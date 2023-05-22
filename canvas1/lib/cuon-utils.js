@@ -62,26 +62,26 @@ function createProgram(gl, vshader, fshader) {
 
 /**
  * Create a shader object
- * @param gl GL context
- * @param type the type of the shader object to be created
+ * @param gl GL 指定渲染上下文
+ * @param type  指定顶点着色器程序代码string
  * @param source shader program (string)
  * @return created shader object, or null if the creation has failed.
  */
 function loadShader(gl, type, source) {
-  // Create shader object
+  // 创建一个 WebGLShader 着色器对象
   var shader = gl.createShader(type);
   if (shader == null) {
     console.log('unable to create shader');
     return null;
   }
 
-  // Set the shader program
+  // 设置着色器的GLSL程序代码
   gl.shaderSource(shader, source);
 
-  // Compile the shader
+  // 用于编译一个GLSL着色器，使其成为二进制数据
   gl.compileShader(shader);
 
-  // Check the result of compilation
+  // 返回给定的着色器信息
   var compiled = gl.getShaderParameter(shader, gl.COMPILE_STATUS);
   if (!compiled) {
     var error = gl.getShaderInfoLog(shader);

@@ -17,7 +17,7 @@ const router = createRouter({
     {
       path: '/canvas-point',
       name: 'canvasPoint',
-      component: () => import('../views/canvasPoint.vue')
+      component: () => import('../views/CanvasPoint.vue')
     }
   ]
 })

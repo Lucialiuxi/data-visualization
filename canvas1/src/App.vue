@@ -10,7 +10,7 @@ import HelloWorld from './components/HelloWorld.vue'
       <nav>
         <RouterLink to="/">Home</RouterLink>
         <RouterLink to="/canvas">Canvas</RouterLink>
-        <RouterLink to="/canvasPoint">CanvasPoint</RouterLink>
+        <RouterLink to="/canvas-point">CanvasPoint</RouterLink>
       </nav>
     </div>
   </header>
