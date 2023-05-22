@@ -94,6 +94,7 @@ function loadShader(gl, type, source) {
 }
 
 /** 
+ * 获取WebGL绘图上下文
  * Initialize and get the rendering for WebGL
  * @param canvas <cavnas> element
  * @param opt_debug flag to initialize the context for debugging

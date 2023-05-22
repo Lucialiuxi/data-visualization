@@ -12,11 +12,13 @@ const router = createRouter({
     {
       path: '/canvas',
       name: 'canvas',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
       component: () => import('../views/CanvasView.vue')
     },
+    {
+      path: '/canvas-point',
+      name: 'canvasPoint',
+      component: () => import('../views/canvasPoint.vue')
+    }
   ]
 })
 

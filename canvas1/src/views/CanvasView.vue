@@ -1,5 +1,5 @@
-<script>
-import { getWebGLContext } from '../../lib/cuon-utils.js';
+<script lang="js">
+import { getWebGLContext  } from '../../lib/cuon-utils.js';
 export default {
   data(){
     return {
@@ -17,15 +17,13 @@ export default {
           console.log("没有找到canvas");
           return;
         }
-        /**
-         
+         /*
         // 获取回执二维图形的绘图上下文
         let ctx = canvas.getContext("2d");
 
         // 绘制蓝色矩形
         ctx.fillStyle = "rgba(0,0,255,1.0)"; // 设置填充颜色为蓝色
-        ctx.fillRect(12, 10, 100, 1500); // 使用填充颜色填充矩形
-        
+        ctx.fillRect(120, 0, 200, 80); // 使用填充颜色填充矩形 [距离左上角的x, 距离左上角的y, 长, 宽]
         */
 
         // 初始化WebGL 上下文
@@ -46,11 +44,11 @@ export default {
         return;
       }
 
-      // 指定清空canvas的颜色
+      // 指定绘图区域canvas的背景色
       // gl.clearColor(0, 0, 1.0, 1.0);
-      gl.clearColor(0.5, 0.5, 0.5, 1.0);
+      gl.clearColor(0.0, 1.0, 0.0, 1.0);
 
-      // 清空canvas
+      // 用上面指定的颜色清除缓冲区
       gl.clear(gl.COLOR_BUFFER_BIT);
     }
   },

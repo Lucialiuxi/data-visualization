@@ -7,10 +7,10 @@ import HelloWorld from './components/HelloWorld.vue'
   <header>
     <div class="wrapper">
       <HelloWorld msg="hello webGL!" />
-
       <nav>
         <RouterLink to="/">Home</RouterLink>
         <RouterLink to="/canvas">Canvas</RouterLink>
+        <RouterLink to="/canvasPoint">CanvasPoint</RouterLink>
       </nav>
     </div>
   </header>
