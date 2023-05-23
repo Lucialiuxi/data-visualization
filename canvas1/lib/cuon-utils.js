@@ -13,7 +13,7 @@ export function initShaders(gl, vshader, fshader) {
     return false;
   }
 
-  gl.useProgram(program);
+  gl.useProgram(program); // 将定义好的WebGLProgram 对象添加到当前的渲染状态中
   gl.program = program;
 
   return true;

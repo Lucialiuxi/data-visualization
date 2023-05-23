@@ -38,3 +38,7 @@ npm run dev
 ```sh
 npm run build
 ```
+
+### webGL
+
+[webGL constants](https://developer.mozilla.org/zh-CN/docs/Web/API/WebGL_API/Constants#standard_webgl_1_constants)
