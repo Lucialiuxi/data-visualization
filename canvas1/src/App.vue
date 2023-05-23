@@ -11,6 +11,7 @@ import HelloWorld from './components/HelloWorld.vue'
         <RouterLink to="/">Home</RouterLink>
         <RouterLink to="/canvas">Canvas</RouterLink>
         <RouterLink to="/canvas-point">CanvasPoint</RouterLink>
+        <RouterLink to="/canvas-point-extend">CanvasPointExtend</RouterLink>
       </nav>
     </div>
   </header>

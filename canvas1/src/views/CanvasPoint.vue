@@ -7,7 +7,7 @@
         },
         methods: {
             main() {
-                // 定点着色器程序
+                // 顶点着色器程序
                 /**
                  * vec4 gl_Position 表示顶点位置 【必传值】
                  * float gl_PointSize 表示点的尺寸（像素数）【非必传值】
