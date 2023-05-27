@@ -23,6 +23,11 @@ const router = createRouter({
       path: '/canvas-point-extend',
       name: 'canvasPointExtend',
       component: () => import('../views/CanvasPointExtend.vue')
+    },
+    {
+      path: '/clicked-point',
+      name: 'clickedPoint',
+      component: () => import('../views/ClickedPoint.vue')
     }
   ]
 })

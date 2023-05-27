@@ -12,6 +12,7 @@ import HelloWorld from './components/HelloWorld.vue'
         <RouterLink to="/canvas">Canvas</RouterLink>
         <RouterLink to="/canvas-point">CanvasPoint</RouterLink>
         <RouterLink to="/canvas-point-extend">CanvasPointExtend</RouterLink>
+        <RouterLink to="/clicked-point">通过鼠标点击绘点</RouterLink>
       </nav>
     </div>
   </header>
