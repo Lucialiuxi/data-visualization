@@ -68,13 +68,13 @@ import { getWebGLContext, initShaders } from '@lib/cuon-utils';
 
                 let halfHeight = rect.height/2;
                 let halfWidth = 200; // 动态宽度为只读 暂时写死
-                let rx = ((x-rect.left) - halfHeight) / halfHeight;
-                let ry = (halfWidth - (y - rect.top)) / halfWidth;
+                // 因为webGL中轴坐标区间为-1.0到1.0 所有要将x坐标点除以canvas长或者宽的一半
+                let rx = ((x-rect.left) - halfWidth) / halfWidth;
+                let ry = (halfHeight - (y - rect.top)) / halfHeight;
                 
                 // 将坐标存储到g_points数组中
                 g_points.push(rx);
                 g_points.push(ry);
-
 
                 let len = g_points.length;
                 for(let i = 0; i < len ; i += 2) {
@@ -82,6 +82,7 @@ import { getWebGLContext, initShaders } from '@lib/cuon-utils';
                     gl.vertexAttrib3f(a_Position, g_points[i], g_points[i+1], 0.0);
                     // 把指定的缓冲区清空为预设的值
                     gl.clear(gl.COLOR_BUFFER_BIT);
+                    // 绘制点
                     gl.drawArrays(gl.POINTS, 0 , 5.0);
                 }
             }
@@ -92,6 +93,6 @@ import { getWebGLContext, initShaders } from '@lib/cuon-utils';
 
 <template>
     <div class="canvas-clicked-point">
-        <canvas id="clicked-point" height="400" width="400"></canvas>
+        <canvas id="clicked-point" height="600" width="400"></canvas>
     </div>
 </template>
