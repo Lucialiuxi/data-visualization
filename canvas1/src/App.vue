@@ -13,6 +13,7 @@ import HelloWorld from './components/HelloWorld.vue'
         <RouterLink to="/canvas-point">CanvasPoint</RouterLink>
         <RouterLink to="/canvas-point-extend">CanvasPointExtend</RouterLink>
         <RouterLink to="/clicked-point">通过鼠标点击绘点</RouterLink>
+        <RouterLink to="/colored-point">改变点的颜色</RouterLink>
       </nav>
     </div>
   </header>

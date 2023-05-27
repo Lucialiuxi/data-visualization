@@ -28,6 +28,11 @@ const router = createRouter({
       path: '/clicked-point',
       name: 'clickedPoint',
       component: () => import('../views/ClickedPoint.vue')
+    },
+    {
+      path: '/colored-point',
+      name: 'coloredPoint',
+      component: () => import('../views/ColoredPoint.vue')
     }
   ]
 })
