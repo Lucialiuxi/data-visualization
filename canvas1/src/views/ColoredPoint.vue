@@ -101,7 +101,7 @@ import { getWebGLContext, initShaders } from '@lib/cuon-utils';
                 // 将点的颜色按象限区分颜色
                 gl.uniform4f(u_FragColor, ...g_color[i]);
                 // 绘制点
-                gl.drawArrays(gl.POINTS, 0 , 5.0);
+                gl.drawArrays(gl.POINTS, 0 , 1.0);
             }
         },
 
