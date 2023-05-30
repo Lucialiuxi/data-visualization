@@ -20,7 +20,7 @@ export default {
                 precision mediump float;
                 uniform vec4 u_FragColor;
                 void main() {
-                    gl_FragColor = u_fragColor;
+                    gl_FragColor = u_FragColor;
                 }
             `;
 
@@ -83,7 +83,7 @@ export default {
                 void gl.bufferData(target, ArrayBufferView srcData, usage, srcOffset, length);
 
              */
-            gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAM);
+            gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
 
             // 获取attribute变量储存位置
             let a_Position = gl.getAttribLocation(gl.program, 'a_Position');
@@ -100,7 +100,7 @@ export default {
             gl.enableVertexAttribArray(a_Position);
 
             // 设置片元着色器颜色
-            gl.uniform4f(1.0, 0.0, 0.0, 1.0);
+            gl.uniform4f(u_FragColor, 1.0, 0.0, 0.0, 1.0);
             return n;
         }
     }
