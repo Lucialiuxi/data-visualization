@@ -12,11 +12,12 @@ import HelloWorld from './components/HelloWorld.vue'
         <RouterLink to="/canvas">Canvas</RouterLink>
         <RouterLink to="/canvas-point">CanvasPoint</RouterLink>
         <RouterLink to="/canvas-point-extend">CanvasPointExtend</RouterLink>
-        <RouterLink to="/clicked-point">通过鼠标点击绘点</RouterLink>
+        <RouterLink to="/clicked-point">鼠标点击绘点</RouterLink>
         <RouterLink to="/colored-point">改变点的颜色</RouterLink>
         <RouterLink to="/multi-point">缓冲区对象绘制多个点</RouterLink>
         <RouterLink to="/hello-triangle">三角形</RouterLink>
         <RouterLink to="/hello-line-strip">线条</RouterLink>
+        <RouterLink to="/hello-quad">矩形</RouterLink>
       </nav>
     </div>
   </header>

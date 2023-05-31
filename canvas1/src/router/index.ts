@@ -49,6 +49,11 @@ const router = createRouter({
       name: 'HelloLineStrip',
       component: () => import('../views/HelloLineStrip.vue')
     },
+    {
+      path: '/hello-quad',
+      name: 'HelloQuad',
+      component: () => import('../views/HelloQuad.vue')
+    },
   ]
 })
 
