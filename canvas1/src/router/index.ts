@@ -33,6 +33,11 @@ const router = createRouter({
       path: '/colored-point',
       name: 'coloredPoint',
       component: () => import('../views/ColoredPoint.vue')
+    },
+    {
+      path: '/multi-point',
+      name: 'multiPoint',
+      component: () => import('../views/MultiPoint.vue')
     }
   ]
 })
