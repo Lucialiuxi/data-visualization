@@ -16,6 +16,7 @@ import HelloWorld from './components/HelloWorld.vue'
         <RouterLink to="/colored-point">改变点的颜色</RouterLink>
         <RouterLink to="/multi-point">缓冲区对象绘制多个点</RouterLink>
         <RouterLink to="/hello-triangle">三角形</RouterLink>
+        <RouterLink to="/hello-line-strip">线条</RouterLink>
       </nav>
     </div>
   </header>

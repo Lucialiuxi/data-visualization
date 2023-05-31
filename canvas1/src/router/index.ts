@@ -44,6 +44,11 @@ const router = createRouter({
       name: 'HelloTriangle',
       component: () => import('../views/HelloTriangle.vue')
     },
+    {
+      path: '/hello-Line-strip',
+      name: 'HelloLineStrip',
+      component: () => import('../views/HelloLineStrip.vue')
+    },
   ]
 })
 
