@@ -50,37 +50,21 @@ export default {
             gl.clear(gl.COLOR_BUFFER_BIT);
 
             // gl.drawArrays(gl.LINES, 0, n);
-            gl.drawArrays(gl.LINE_LOOP, 0, n);
-            // gl.drawArrays(gl.LINE_STRIP, 0, n);
+            // gl.drawArrays(gl.LINE_LOOP, 0, n);
+            gl.drawArrays(gl.LINE_STRIP, 0, n);
         },
         // 创建缓冲区对象&设置顶点位置
         initVertexBuffer(gl) {
-
-            // //----gl.LINES
-            // // 顶点位置
-            // let vertices = new Float32Array(8); // 4 为TypeArray的length
-            //  // vertices.set(array, targetOffset) targetOffset下标
-            // vertices.set([
-            //     0.0, 0.5,
-            //     -0.5, -0.5, 
-            //     0.0, 0.4,
-            //     -0.0, -0.4,
-            // ], 0);
-            // // 顶点个数
-            // let n = 4;
-
-            //----gl.LINES_STRIP AND  gl.LINES_LOOP
             // 顶点位置
-            let vertices = new Float32Array(8); // 8 为TypeArray的length
+            let vertices = new Float32Array(6); // offset 为TypeArray的length
              // vertices.set(array, targetOffset) targetOffset下标
             vertices.set([
-                -0.1, 0.5,
-                0.5, 0.5, 
-                0.0, -0.5,
-                0.5, -0.5
+                0.0, 0.5, 
+                -0.5, -0.5, 
+                0.5, 0.5
             ], 0);
             // 顶点个数
-            let n = 4;
+            let n = 3;
 
             // 创建缓冲区对象
             let vertexBuffer = gl.createBuffer();
