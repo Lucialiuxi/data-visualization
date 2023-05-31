@@ -56,9 +56,11 @@ export default {
         },
         // 初始化顶点缓冲区
         initVertexBuffers(gl) {
-            let vertices = new Float32Array([
-                0.0, 0.5, -0.5, -0.5, 0.5, 0.5
-            ]);
+            // let vertices = new Float32Array([
+            //     0.0, 0.5, -0.5, -0.5, 0.5, 0.5
+            // ]);
+            let vertices = new Float32Array(6);
+            vertices.set([0.0, 0.5, -0.5, -0.5, 0.5, 0.5], 0);
             let n = 3; // 点的个数
 
             // 创建并初始化一个用于储存顶点数据或者着色数据的webGLBuffer对象
