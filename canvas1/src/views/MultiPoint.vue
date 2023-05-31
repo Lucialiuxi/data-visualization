@@ -43,7 +43,7 @@ export default {
             // 设置顶点位置
             let n = this.initVertexBuffers(gl);
             if (n < 0) {
-                console.error('设置定点位置失败');
+                console.error('设置顶点位置失败');
             }
 
             // 设置canvas背景色

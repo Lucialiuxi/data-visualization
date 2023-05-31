@@ -38,7 +38,12 @@ const router = createRouter({
       path: '/multi-point',
       name: 'multiPoint',
       component: () => import('../views/MultiPoint.vue')
-    }
+    },
+    {
+      path: '/hello-triangle',
+      name: 'HelloTriangle',
+      component: () => import('../views/HelloTriangle.vue')
+    },
   ]
 })
 
