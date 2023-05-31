@@ -52,6 +52,7 @@ export default {
             // 把指定的缓冲区清空为预设的值
             gl.clear(gl.COLOR_BUFFER_BIT);
 
+            // 从第0个点开始绘制 绘制n个点
             gl.drawArrays(gl.POINTS, 0, n);
         },
         // 初始化顶点缓冲区
