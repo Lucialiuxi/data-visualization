@@ -2,7 +2,8 @@
 import { RouterLink, RouterView } from 'vue-router';
 import HelloWorld from './components/HelloWorld.vue';
 import router from './router/index';
-console.log(router.getRoutes())
+let routes = router.getRoutes();
+console.log(routes)
 </script>
 
 <template>
@@ -10,16 +11,7 @@ console.log(router.getRoutes())
     <div class="wrapper">
       <HelloWorld msg="hello webGL!" />
       <nav>
-        <RouterLink to="/">Home</RouterLink>
-        <RouterLink to="/canvas">Canvas</RouterLink>
-        <RouterLink to="/canvas-point">CanvasPoint</RouterLink>
-        <RouterLink to="/canvas-point-extend">CanvasPointExtend</RouterLink>
-        <RouterLink to="/clicked-point">鼠标点击绘点</RouterLink>
-        <RouterLink to="/colored-point">改变点的颜色</RouterLink>
-        <RouterLink to="/multi-point">缓冲区对象绘制多个点</RouterLink>
-        <RouterLink to="/hello-triangle">三角形</RouterLink>
-        <RouterLink to="/hello-line-strip">线条</RouterLink>
-        <RouterLink to="/hello-quad">矩形</RouterLink>
+        <RouterLink  v-for="route of routes" :key="route.path" :to="route.path" >{{route?.name}}</RouterLink>
       </nav>
     </div>
   </header>
