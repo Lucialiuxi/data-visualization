@@ -3,7 +3,7 @@ import { RouterLink, RouterView } from 'vue-router';
 import HelloWorld from './components/HelloWorld.vue';
 import router from './router/index';
 let routes = router.getRoutes();
-console.log(routes)
+
 </script>
 
 <template>

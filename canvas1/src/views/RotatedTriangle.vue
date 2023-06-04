@@ -1,11 +1,24 @@
 <template>
   <div class="canvas-hello-triangle">
-    <canvas height="600" width="400" id="translated-triangle"></canvas>
+    <canvas height="600" width="400" id="rotated-triangle"></canvas>
   </div>
 </template>
 
 <script>
-// 平移三角形
+/**
+ * 两角和差公式
+ * sin(A ± B) = sinB * cosB + cosA * sinB;
+ * cons(A ± B) = sinA * sinB ± cosA * cosB;
+ * 
+ * 角度制计算弧长:
+ * 弧长 = 圆心角度数 * π * 半径r / 180 
+ * 弧度制计算弧长
+ * 弧长 = 弧度 * 半径
+ * so
+ * 弧度 = 圆心角 * π / 180
+*/
+
+// 变换矩阵
 import { getWebGLContext, initShaders } from '@lib/cuon-utils'; 
 export default {
     mounted() {
@@ -13,11 +26,23 @@ export default {
     },
     methods: {
         initHandle(){
+            /*
+                通过两角和差公式推导可得：
+                x' = x*cosB - y*sinB
+                y' = x*sinB + y*cosB
+                z' = z
+            */
             let VSHADER_SOURCE = `
                 attribute vec4 a_Position;
                 uniform vec4 u_Translation;
+                uniform float u_CosB, u_SinB;
+                
                 void main() {
-                    gl_Position = a_Position + u_Translation;
+                    // a_Position 为位移前的坐标  gl_Position为位移后的坐标
+                    gl_Position.x = a_Position.x * u_CosB - a_Position.y * u_SinB;
+                    gl_Position.y = a_Position.x * u_SinB + a_Position.y * u_CosB;
+                    gl_Position.z = a_Position.z;
+                    gl_Position.w = 1.0;
                 }
             `;
             let FSHADER_SOURCE = `
@@ -28,7 +53,7 @@ export default {
                 }
             `;
             
-            let canvas = document.getElementById('translated-triangle');
+            let canvas = document.getElementById('rotated-triangle');
             // 获取webGL上下文
             let gl = getWebGLContext(canvas);
             if(!gl) {
@@ -46,6 +71,20 @@ export default {
             if (n < 0) {
                 console.error('设置顶点位置失败')
             }
+
+            // 旋转角度
+            const ANGLE = 90.0;
+
+        
+            // 将旋转图形所需的数据传输给顶点着色器
+            let radian = ANGLE * Math.PI / 180; // 计算弧度
+            let cosB = Math.cos(radian);
+            let sinB = Math.sin(radian);
+            let u_CosB = gl.getUniformLocation(gl.program, 'u_CosB');
+            let u_SinB = gl.getUniformLocation(gl.program, 'u_SinB');
+            gl.uniform1f(u_CosB, cosB);
+            gl.uniform1f(u_SinB, sinB);
+
             // 设置canvas画布背景色
             gl.clearColor(0.2, 0.1, 0.3, 1.0);
             // 把指定的缓冲区清空为预设的值

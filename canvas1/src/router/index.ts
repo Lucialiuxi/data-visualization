@@ -59,6 +59,11 @@ const router = createRouter({
       name: '平移三角形',
       component: () => import('../views/TranslatedTriangle.vue'),
     },
+    {
+      path: '/rotated-triangle',
+      name: '平移三角形',
+      component: () => import('../views/RotatedTriangle.vue'),
+    },
   ]
 })
 
