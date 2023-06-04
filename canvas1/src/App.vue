@@ -11,7 +11,11 @@ console.log(routes)
     <div class="wrapper">
       <HelloWorld msg="hello webGL!" />
       <nav>
-        <RouterLink  v-for="route of routes" :key="route.path" :to="route.path" >{{route?.name}}</RouterLink>
+        <RouterLink
+          v-for="route of routes" 
+          :key="route.path" 
+          :to="route.path" 
+        >{{route?.name}}</RouterLink>
       </nav>
     </div>
   </header>
