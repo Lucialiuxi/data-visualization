@@ -119,7 +119,8 @@ export default {
             /**
              * 告诉显卡重当前绑定的缓冲区中读取定点数据
              * gl.vertexAttribPointer(index, size, type, normalized, stride, offset);
-             * size:坐标参数的个数
+             * index: 下标
+             * size: 坐标参数的个数
              * type: 指定数组中每个元素的数据类型
              * normalized: 当转换为浮点数时是否将整数数值归一到特定范围
              * stride: 一以字节为单位指定连续顶点属性开始之间的偏移量（即数据中一行的长度）
