@@ -61,12 +61,11 @@ export default {
             let sinB = Math.sin(radian);
             // 注意webGL中矩阵是列主序的
             let xformMatrix = new Float32Array([
-                cosB, -sinB, 0, 0,
-                sinB, cosB, 0, 0,
+                cosB, sinB, 0, 0,
+                -sinB, cosB, 0, 0,
                 0, 0, 1, 0,
                 0, 0, 0, 1,
             ]);
-
 
             let u_xformMatrix = gl.getUniformLocation(gl.program, 'u_xformMatrix');
             // 为uniform指定矩阵值
