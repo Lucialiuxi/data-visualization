@@ -39,7 +39,7 @@ export default {
             }
 
             // 初始化着色器
-            if (initShaders(gl, VSHADER_SOURCE, FSHADER_SOURCE)) {
+            if (!initShaders(gl, VSHADER_SOURCE, FSHADER_SOURCE)) {
                 console.error('着色器初始化失败');
                 return;
             }
@@ -50,6 +50,27 @@ export default {
                 console.error('设置顶点位置失败');
                 return;
             }
+
+
+            // 旋转角度
+            const ANGLE = 90.0;
+
+            // 创建旋转矩阵
+            let radian = ANGLE * Math.PI / 180; // 角度制转弧度制
+            let cosB = Math.cos(radian);
+            let sinB = Math.sin(radian);
+            // 注意webGL中矩阵是列主序的
+            let xformMatrix = new Float32Array([
+                cosB, -sinB, 0, 0,
+                sinB, cosB, 0, 0,
+                0, 0, 1, 0,
+                0, 0, 0, 1,
+            ]);
+
+
+            let u_xformMatrix = gl.getUniformLocation(gl.program, 'u_xformMatrix');
+            // 为uniform指定矩阵值
+            gl.uniformMatrix4fv(u_xformMatrix, false, xformMatrix);
 
             // 设置canvas画布背景色
             gl.clearColor(0.2, 0.1, 0.3, 1.0);
@@ -73,34 +94,19 @@ export default {
             // 顶点个数
             let n = 3;
 
-            // 旋转角度
-            const ANGLE = 90.0;
-
-            // 创建旋转矩阵
-            let radian = ANGLE * Math.PI / 180; // 角度制转弧度制
-            let cosB = Math.cos(radian);
-            let sinB = Math.sin(radian);
-            // 注意webGL中矩阵是列主序的
-            let xformMatrix = new Float32Array([
-                cosB, -sinB, 0, 0,
-                sinB, cosB, 0, 0,
-                0, 0, 1, 0,
-                0, 0, 0, 1,
-            ]);
-
 
             // 创建缓冲区对象
             let vertexBuffer = gl.createBuffer();
             if(!vertexBuffer) {
                 console.error('创建缓冲区对象失败');
-                return;
+                return -1;
             }
 
             // 绑定缓冲区对象
             gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
 
             // 将数据写入缓冲区对象
-            gl.bufferData(gl.ARRAY_BUFFER, vertexBuffer, gl.STATIC_DRAW, 0, len);
+            gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
 
             // 获取attribute变量下标
             let a_Position = gl.getAttribLocation(gl.program, 'a_Position');
@@ -120,16 +126,10 @@ export default {
              * offset: 指定顶点属性数组中第一部分的字节偏移量
              * 
              */
-            gl.vertexAttribPointer(a_Position, n, gl.FLOAT, false, 0, 0);
-
+            gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, 0, 0);
 
             // 开启attribute变量
             gl.enableVertexAttribArray(a_Position);
-
-
-            let u_xformMatrix = gl.getUniformLocation(gl.program, 'u_xformMatrix');
-            // 为uniform指定矩阵值
-            gl.uniform4fv(u_xformMatrix, false, xformMatrix);
 
             return n;
         }
