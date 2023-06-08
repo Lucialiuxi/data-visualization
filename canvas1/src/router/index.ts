@@ -69,6 +69,11 @@ const router = createRouter({
       name: '旋转矩阵',
       component: () => import('../views/RotatedTriangleMatrix.vue'),
     },
+    {
+      path: '/translate-triangle-matrix',
+      name: '平移矩阵',
+      component: () => import('../views/TranslateTriangleMatrix.vue'),
+    },
   ]
 })
 

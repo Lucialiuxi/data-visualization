@@ -5,6 +5,7 @@
   </template>
   
   <script>
+  // 旋转矩阵
   import { getWebGLContext, initShaders } from '@lib/cuon-utils'; 
   
   export default {
@@ -49,7 +50,7 @@
               }
   
               // 旋转角度
-              const ANGLE = 90.0;
+              const ANGLE = 60.0;
   
           
               // 将旋转图形所需的数据传输给顶点着色器
@@ -114,7 +115,7 @@
               gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, 0, 0);
   
               let u_FragColor = gl.getUniformLocation(gl.program, 'u_FragColor');
-              gl.uniform4f(u_FragColor, 0.0, 1.0, 0.0, 1.0);
+              gl.uniform4f(u_FragColor, 0.0, 1.0, 1.0, 1.0);
   
               // 开启attribute变量
               gl.enableVertexAttribArray(a_Position);
