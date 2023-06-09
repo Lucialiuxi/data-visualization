@@ -89,7 +89,7 @@ export const advanceRoutes = {
     params: '进阶'
   },
   children: [
-    
+
   ]
 };
 const router = createRouter({
@@ -98,7 +98,7 @@ const router = createRouter({
     {
       path: '/',
       component: () => HomeView,
-      name: '入口',
+      name: 'enter',
       props: {
         params: '准备开始学习吧'
       },

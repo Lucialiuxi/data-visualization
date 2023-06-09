@@ -5,21 +5,22 @@ import router from './router/index';
 let routes = router.getRoutes();
 
 export default {
+  data() {
+    return {
+      current: ''
+    }
+  },
   mounted() {
     // console.log('routes---', routes)
   },
   methods: {
-    getRoutes(parentName) {
-        let showRoutes = routes.find(item => item.name.indexOf(parentName) !== -1);
+    getRoutes() {
+        let showRoutes = routes.find(item => item.name.indexOf(this.current) !== -1);
         return showRoutes?.children || [];
     },
-    getPath(route, parent) {
-      let fullPath = '/' + parent + '/' + route.path;
+    getPath(route) {
+      let fullPath = '/' + this.current + '/' + route.path;
       return fullPath;
-    },
-    showRoute(parentName) {
-      let show =  this.$route.path.indexOf(parentName) !== -1;
-      return show;
     },
     getFirstList() {
       let list = routes.filter(item => {
@@ -35,7 +36,7 @@ export default {
   watch: {
     $route: {
       handler: function (to, from) {
-        console.log(to.fullPath, from.fullPath)
+        this.current = to.name;
       }
     }
   }
@@ -46,26 +47,20 @@ export default {
   <header>
     <div class="wrapper">
       <HelloWorld msg="hello webGL!" />
+      <nav class="firstLevelNavWrap">
+          <RouterLink
+            v-for="route of getFirstList()" 
+            :key="route.path"
+            :to ="route.path"
+          >{{route?.name}}</RouterLink>
+
+      </nav>
       <nav>
         <RouterLink
-          v-for="route of getFirstList()" 
-          :key="route.path"
-          :to ="route.path"
+          v-for="route of getRoutes()" 
+          :key="route.path" 
+          :to="{path: getPath(route)}" 
         >{{route?.name}}</RouterLink>
-        <div v-show="showRoute('single')">
-          <RouterLink
-            v-for="route of getRoutes('single')" 
-            :key="route.path" 
-            :to="{path: getPath(route, 'single')}" 
-          >{{route?.name}}</RouterLink>
-        </div>
-        <div v-show="showRoute('advance')">
-          <RouterLink
-            v-for="route of getRoutes('advance')" 
-            :key="route.path" 
-            :to="{path: getPath(route, 'advance')}" 
-          >{{route?.name}}</RouterLink>
-        </div>
       </nav>
     </div>
   </header>
@@ -133,5 +128,9 @@ nav a:first-of-type {
     padding: 1rem 0;
     margin-top: 1rem;
   }
+}
+.firstLevelNavWrap {
+  width: 500px;
+  margin-bottom: 20px;
 }
 </style>
