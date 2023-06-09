@@ -1,8 +1,25 @@
-<script setup lang="ts">
+<script lang="js">
+import { RouterLink, RouterView } from 'vue-router';
+  export default {
+    mounted() {
+      console.log('levelText', this.levelText)
+    },
+    computed: {
+      levelText: {
+        get() {
+          return this.$route?.name || '开始学习吧';
+        },
+        set(text) {
+          this.levelText = text;
+        }
+      }
+    }
+  }
 </script>
 
 <template>
   <main>
-    开始学习吧
+    {{levelText}}
+    <RouterView/>
   </main>
 </template>

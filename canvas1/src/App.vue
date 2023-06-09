@@ -1,9 +1,45 @@
-<script setup lang="ts">
+<script  lang="js">
 import { RouterLink, RouterView } from 'vue-router';
 import HelloWorld from './components/HelloWorld.vue';
 import router from './router/index';
 let routes = router.getRoutes();
 
+export default {
+  mounted() {
+    // console.log('routes---', routes)
+  },
+  methods: {
+    getRoutes(parentName) {
+        let showRoutes = routes.find(item => item.name.indexOf(parentName) !== -1);
+        return showRoutes?.children || [];
+    },
+    getPath(route, parent) {
+      let fullPath = '/' + parent + '/' + route.path;
+      return fullPath;
+    },
+    showRoute(parentName) {
+      let show =  this.$route.path.indexOf(parentName) !== -1;
+      return show;
+    },
+    getFirstList() {
+      let list = routes.filter(item => {
+        if(item?.props?.default?.params) {
+          let newItem = Object.assign({}, item);
+          delete newItem.children;
+          return newItem;
+        }
+      });
+      return list;
+    }
+  },
+  watch: {
+    $route: {
+      handler: function (to, from) {
+        console.log(to.fullPath, from.fullPath)
+      }
+    }
+  }
+}
 </script>
 
 <template>
@@ -12,14 +48,27 @@ let routes = router.getRoutes();
       <HelloWorld msg="hello webGL!" />
       <nav>
         <RouterLink
-          v-for="route of routes" 
-          :key="route.path" 
-          :to="route.path" 
+          v-for="route of getFirstList()" 
+          :key="route.path"
+          :to ="route.path"
         >{{route?.name}}</RouterLink>
+        <div v-show="showRoute('single')">
+          <RouterLink
+            v-for="route of getRoutes('single')" 
+            :key="route.path" 
+            :to="{path: getPath(route, 'single')}" 
+          >{{route?.name}}</RouterLink>
+        </div>
+        <div v-show="showRoute('advance')">
+          <RouterLink
+            v-for="route of getRoutes('advance')" 
+            :key="route.path" 
+            :to="{path: getPath(route, 'advance')}" 
+          >{{route?.name}}</RouterLink>
+        </div>
       </nav>
     </div>
   </header>
-
   <RouterView />
 </template>
 
