@@ -1,5 +1,5 @@
 <script lang="js">
-import { getWebGLContext  } from '../../lib/cuon-utils.js';
+import { getWebGLContext  } from '@lib/cuon-utils.js';
 export default {
   data(){
     return {

@@ -12,72 +12,72 @@ export const singleRoutes = {
     {
       path: 'canvas',
       name: 'canvas',
-      component: () => import('../views/CanvasView.vue')
+      component: () => import('../views/single/CanvasView.vue')
     },
     {
       path: 'canvas-point',
       name: 'canvasPoint',
-      component: () => import('../views/CanvasPoint.vue')
+      component: () => import('../views/single/CanvasPoint.vue')
     },
     {
       path: 'canvas-point-extend',
       name: 'canvasPointExtend',
-      component: () => import('../views/CanvasPointExtend.vue')
+      component: () => import('../views/single/CanvasPointExtend.vue')
     },
     {
       path: 'clicked-point',
       name: '鼠标点击绘点',
-      component: () => import('../views/ClickedPoint.vue')
+      component: () => import('../views/single/ClickedPoint.vue')
     },
     {
       path: 'colored-point',
       name: '改变点的颜色',
-      component: () => import('../views/ColoredPoint.vue')
+      component: () => import('../views/single/ColoredPoint.vue')
     },
     {
       path: 'multi-point',
       name: '缓冲区对象绘制多个点',
-      component: () => import('../views/MultiPoint.vue')
+      component: () => import('../views/single/MultiPoint.vue')
     },
     {
       path: 'hello-triangle',
       name: '三角形',
-      component: () => import('../views/HelloTriangle.vue')
+      component: () => import('../views/single/HelloTriangle.vue')
     },
     {
       path: 'hello-Line-strip',
       name: '线条',
-      component: () => import('../views/HelloLineStrip.vue')
+      component: () => import('../views/single/HelloLineStrip.vue')
     },
     {
       path: 'hello-quad',
       name: '矩形',
-      component: () => import('../views/HelloQuad.vue')
+      component: () => import('../views/single/HelloQuad.vue')
     },
     {
       path: 'translated-triangle',
       name: '平移三角形',
-      component: () => import('../views/TranslatedTriangle.vue'),
+      component: () => import('../views/single/TranslatedTriangle.vue'),
     },
     {
       path: 'rotated-triangle',
       name: '旋转三角形',
-      component: () => import('../views/RotatedTriangle.vue'),
+      component: () => import('../views/single/RotatedTriangle.vue'),
     },
     {
       path: 'rotated-triangle-matrix',
       name: '旋转矩阵',
-      component: () => import('../views/RotatedTriangleMatrix.vue'),
+      component: () => import('../views/single/RotatedTriangleMatrix.vue'),
     },
     {
       path: 'translate-triangle-matrix',
       name: '平移矩阵',
-      component: () => import('../views/TranslateTriangleMatrix.vue'),
+      component: () => import('../views/single/TranslateTriangleMatrix.vue'),
     },
     {
       path: 'scale-triangle-matrix',
       name: '缩放矩阵',
-      component: () => import('../views/ScaleTriangleMatrix.vue'),
+      component: () => import('../views/single/ScaleTriangleMatrix.vue'),
     },
   ]
 };

@@ -2,7 +2,7 @@
 /**
  * 使用attribute变量赋值
  */
-import { getWebGLContext, initShaders } from '../../lib/cuon-utils';
+import { getWebGLContext, initShaders } from '@lib/cuon-utils';
 
 export default {
     mounted() {

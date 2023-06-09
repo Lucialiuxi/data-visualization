@@ -36,7 +36,9 @@ export default {
   watch: {
     $route: {
       handler: function (to, from) {
-        this.current = to.name;
+        if (to.fullPath !== from.fullPath && to.params.id) {
+          this.current = to.name;
+        }
       }
     }
   }

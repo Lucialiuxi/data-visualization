@@ -1,5 +1,5 @@
 <script setup lang="js">
-    import { getWebGLContext, initShaders } from '../../lib/cuon-utils'
+    import { getWebGLContext, initShaders } from '@lib/cuon-utils'
     
     export default {
         mounted() {
