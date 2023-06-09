@@ -74,6 +74,11 @@ const router = createRouter({
       name: '平移矩阵',
       component: () => import('../views/TranslateTriangleMatrix.vue'),
     },
+    {
+      path: '/scale-triangle-matrix',
+      name: '缩放矩阵',
+      component: () => import('../views/ScaleTriangleMatrix.vue'),
+    },
   ]
 })
 
