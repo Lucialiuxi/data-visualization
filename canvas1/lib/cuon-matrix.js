@@ -477,12 +477,12 @@ Matrix4.prototype.translate = function(x, y, z) {
 };
 
 /**
- * Set the matrix for rotation.
- * The vector of rotation axis may not be normalized.
+ * 设置矩阵进行旋转。
+ * 旋转轴的矢量可能无法标准化。
  * @param angle The angle of rotation (degrees)
- * @param x The X coordinate of vector of rotation axis.
- * @param y The Y coordinate of vector of rotation axis.
- * @param z The Z coordinate of vector of rotation axis.
+ * @param x 旋转轴矢量的X坐标
+ * @param y 旋转轴矢量的Y坐标
+ * @param z 旋转轴矢量的Z坐标
  * @return this
  */
 Matrix4.prototype.setRotate = function(angle, x, y, z) {

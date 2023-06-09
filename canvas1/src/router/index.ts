@@ -2,9 +2,9 @@ import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue';
 
 export const singleRoutes = {
-  path: '/single/:id?',
+  path: '/simple/:id?',
   component: () => HomeView,
-  name: 'single',
+  name: 'simple',
   props: {
     params: '简单'
   },
@@ -12,72 +12,72 @@ export const singleRoutes = {
     {
       path: 'canvas',
       name: 'canvas',
-      component: () => import('../views/single/CanvasView.vue')
+      component: () => import('../views/simple/CanvasView.vue')
     },
     {
       path: 'canvas-point',
       name: 'canvasPoint',
-      component: () => import('../views/single/CanvasPoint.vue')
+      component: () => import('../views/simple/CanvasPoint.vue')
     },
     {
       path: 'canvas-point-extend',
       name: 'canvasPointExtend',
-      component: () => import('../views/single/CanvasPointExtend.vue')
+      component: () => import('../views/simple/CanvasPointExtend.vue')
     },
     {
       path: 'clicked-point',
       name: '鼠标点击绘点',
-      component: () => import('../views/single/ClickedPoint.vue')
+      component: () => import('../views/simple/ClickedPoint.vue')
     },
     {
       path: 'colored-point',
       name: '改变点的颜色',
-      component: () => import('../views/single/ColoredPoint.vue')
+      component: () => import('../views/simple/ColoredPoint.vue')
     },
     {
       path: 'multi-point',
       name: '缓冲区对象绘制多个点',
-      component: () => import('../views/single/MultiPoint.vue')
+      component: () => import('../views/simple/MultiPoint.vue')
     },
     {
       path: 'hello-triangle',
       name: '三角形',
-      component: () => import('../views/single/HelloTriangle.vue')
+      component: () => import('../views/simple/HelloTriangle.vue')
     },
     {
       path: 'hello-Line-strip',
       name: '线条',
-      component: () => import('../views/single/HelloLineStrip.vue')
+      component: () => import('../views/simple/HelloLineStrip.vue')
     },
     {
       path: 'hello-quad',
       name: '矩形',
-      component: () => import('../views/single/HelloQuad.vue')
+      component: () => import('../views/simple/HelloQuad.vue')
     },
     {
       path: 'translated-triangle',
       name: '平移三角形',
-      component: () => import('../views/single/TranslatedTriangle.vue'),
+      component: () => import('../views/simple/TranslatedTriangle.vue'),
     },
     {
       path: 'rotated-triangle',
       name: '旋转三角形',
-      component: () => import('../views/single/RotatedTriangle.vue'),
+      component: () => import('../views/simple/RotatedTriangle.vue'),
     },
     {
       path: 'rotated-triangle-matrix',
       name: '旋转矩阵',
-      component: () => import('../views/single/RotatedTriangleMatrix.vue'),
+      component: () => import('../views/simple/RotatedTriangleMatrix.vue'),
     },
     {
       path: 'translate-triangle-matrix',
       name: '平移矩阵',
-      component: () => import('../views/single/TranslateTriangleMatrix.vue'),
+      component: () => import('../views/simple/TranslateTriangleMatrix.vue'),
     },
     {
       path: 'scale-triangle-matrix',
       name: '缩放矩阵',
-      component: () => import('../views/single/ScaleTriangleMatrix.vue'),
+      component: () => import('../views/simple/ScaleTriangleMatrix.vue'),
     },
   ]
 };
