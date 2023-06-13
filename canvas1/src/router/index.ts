@@ -86,10 +86,19 @@ export const advanceRoutes = {
   component: () => HomeView,
   name: 'advance',
   props: {
-    params: '进阶'
+    params: '进阶(Matrix4函数)'
   },
   children: [
-
+    {
+      path: 'rotated-triangle-matrix',
+      name: '旋转矩阵',
+      component: () => import('../views/advance/RotatedTriangleMatrix.vue'),
+    },
+    {
+      path: 'rotated-translate-triangle',
+      name: '旋转平移矩阵',
+      component: () => import('../views/advance/RotatedTranslateTriangle.vue'),
+    }
   ]
 };
 const router = createRouter({

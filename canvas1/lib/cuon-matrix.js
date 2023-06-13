@@ -27,6 +27,7 @@ var Matrix4 = function(opt_src) {
 };
 
 /**
+ * 将Matrix4示例初始化为单位阵
  * Set the identity matrix.
  * @return this
  */
@@ -40,6 +41,7 @@ Matrix4.prototype.setIdentity = function() {
 };
 
 /**
+ * 将Matrix4实例设置为m,m 也必须是一个Matrix4实例（相当于复制）
  * Copy matrix.
  * @param src source matrix
  * @return this
@@ -413,6 +415,7 @@ Matrix4.prototype.perspective = function(fovy, aspect, near, far) {
 };
 
 /**
+ * 将Matrix4实力设置为旋转变化矩阵
  * Set the matrix for scaling.
  * @param x The scale factor along the X axis
  * @param y The scale factor along the Y axis
@@ -429,6 +432,7 @@ Matrix4.prototype.setScale = function(x, y, z) {
 };
 
 /**
+ * 将Matrix4示例乘以一个旋转变化矩阵
  * Multiply the matrix for scaling from the right.
  * @param x The scale factor along the X axis
  * @param y The scale factor along the Y axis
@@ -445,6 +449,7 @@ Matrix4.prototype.scale = function(x, y, z) {
 };
 
 /**
+ * 将Matrix4设置为平移变化矩阵
  * Set the matrix for translation.
  * @param x The X value of a translation.
  * @param y The Y value of a translation.
@@ -563,6 +568,7 @@ Matrix4.prototype.setRotate = function(angle, x, y, z) {
 };
 
 /**
+ * 将Matrix4实力乘以一个旋转变化矩阵
  * Multiply the matrix for rotation from the right.
  * The vector of rotation axis may not be normalized.
  * @param angle The angle of rotation (degrees)
@@ -739,3 +745,5 @@ var Vector4 = function(opt_src) {
   } 
   this.elements = v;
 }
+
+export  default new Matrix4();
