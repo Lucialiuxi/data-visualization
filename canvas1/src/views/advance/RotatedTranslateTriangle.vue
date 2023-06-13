@@ -74,7 +74,7 @@ export default {
         },
         setMatrixHandle(gl) {
             Matrix4.setTranslate(0.5, 0.1, 0);
-            Matrix4.setRotate(30, 0, 0, 1); // 绕z轴旋转30度 [绕哪个轴旋转 那个轴的值为1 其他为0]
+            Matrix4.rotate(30, 0, 0, 1); // 绕z轴旋转30度 [绕哪个轴旋转 那个轴的值为1 其他为0]
             let u_xformMatrix = gl.getUniformLocation(gl.program, 'u_xformMatrix');
             gl.uniformMatrix4fv(u_xformMatrix, false, Matrix4.elements);
         },
