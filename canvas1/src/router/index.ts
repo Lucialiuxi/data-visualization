@@ -98,6 +98,11 @@ export const advanceRoutes = {
       path: 'rotated-translate-triangle',
       name: '旋转平移矩阵',
       component: () => import('../views/advance/RotatedTranslateTriangle.vue'),
+    },
+    {
+      path: 'rotating-triangle',
+      name: '旋转动画',
+      component: () => import('../views/advance/RotatingTriangle.vue')
     }
   ]
 };
