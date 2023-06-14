@@ -21,6 +21,9 @@ export default {
       count: 0, // 记录动画时长
       Ty: 0, // y轴平移方向
       direction: '',
+      webGl: undefined,
+      open: false,
+      angleCount: 0,
     }
   },
   mounted() {
@@ -56,14 +59,15 @@ export default {
         console.error('获取webGl上下文失败');
         return;
       }
+      this.webGl = gl;
 
       if (!initShaders(gl, VSHADER_SOURCE, FHSHADER_SOURCE)) {
         console.error('着色器初始化失败');
         return;
       }
 
-      let n = this.initVertexBuffer(gl);
-      if (n < 0) {
+      this.angleCount = this.initVertexBuffer(gl);
+      if (this.angleCount < 0) {
         console.error('创建顶点缓冲对象失败');
         return;
       }
@@ -74,8 +78,8 @@ export default {
       gl.clearColor(0.0, 0.3, 0.3, 1.0);
 
       let  u_xformMatrix = gl.getUniformLocation(gl.program, 'u_xformMatrix');
-
-      this.tick(gl, u_xformMatrix, n, Matrix4, this.Ty);
+      this.open = true;
+      this.tick(gl, u_xformMatrix, this.angleCount, Matrix4);
     },
     initVertexBuffer(gl) {
       let n = 3;
@@ -117,16 +121,17 @@ export default {
 
       return newAngle %= 360; // 取余数
     },
-    tick(gl, u_xformMatrix, n, matrix_model, Ty) {
-      if (this.gl_last - this.startTime < 60000) {
+    tick(gl, u_xformMatrix, n, matrix_model) {
+      if (this.open && (this.gl_last - this.startTime < 60000)) {
         this.currentAngle = this.animateHandle(this.currentAngle); // 更新旋转角度
-        this.drawHandle(gl, u_xformMatrix, n, this.currentAngle, matrix_model, Ty);
+        this.drawHandle(gl, u_xformMatrix, n, this.currentAngle, matrix_model, this.Ty);
         
         // 告诉浏览器执行一个动画，并且要求浏览器在下次重绘之前调用制定的回调函数更新动画
         requestAnimationFrame(() => {
-          this.tick(gl, u_xformMatrix, n, matrix_model, Ty);
+          this.tick(gl, u_xformMatrix, this.angleCount, matrix_model);
         }); 
       } else {
+        this.open = false;
         // 停止动画
         window.cancelAnimationFrame(this.tick);
       }
@@ -140,8 +145,17 @@ export default {
       } else if (direction === 'down') {
         this.Ty -= 0.1;
       }
-      console.log('34234--', this.Ty)
     },
+  },
+  watch: {
+    Ty(val, oldVal){
+      this.open = false;
+      window.cancelAnimationFrame(this.tick);
+      let gl = this.webGl;
+      let  u_xformMatrix = gl.getUniformLocation(gl.program, 'u_xformMatrix');
+      this.open = true;
+      this.tick(gl, u_xformMatrix, this.angleCount, Matrix4);
+    }
   }
 }
 </script>
