@@ -11,7 +11,11 @@ export default {
     }
   },
   mounted() {
-    // console.log('routes---', routes)
+    let { pathname } = window.location;
+    let levelArray = pathname?.split('/')?.filter(str => !!str);
+    if(levelArray?.[0]) {
+      this.current = levelArray[0]; 
+    }
   },
   methods: {
     getRoutes() {
