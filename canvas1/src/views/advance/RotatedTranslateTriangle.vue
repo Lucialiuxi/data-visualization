@@ -95,7 +95,7 @@ export default {
             }
             gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
             // 创建并初始化了buffer对象的数据存储区
-            gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW, false, 0, 0);
+            gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
 
             let a_Position = gl.getAttribLocation(gl.program, 'a_Position');
             // 告诉显卡重当前绑定的缓冲区读取定点数据

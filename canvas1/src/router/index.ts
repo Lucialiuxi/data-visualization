@@ -1,9 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue';
+
 
 export const singleRoutes = {
   path: '/simple/:id?',
-  component: () => HomeView,
+  component: () => import('../views/HomeView.vue'),
   name: 'simple',
   props: {
     params: '简单'
@@ -83,7 +83,7 @@ export const singleRoutes = {
 };
 export const advanceRoutes = {
   path: '/advance/:id?',
-  component: () => HomeView,
+  component: () => import('../views/HomeView.vue'),
   name: 'advance',
   props: {
     params: '进阶(Matrix4函数)'
@@ -106,12 +106,31 @@ export const advanceRoutes = {
     }
   ]
 };
+
+// 颜色和纹理
+let rasterize  = {
+  path: '/rasterize/:id?',
+  name: 'rasterize',
+  displayName: '颜色和纹理',
+  component: () => import('../views/HomeView.vue'),
+  props: {
+    params: '颜色与纹理-基础'
+  },
+  children: [
+    {
+      path: 'multiAttributeSize',
+      name: '缓冲对象设置顶点大小',
+      component: () => import('../views/rasterization/MultiAttributeSize.vue')
+    },
+  ]
+};
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: '/',
-      component: () => HomeView,
+      component: () => import('../views/HomeView.vue'),
       name: 'enter',
       props: {
         params: '准备开始学习吧'
@@ -119,6 +138,7 @@ const router = createRouter({
     },
     singleRoutes,
     advanceRoutes,
+    rasterize,
   ],
 })
 
