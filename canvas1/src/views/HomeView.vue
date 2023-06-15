@@ -2,7 +2,6 @@
 import { RouterLink, RouterView } from 'vue-router';
   export default {
     mounted() {
-      console.log('levelText', this.levelText)
     },
     computed: {
       levelText: {

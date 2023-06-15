@@ -62,10 +62,9 @@ export default {
             let verticesSizes = new Float32Array(9);
             verticesSizes.set([
                 0.0, 0.5, 10.0, // x y size
-                0.5, 0.0, 20.0
-                -0.5, 0.0, 30.0,
-            ])
-
+                -0.5, -0.5, 20.0,
+                0.5, -0.5, 30.0,
+            ]);
 
             let vertexSizeBuffer = gl.createBuffer();
 
@@ -93,10 +92,10 @@ export default {
              * offset 指定缓冲区对象中的偏移量（以字节为单位），即attribute变量从缓冲区中的何处开始储存。如果是从起始位置开始，该参数应设为0
              */
             gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, FSIZE * 3, 0);
-            gl.vertexAttribPointer(a_PointSize, 1, gl.FLOAT, false, FSIZE * 3 , FSIZE * 2);
-
             // 打开属性列表中指定索引处通用顶点属性数组
             gl.enableVertexAttribArray(a_Position);
+
+            gl.vertexAttribPointer(a_PointSize, 1, gl.FLOAT, false, FSIZE * 3 , FSIZE * 2);
             gl.enableVertexAttribArray(a_PointSize);
             return n;
         },
