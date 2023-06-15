@@ -61,7 +61,6 @@ import { getWebGLContext, initShaders } from '@lib/cuon-utils';
         clickHandle(gl, canvas, a_Position) {
             let g_points = []; // 鼠标点击位置数组
             canvas.onmousedown = function (ev) {
-                console.log('点击了')
                 let x = ev.clientX; // 鼠标点击处x坐标
                 let y = ev.clientY; // 鼠标点击处y坐标
                 let rect = ev.target.getBoundingClientRect();

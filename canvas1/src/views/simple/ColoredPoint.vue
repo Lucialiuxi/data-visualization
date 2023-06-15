@@ -66,7 +66,6 @@ import { getWebGLContext, initShaders } from '@lib/cuon-utils';
             let g_points = []; // 鼠标点击位置数组
             let g_color = []; // 给不同象限的点不同的颜色
             canvas.onmousedown = function (ev) {
-                console.log('点击了')
                 let x = ev.clientX; // 鼠标点击处x坐标
                 let y = ev.clientY; // 鼠标点击处y坐标
                 let rect = ev.target.getBoundingClientRect();
@@ -82,8 +81,6 @@ import { getWebGLContext, initShaders } from '@lib/cuon-utils';
                 
                 g_color.push(that.getColorsHandle(rx, ry));
 
-                console.log('g_points', g_points)
-                console.log('g_color', g_color)
                 // 把指定的缓冲区清空为预设的值
                 gl.clear(gl.COLOR_BUFFER_BIT);
                 

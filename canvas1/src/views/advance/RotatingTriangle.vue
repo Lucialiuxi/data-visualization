@@ -30,8 +30,6 @@ export default {
     this.paintHandle();
   },
   updated() {
-    console.log('456', this.Ty)
-    
   },
   methods: {
     paintHandle() {
