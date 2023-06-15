@@ -58,29 +58,27 @@ export default {
         initVertexBuffers(gl) {
             let n = 3;
 
-            let vertices = new Float32Array([
-                0.0, 0.5,
-                0.5, 0.0,
-                -0.5, 0.0,
-            ]);
+            // 把顶点位置和大小放一起
+            let verticesSizes = new Float32Array(9);
+            verticesSizes.set([
+                0.0, 0.5, 10.0, // x y size
+                0.5, 0.0, 20.0
+                -0.5, 0.0, 30.0,
+            ])
 
-            let sizes = new Float32Array([ 5.0, 10.0, 15.0 ]);
 
-            let vertexBuffer = gl.createBuffer();
             let vertexSizeBuffer = gl.createBuffer();
 
             // TypeArray.BYTES_PER_ELEMENT属性代表了强类型数组中每个元素所占用的字节数
-            const FSIZE = vertices.BYTES_PER_ELEMENT;
+            const FSIZE = verticesSizes.BYTES_PER_ELEMENT;
 
-            if (!vertexBuffer || !vertexSizeBuffer) {
+            if (!vertexSizeBuffer) {
                 return -1;
             }
 
-            gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
             gl.bindBuffer(gl.ARRAY_BUFFER, vertexSizeBuffer);
 
-            gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
-            gl.bufferData(gl.ARRAY_BUFFER, sizes, gl.STATIC_DRAW);
+            gl.bufferData(gl.ARRAY_BUFFER, verticesSizes, gl.STATIC_DRAW);
             
             let a_Position = gl.getAttribLocation(gl.program, 'a_Position');
             let a_PointSize = gl.getAttribLocation(gl.program, 'a_PointSize');
