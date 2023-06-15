@@ -119,8 +119,13 @@ let rasterize  = {
   children: [
     {
       path: 'multiAttributeSize',
-      name: '缓冲对象设置顶点大小',
+      name: '多顶点位置&大小',
       component: () => import('../views/rasterization/MultiAttributeSize.vue')
+    },
+    {
+      path: 'multiAttributeColor',
+      name: '顶点多个颜色',
+      component: () => import('../views/rasterization/MultiAttributeColor.vue')
     },
   ]
 };
