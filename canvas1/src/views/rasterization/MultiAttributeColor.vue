@@ -62,7 +62,8 @@ export default {
             gl.clear(gl.COLOR_BUFFER_BIT);
 
             // gl.drawArrays(gl.TRIANGLES, 0, n);  // 渐变色三角形
-            gl.drawArrays(gl.POINTS, 0, n);
+            gl.drawArrays(gl.LINE_LOOP, 0, n);
+            // gl.drawArrays(gl.POINTS, 0, n);
         },
         initVertexBuffers(gl) {
             let n = 3;
