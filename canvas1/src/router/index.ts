@@ -127,6 +127,11 @@ let rasterize  = {
       name: '顶点多个颜色',
       component: () => import('../views/rasterization/MultiAttributeColor.vue')
     },
+    {
+      path: 'TriangleFragCoord',
+      name: '逐片元修改颜色',
+      component: () => import('../views/rasterization/TriangleFragCoord.vue')
+    },
   ]
 };
 
