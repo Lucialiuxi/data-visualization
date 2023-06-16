@@ -132,6 +132,11 @@ let rasterize  = {
       name: '逐片元修改颜色',
       component: () => import('../views/rasterization/TriangleFragCoord.vue')
     },
+    {
+      path: 'TextureQuad',
+      name: '带纹理的矩形',
+      component: () => import('../views/rasterization/TextureQuad.vue')
+    },
   ]
 };
 

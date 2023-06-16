@@ -5,7 +5,7 @@
   </template>
   
   <script>
-  import { getWebGLContext, initShaders } from '@lib/cuon-utils'; 
+  import { getWebGLContext, initShaders } from '@lib/cuon-utils.js'; 
   export default {
       mounted() {
           this.initHandle();
