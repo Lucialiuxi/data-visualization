@@ -55,7 +55,7 @@ export default {
             }
 
             gl.clearColor(0.3, 0.2, 0.3, 1.0);
-            gl.clear(gl.BUFFER_COLOR_BIT);
+            gl.clear(gl.COLOR_BUFFER_BIT);
 
             gl.drawArrays(gl.TRIANGLE_STRIP, 0, n);
 
@@ -65,10 +65,10 @@ export default {
             let n = 4;
             let verticesTexCoords = new Float32Array(16);
             verticesTexCoords.set([
-                0.5, 0.5, 1.0, 1.0, //  顶点齐次坐标x,y  纹理坐标 s,t
-                0.5, -0.5, 1.0, 0.0,
-                -0.5, -0.5, 0.0, 0.0,
                 -0.5, 0.5, 0.0, 1.0,
+                -0.5, -0.5, 0.0, 0.0,
+                0.5, 0.5, 1.0, 1.0,
+                0.5, -0.5, 1.0, 0.0,
             ], 0);
 
 
