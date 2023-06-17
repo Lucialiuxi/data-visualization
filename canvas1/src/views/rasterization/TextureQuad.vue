@@ -109,7 +109,7 @@ export default {
                 this.loadTexture(gl, n, texture, u_Sampler, image);
             };
             // 浏览器开始加载图像
-            image.src = '../../../img/more.png';
+            image.src = '../../../img/water.webp';
 
             return true;
         },
