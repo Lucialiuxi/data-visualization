@@ -54,6 +54,11 @@ export default {
                 return;
             }
 
+            if (!this.initTextures(gl, n)) {
+                console.error('配置纹理出错');
+                return;
+            }
+
             gl.clearColor(0.3, 0.2, 0.3, 1.0);
             gl.clear(gl.COLOR_BUFFER_BIT);
         },
@@ -75,11 +80,6 @@ export default {
             if (!vertexBuffer) {
                 return -1;
             }
-
-            if (!this.initTextures(gl, n)) {
-                console.error('配置纹理出错');
-                return;
-            }
             gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
             gl.bufferData(gl.ARRAY_BUFFER, verticesTexCoords, gl.STATIC_DRAW);
 
@@ -99,7 +99,7 @@ export default {
             let texture = gl.createTexture();
 
             // 获取u_Sampler的存储位置
-            let u_Sampler = gl.getUniformLocation(gl.program, 'u_sampler');
+            let u_Sampler = gl.getUniformLocation(gl.program, 'u_Sampler');
 
             // 创建一个图片对象
             let image = new Image();
@@ -109,8 +109,7 @@ export default {
                 this.loadTexture(gl, n, texture, u_Sampler, image);
             };
             // 浏览器开始加载图像
-            image.src = '../../../img/water.webp';
-
+            image.src = '/img/water.webp';
             return true;
         },
         loadTexture(gl, n, texture, u_Sampler, image) {
@@ -124,6 +123,7 @@ export default {
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
             // 配置纹理图像
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image);
+
             // 将0号传递给着色器
             gl.uniform1i(u_Sampler, 0);
 
