@@ -56,9 +56,6 @@ export default {
 
             gl.clearColor(0.3, 0.2, 0.3, 1.0);
             gl.clear(gl.COLOR_BUFFER_BIT);
-
-            gl.drawArrays(gl.TRIANGLE_STRIP, 0, n);
-
         },
 
         initVertexBuffer(gl) {
@@ -108,10 +105,11 @@ export default {
             let image = new Image();
             // 注册图片加载时间的响应函数
             image.onload = () => {
+                console.log('图像加载完成')
                 this.loadTexture(gl, n, texture, u_Sampler, image);
             };
             // 浏览器开始加载图像
-            image.src = '../../../img/waterDrop.webp';
+            image.src = '../../../img/more.png';
 
             return true;
         },
@@ -128,6 +126,8 @@ export default {
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image);
             // 将0号传递给着色器
             gl.uniform1i(u_Sampler, 0);
+
+            gl.drawArrays(gl.TRIANGLE_STRIP, 0, n);
 
         }
     }
