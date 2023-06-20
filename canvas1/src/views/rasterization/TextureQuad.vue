@@ -65,13 +65,12 @@ export default {
 
         initVertexBuffer(gl) {
             let n = 4;
-            let verticesTexCoords = new Float32Array(16);
-            verticesTexCoords.set([
+            let verticesTexCoords = new Float32Array([
                 -0.5, 0.5, 0.0, 1.0,
                 -0.5, -0.5, 0.0, 0.0,
                 0.5, 0.5, 1.0, 1.0,
                 0.5, -0.5, 1.0, 0.0,
-            ], 0);
+            ]);
 
 
             const FSIZE = verticesTexCoords.BYTES_PER_ELEMENT;
@@ -120,7 +119,10 @@ export default {
             // 想target绑定纹理对象
             gl.bindTexture(gl.TEXTURE_2D, texture);
             // 配置纹理参数
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+
             // 配置纹理图像
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image);
 
@@ -128,7 +130,6 @@ export default {
             gl.uniform1i(u_Sampler, 0);
 
             gl.drawArrays(gl.TRIANGLE_STRIP, 0, n);
-
         }
     }
 }
