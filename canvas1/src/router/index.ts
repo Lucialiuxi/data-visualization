@@ -137,6 +137,11 @@ let rasterize  = {
       name: '带纹理的矩形',
       component: () => import('../views/rasterization/TextureQuad.vue')
     },
+    {
+      path: 'TextureQuadRepeat',
+      name: '带纹理的矩形-试验',
+      component: () => import('../views/rasterization/TextureRepeat.vue')
+    },
   ]
 };
 
