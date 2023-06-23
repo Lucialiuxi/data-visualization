@@ -142,6 +142,11 @@ let rasterize  = {
       name: '带纹理的矩形-试验',
       component: () => import('../views/rasterization/TextureRepeat.vue')
     },
+    {
+      path: 'MultiTexture',
+      name: '多幅纹理',
+      component: () => import('../views/rasterization/MultiTexture.vue')
+    },
   ]
 };
 
