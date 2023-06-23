@@ -34,7 +34,6 @@ export default {
             */
             let VSHADER_SOURCE = `
                 attribute vec4 a_Position;
-                uniform vec4 u_Translation;
                 uniform float u_CosB, u_SinB;
                 
                 void main() {
@@ -99,7 +98,6 @@ export default {
             vertices.set([0.0, 0.5, -0.5, -0.5, 0.5, 0.5], 0);
             // 顶点个数
             let n = 3;
-            let tx = 0.5, ty = 0.5, tz = 0.5;
             
             // 创建缓冲区对象
             let vertexBuffer = gl.createBuffer();
@@ -129,10 +127,8 @@ export default {
              */
             gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, 0, 0);
 
-            let u_Translation = gl.getUniformLocation(gl.program, 'u_Translation');
             let u_FragColor = gl.getUniformLocation(gl.program, 'u_FragColor');
             gl.uniform4f(u_FragColor, 0.0, 1.0, 0.0, 1.0);
-            gl.uniform4f(u_Translation, tx, ty, tz, 0); // x y z 轴都位移0.5
 
             // 开启attribute变量
             gl.enableVertexAttribArray(a_Position);
