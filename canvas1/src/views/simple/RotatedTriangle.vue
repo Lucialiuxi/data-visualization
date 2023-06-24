@@ -7,8 +7,8 @@
 <script>
 /**
  * 两角和差公式
- * sin(A ± B) = sinB * cosB + cosA * sinB;
- * cons(A ± B) = sinA * sinB ± cosA * cosB;
+ * sin(A ± B) = sinB * cosB ± cosA * sinB;
+ * cons(A ± B) = sinA * sinB ∓ cosA * cosB;
  * 
  * 角度制计算弧长:
  * 弧长 = 圆心角度数 * π * 半径r / 180 
