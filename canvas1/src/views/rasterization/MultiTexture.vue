@@ -96,6 +96,10 @@ export default {
                 0.5, -0.5, 1.0, 0.0,
             ]);
 
+            // 系统支持的经度范围
+            let systemPrecision = gl.getShaderPrecisionFormat(gl.VERTEX_SHADER, gl.HIGH_FLOAT);
+            console.log('systemPrecision', systemPrecision)
+
             // 强类型数组中每个元素占用的字节数
             const FSIZE = vertices.BYTES_PER_ELEMENT;
 
