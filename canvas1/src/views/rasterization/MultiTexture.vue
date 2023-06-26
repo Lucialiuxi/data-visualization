@@ -31,12 +31,13 @@ export default {
     methods: {
         paintHandle() {
             let VSHADER_SOURCE = `
+                // 接下来所有不以精度限定字修饰的浮点类型变量，都默认为高精度, 因为float在顶点着色器中默认是高精度，所以这行也可以省略
                 precision highp float;
 
                 attribute vec4 a_Position;
 
-                attribute vec2 a_TexCoord;
-                varying vec2 v_TexCoord;
+                attribute mediump vec2 a_TexCoord;
+                varying mediump vec2 v_TexCoord;
 
                 void main() {
                     gl_Position = a_Position;
