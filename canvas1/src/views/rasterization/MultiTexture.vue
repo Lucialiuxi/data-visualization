@@ -31,7 +31,7 @@ export default {
     methods: {
         paintHandle() {
             let VSHADER_SOURCE = `
-                precision mediump float;
+                precision highp float;
 
                 attribute vec4 a_Position;
 
