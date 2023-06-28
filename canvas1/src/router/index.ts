@@ -173,6 +173,11 @@ export const threeDimensionalSpace = {
       name: '模型视图矩阵',
       component: () => import('../views/threeDimensionalSpace/LookAtRotatedTriangle_mvMatrix.vue'),
     },
+    {
+      path: 'lookAtTrianglesWidthKeys',
+      name: '用键盘改变视点',
+      component: () => import('../views/threeDimensionalSpace/LookAtTrianglesWidthKeys.vue'),
+    },
   ]
 }
 const router = createRouter({
