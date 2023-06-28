@@ -7,6 +7,7 @@
 <script>
 import { getWebGLContext, initShaders } from '@lib/cuon-utils.js';
 import Matrix4 from '@lib/cuon-matrix.js';
+const Matrix = new Matrix4();
 
 export default {
     mounted() {
@@ -60,13 +61,13 @@ export default {
             let a_ViewMatrix = gl.getUniformLocation(gl.program, 'u_ViewMatrix');
 
             // 设置 视点、观察目标点 和 上方向
-            Matrix4.setLookAt(
+            Matrix.setLookAt(
                 0.20, 0.25, 0.25, // 视点
                 0, 0, 0, // 观察目标点
                 0, 1, 0, // 上方向
             );
             // 将视图矩阵传给u_ViewMatrix
-            gl.uniformMatrix4fv(a_ViewMatrix, false, Matrix4.elements), 
+            gl.uniformMatrix4fv(a_ViewMatrix, false, Matrix.elements), 
 
 
             gl.clearColor(0.1, 0.2, 0.3, 1.0);

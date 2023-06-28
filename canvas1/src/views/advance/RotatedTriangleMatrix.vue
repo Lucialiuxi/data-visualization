@@ -8,7 +8,8 @@
   // 旋转矩阵 -使用函数库 Matrix4已经在html全局引入了
   import { getWebGLContext, initShaders } from '@lib/cuon-utils';
  import Matrix4 from '@lib/cuon-matrix';
- 
+const Matrix = new Matrix4();
+
   export default {
       mounted() {
           this.initHandle();
@@ -52,10 +53,10 @@
   
               // 旋转角度
               const ANGLE = 60.0;
-              Matrix4.setRotate(ANGLE, 0, 0, 1);
+              Matrix.setRotate(ANGLE, 0, 0, 1);
 
               let u_xformMatrix = gl.getUniformLocation(gl.program, 'u_xformMatrix');
-              gl.uniformMatrix4fv(u_xformMatrix, false, Matrix4.elements);
+              gl.uniformMatrix4fv(u_xformMatrix, false, Matrix.elements);
   
               // 设置canvas画布背景色
               gl.clearColor(0.2, 0.1, 0.3, 1.0);

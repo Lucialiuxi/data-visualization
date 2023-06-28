@@ -8,6 +8,7 @@
 // 旋转平移矩阵
 import { getWebGLContext, initShaders } from '@lib/cuon-utils';
 import Matrix4 from '@lib/cuon-matrix';
+const Matrix = new Matrix4();
 
 export default {
     mounted() {
@@ -73,10 +74,10 @@ export default {
             gl.drawArrays(gl.TRIANGLES, 0, n);
         },
         setMatrixHandle(gl) {
-            Matrix4.setTranslate(0.5, 0.1, 0);
-            Matrix4.rotate(30, 0, 0, 1); // 绕z轴旋转30度 [绕哪个轴旋转 那个轴的值为1 其他为0]
+            Matrix.setTranslate(0.5, 0.1, 0);
+            Matrix.rotate(30, 0, 0, 1); // 绕z轴旋转30度 [绕哪个轴旋转 那个轴的值为1 其他为0]
             let u_xformMatrix = gl.getUniformLocation(gl.program, 'u_xformMatrix');
-            gl.uniformMatrix4fv(u_xformMatrix, false, Matrix4.elements);
+            gl.uniformMatrix4fv(u_xformMatrix, false, Matrix.elements);
         },
         // 创建缓冲区对象
         initVertexBuffer(gl) {

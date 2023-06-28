@@ -166,7 +166,7 @@ export const threeDimensionalSpace = {
     {
       path: 'lookAtTriangles_c',
       name: '指定视点',
-      component: () => import('../views/threeDimensionalSpace/LookAtTriangles_c.vue'),
+      component: () => import('../views/threeDimensionalSpace/LookAtRotatedTriangles.vue'),
     },
   ]
 }

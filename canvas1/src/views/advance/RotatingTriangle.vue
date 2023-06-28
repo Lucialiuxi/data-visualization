@@ -10,6 +10,7 @@
 // 旋转动画
 import { getWebGLContext, initShaders } from '@lib/cuon-utils';
 import Matrix4 from '@lib/cuon-matrix';
+const Matrix = new Matrix4();
 
 export default {
   data(){
@@ -77,7 +78,7 @@ export default {
 
       let  u_xformMatrix = gl.getUniformLocation(gl.program, 'u_xformMatrix');
       this.open = true;
-      this.tick(gl, u_xformMatrix, this.angleCount, Matrix4);
+      this.tick(gl, u_xformMatrix, this.angleCount, Matrix);
     },
     initVertexBuffer(gl) {
       let n = 3;
@@ -100,8 +101,8 @@ export default {
     },
     drawHandle(gl, u_xformMatrix, n, angle, matrix_model,Ty) {
       // 设置旋转矩阵
-      Matrix4.setRotate(angle, 0, 0, 1);
-      Matrix4.translate(0.3, Ty, 0);
+      Matrix.setRotate(angle, 0, 0, 1);
+      Matrix.translate(0.3, Ty, 0);
       // 将旋转矩阵传输给顶点着色器
       gl.uniformMatrix4fv(u_xformMatrix, false, matrix_model.elements);
       // 清除canvas
@@ -152,7 +153,7 @@ export default {
       let gl = this.webGl;
       let  u_xformMatrix = gl.getUniformLocation(gl.program, 'u_xformMatrix');
       this.open = true;
-      this.tick(gl, u_xformMatrix, this.angleCount, Matrix4);
+      this.tick(gl, u_xformMatrix, this.angleCount, Matrix);
     }
   }
 }

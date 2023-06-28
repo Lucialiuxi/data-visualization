@@ -747,4 +747,4 @@ var Vector4 = function(opt_src) {
   this.elements = v;
 }
 
-export  default new Matrix4();
+export  default Matrix4;
