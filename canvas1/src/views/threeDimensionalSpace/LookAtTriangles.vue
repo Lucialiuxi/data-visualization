@@ -31,9 +31,6 @@ export default {
             // gl_FragCoord 是内置变量，用来表示片元的坐标
             let FSHADER_SOURCE = `
                 precision mediump float;
-
-                uniform float u_Width;
-                uniform float u_Height;
                 varying vec4 v_Color;
 
                 void main() {
@@ -120,11 +117,12 @@ export default {
 
             let a_Position = gl.getAttribLocation(gl.program, 'a_Position');
             gl.vertexAttribPointer(a_Position, 3, gl.FLOAT, false, FSIZE * 6, 0);
+            gl.enableVertexAttribArray(a_Position);
 
             let a_Color = gl.getAttribLocation(gl.program, 'a_Color');
             gl.vertexAttribPointer(a_Color, 3, gl.FLOAT, false, FSIZE * 6, FSIZE * 3);
+            gl.enableVertexAttribArray(a_Color);
 
-            gl.enableVertexAttribArray(a_Position);
             return n;
         }
     }
