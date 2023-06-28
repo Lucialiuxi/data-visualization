@@ -582,10 +582,11 @@ Matrix4.prototype.rotate = function(angle, x, y, z) {
 };
 
 /**
+ * 创建视图矩阵
  * Set the viewing matrix.
- * @param eyeX, eyeY, eyeZ The position of the eye point.
- * @param centerX, centerY, centerZ The position of the reference point.
- * @param upX, upY, upZ The direction of the up vector.
+ * @param eyeX, eyeY, eyeZ The position of the eye point. 视点
+ * @param centerX, centerY, centerZ The position of the reference point. 观察点
+ * @param upX, upY, upZ The direction of the up vector. 上方向
  * @return this
  */
 Matrix4.prototype.setLookAt = function(eyeX, eyeY, eyeZ, centerX, centerY, centerZ, upX, upY, upZ) {

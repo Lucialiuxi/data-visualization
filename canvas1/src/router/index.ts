@@ -107,11 +107,10 @@ export const advanceRoutes = {
   ]
 };
 
-// 颜色和纹理
-let rasterize  = {
+// 颜色和纹理(光栅shan化)
+export const rasterizeRoutes  = {
   path: '/rasterize/:id?',
   name: 'rasterize',
-  displayName: '颜色和纹理',
   component: () => import('../views/HomeView.vue'),
   props: {
     params: '颜色与纹理-基础'
@@ -150,6 +149,22 @@ let rasterize  = {
   ]
 };
 
+// 三维空间
+export const threeDimensionalSpace = {
+  path: '/threeDimensional/:id?',
+  component: () => import('../views/HomeView.vue'),
+  name: 'threeDimensional',
+  props: {
+    params: '进入三维世界'
+  },
+  children: [
+    {
+      path: 'lookAtTriangles',
+      name: '视线、视点',
+      component: () => import('../views/threeDimensionalSpace/LookAtTriangles.vue'),
+    }
+  ]
+}
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -163,7 +178,8 @@ const router = createRouter({
     },
     singleRoutes,
     advanceRoutes,
-    rasterize,
+    rasterizeRoutes,
+    threeDimensionalSpace,
   ],
 })
 
