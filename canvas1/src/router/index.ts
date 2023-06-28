@@ -162,7 +162,12 @@ export const threeDimensionalSpace = {
       path: 'lookAtTriangles',
       name: '视线、视点',
       component: () => import('../views/threeDimensionalSpace/LookAtTriangles.vue'),
-    }
+    },
+    {
+      path: 'lookAtTriangles_c',
+      name: '指定视点',
+      component: () => import('../views/threeDimensionalSpace/LookAtTriangles_c.vue'),
+    },
   ]
 }
 const router = createRouter({
