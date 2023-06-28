@@ -11,6 +11,9 @@ import Matrix4 from '@lib/cuon-matrix.js';
 const viewMatrix = new Matrix4();
 const modelMatrix = new Matrix4();
 
+// 模型视图矩阵 = 视图矩阵 * 模型矩阵
+// gl_Position  = 模型视图矩阵 * 顶点坐标
+
 export default {
     mounted() {
         this.paintHandle();
@@ -24,11 +27,10 @@ export default {
                 attribute vec4 a_Color;
                 varying vec4 v_Color;
 
-                uniform mat4 u_ViewMatrix; // 视图矩阵
-                uniform mat4 u_ModelMatrix; // 模型矩阵
+                uniform mat4 u_ModelViewMatrix; // 模型视图矩阵
 
                 void main() {
-                    gl_Position = u_ViewMatrix * u_ModelMatrix * a_Position;
+                    gl_Position = u_ModelViewMatrix * a_Position;
                     v_Color = a_Color;
                 }
             `;
@@ -61,19 +63,18 @@ export default {
                 return;
             }
 
-            let u_ViewMatrix = gl.getUniformLocation(gl.program, 'u_ViewMatrix');
+            let u_ModelViewMatrix = gl.getUniformLocation(gl.program, 'u_ModelViewMatrix');
             // 设置 视点、观察目标点 和 上方向
             viewMatrix.setLookAt(
                 0.20, 0.25, 0.25, // 视点
                 0, 0, 0, // 观察目标点
                 0, 1, 0, // 上方向
             );
-            // 将视图矩阵传给u_ViewMatrix
-            gl.uniformMatrix4fv(u_ViewMatrix, false, viewMatrix.elements);
 
-            let u_ModelMatrix = gl.getUniformLocation(gl.program, 'u_ModelMatrix');
-            modelMatrix.setRotate(-20, 0, 0, 1); // Rotate around z-axis
-            gl.uniformMatrix4fv(u_ModelMatrix, false, modelMatrix.elements);
+            modelMatrix.setRotate(20, 0, 0, 1); // Rotate around z-axis
+
+            let modelViewMatrix = viewMatrix.multiply(modelMatrix); // 视图矩阵 * 模型矩阵
+            gl.uniformMatrix4fv(u_ModelViewMatrix, false, modelViewMatrix.elements);
 
             gl.clearColor(0.1, 0.2, 0.3, 1.0);
             gl.clear(gl.COLOR_BUFFER_BIT);

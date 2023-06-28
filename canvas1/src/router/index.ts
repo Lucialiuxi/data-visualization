@@ -164,9 +164,14 @@ export const threeDimensionalSpace = {
       component: () => import('../views/threeDimensionalSpace/LookAtTriangles.vue'),
     },
     {
-      path: 'lookAtTriangles_c',
+      path: 'lookAtRotatedTriangles',
       name: '指定视点',
       component: () => import('../views/threeDimensionalSpace/LookAtRotatedTriangles.vue'),
+    },
+    {
+      path: 'LookAtRotatedTriangle_mvMatrix',
+      name: '模型视图矩阵',
+      component: () => import('../views/threeDimensionalSpace/LookAtRotatedTriangle_mvMatrix.vue'),
     },
   ]
 }
