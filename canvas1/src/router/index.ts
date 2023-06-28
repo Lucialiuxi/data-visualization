@@ -178,6 +178,11 @@ export const threeDimensionalSpace = {
       name: '用键盘改变视点',
       component: () => import('../views/threeDimensionalSpace/LookAtTrianglesWidthKeys.vue'),
     },
+    {
+      path: 'orthographicView',
+      name: '正射投影-键盘改变可视空间大小',
+      component: () => import('../views/threeDimensionalSpace/OrthographicView.vue'),
+    },
   ]
 }
 const router = createRouter({

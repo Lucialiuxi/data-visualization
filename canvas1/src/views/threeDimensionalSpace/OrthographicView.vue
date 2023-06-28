@@ -1,6 +1,7 @@
 <template>
   <div class="look-at-triangles-wrap">
     <canvas id="look-at-triangles" height="600" width="600"></canvas>
+    <p id="nearFar">near 和 far的值展示在这儿</p>
   </div>
 </template>
 
@@ -8,15 +9,22 @@
 import { getWebGLContext, initShaders } from '@lib/cuon-utils.js';
 import Matrix4 from '@lib/cuon-matrix.js';
 
-// 注册键盘事件， 每当左方向键或者右方向键被按下时， 就改变视点的位置
+/**
+ * 设置盒装可视空间【正射投影orthographic projection】
+ * 注册键盘事件， 按方向键改变可是空间大小
+ * 左方向键 near递增0.01
+ * 右方向键 near递减 0.01
+ * 上方向键 far递增0.01
+ * 下方向键 far递减0.01
+ * 
+ * 本例 将视点置于原点处，视线为Z轴负方向
+ */
 
 export default {
     data() {
         return {
-            // 视点的 xyz坐标点
-            g_eyeX: 0.20,
-            g_eyeY: 0.25,
-            g_eyeZ: 0.25,
+            gl_near: 0.0,
+            gl_far: 0.5,
         }
     },
     mounted() {
@@ -31,10 +39,10 @@ export default {
                 attribute vec4 a_Color;
                 varying vec4 v_Color;
 
-                uniform mat4 u_ViewMatrix;
+                uniform mat4 u_ProjMatrix; // 投影矩阵
 
                 void main() {
-                    gl_Position = u_ViewMatrix * a_Position;
+                    gl_Position = u_ProjMatrix * a_Position;
                     v_Color = a_Color;
                 }
             `;
@@ -48,6 +56,7 @@ export default {
                 }
             `;
 
+            let nf = document.getElementById('nearFar');
             let canvas = document.getElementById('look-at-triangles');
             let gl = getWebGLContext(canvas);
 
@@ -66,18 +75,19 @@ export default {
                 console.error('缓冲区对象创建失败');
                 return;
             }
-            const viewMatrix = new Matrix4();
-            let u_ViewMatrix = gl.getUniformLocation(gl.program, 'u_ViewMatrix');
-            this.drawHandle(gl, n, u_ViewMatrix, viewMatrix);
-            document.onkeydown = (ev) => this.onKeyDown(ev, gl, n, u_ViewMatrix, viewMatrix);
+            const projMatrix = new Matrix4();
+
+            let u_ProjMatrix = gl.getUniformLocation(gl.program, 'u_ProjMatrix');
+            this.drawHandle(gl, n, u_ProjMatrix, projMatrix, nf);
+            document.onkeydown = (ev) => this.onKeyDown(ev, gl, n, u_ProjMatrix, projMatrix, nf);
         },
         // 初始化缓冲区对象
         initVertexBuffer(gl) {
             // 绿色三角形 在最后面
             const triangle1 = [
-                0.0, 0.5, -0.4, 0.4, 1.0, 0.4, // x, y, z, r, g, b
-                -0.5, -0.5, -0.4, 0.4, 1.0, 0.4,
-                0.5, -0.5, -0.4, 1.0, 0.5, 0.4,
+                0.0, 0.6, -0.4, 0.4, 1.0, 0.4, // x, y, z, r, g, b
+                -0.5, -0.4, -0.4, 0.4, 1.0, 0.4,
+                0.5, -0.4, -0.4, 1.0, 0.5, 0.4,
             ];
 
             // 黄色三角形 在中间
@@ -123,31 +133,32 @@ export default {
             return n;
         },
         // 键盘事件
-        onKeyDown(ev, gl, n, u_ViewMatrix, viewMatrix) {
-            if (ev.keyCode == 39) { // 按下右键
-                this.g_eyeX = this.g_eyeX + 0.01;
-            } else if (ev.keyCode == 37) {// 按下左键
-                this.g_eyeX = this.g_eyeX - 0.01;
+        onKeyDown(ev, gl, n, u_ProjMatrix, Matrix, nf) {
+            let changeValue = 0.01;
+            if (ev.keyCode == 39) { // 右键
+                this.gl_far += changeValue;
+            } else if (ev.keyCode == 37) {// 左键
+                this.gl_far -= changeValue;
+            } else if(ev.keyCode == 38){ // 上键
+                this.gl_near += changeValue;
+            } else if(ev.keyCode == 40){ // 下键
+                this.gl_near -= changeValue;
             } else {
                 return;
             }
 
-            this.drawHandle(gl, n, u_ViewMatrix, viewMatrix);
+            this.drawHandle(gl, n, u_ProjMatrix, Matrix, nf);
         },
-        drawHandle(gl, n, u_ViewMatrix, viewMatrix) {
-            // 设置 视点、观察目标点 和 上方向
-            viewMatrix.setLookAt(
-                this.g_eyeX, this.g_eyeY, this.g_eyeZ, // 视点
-                0, 0, 0, // 观察目标点
-                0, 1, 0, // 上方向
-            );
-
-            gl.uniformMatrix4fv(u_ViewMatrix, false, viewMatrix.elements);
+        drawHandle(gl, n, u_ProjMatrix, Matrix, nf) {
+            let { gl_near, gl_far } = this;
+            Matrix.setOrtho(-1, 1, -1, 1, gl_near, gl_far);
+            gl.uniformMatrix4fv(u_ProjMatrix, false, Matrix.elements);
 
             gl.clearColor(0.1, 0.2, 0.3, 1.0);
             gl.clear(gl.COLOR_BUFFER_BIT);
             
             gl.drawArrays(gl.TRIANGLES, 0, n);
+            nf.innerHTML = `near: ${gl_near}  far: ${gl_far}`;
         }
     }
 }
