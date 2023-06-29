@@ -191,7 +191,7 @@ export const threeDimensionalSpace = {
     {
       path: 'orthoView_halfSize',
       name: '可视空间宽高比与canvas不一致的压缩',
-      component: () => import('../views/threeDimensionalSpace/OrthoView_halfSize.vue'),
+      component: () => import('../views/threeDimensionalSpace/OrthographicView_halfSize.vue'),
     },
   ]
 }
