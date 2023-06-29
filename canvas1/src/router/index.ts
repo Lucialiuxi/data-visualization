@@ -183,6 +183,16 @@ export const threeDimensionalSpace = {
       name: '正射投影-键盘改变可视空间大小',
       component: () => import('../views/threeDimensionalSpace/OrthographicView.vue'),
     },
+    {
+      path: 'lookAtTriangleWithKeys_ViewVolume',
+      name: '正射投影-补缺角',
+      component: () => import('../views/threeDimensionalSpace/LookAtTrianglesWidthKeys_ViewVolume.vue'),
+    },
+    {
+      path: 'orthoView_halfSize',
+      name: '可视空间宽高比与canvas不一致的压缩',
+      component: () => import('../views/threeDimensionalSpace/OrthoView_halfSize.vue'),
+    },
   ]
 }
 const router = createRouter({
