@@ -190,8 +190,13 @@ export const threeDimensionalSpace = {
     },
     {
       path: 'orthoView_halfSize',
-      name: '可视空间宽高比与canvas不一致的压缩',
+      name: '正射投影-可视空间宽高比压缩',
       component: () => import('../views/threeDimensionalSpace/OrthographicView_halfSize.vue'),
+    },
+    {
+      path: 'perspectiveView',
+      name: '透视投影',
+      component: () => import('../views/threeDimensionalSpace/PerspectiveView.vue'),
     },
   ]
 }
