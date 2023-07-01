@@ -30,11 +30,11 @@ export default {
 
                 varying vec4 v_Color;
 
-                uniform mat4 a_PerspectiveMatrix; // 透视投影矩阵
-                uniform mat4 a_ViewMatrix; // 视图矩阵
+                uniform mat4 u_PerspectiveMatrix; // 透视投影矩阵
+                uniform mat4 u_ViewMatrix; // 视图矩阵
 
                 void main() {
-                    gl_Position = a_PerspectiveMatrix * a_ViewMatrix * a_Position;
+                    gl_Position = u_PerspectiveMatrix * u_ViewMatrix * a_Position;
                     v_Color = a_Color;
                 }
             `;
@@ -69,8 +69,8 @@ export default {
             }
             // 视图矩阵
             let viewMatrix = new Matrix4();
-            let a_ViewMatrix = gl.getUniformLocation(gl.program, 'a_ViewMatrix');
-            gl.uniformMatrix4fv(a_ViewMatrix, false, viewMatrix.elements);
+            let u_ViewMatrix = gl.getUniformLocation(gl.program, 'u_ViewMatrix');
+            gl.uniformMatrix4fv(u_ViewMatrix, false, viewMatrix.elements);
             viewMatrix.setLookAt(
                 0, 0, 5, // 视点
                 0, 0, -100, // 目标点
@@ -79,8 +79,8 @@ export default {
 
             // 透视投影矩阵
             let perspectiveMatrix = new Matrix4();
-            let a_PerspectiveMatrix = gl.getUniformLocation(gl.program, 'a_PerspectiveMatrix');
-            gl.uniformMatrix4fv(a_PerspectiveMatrix, false, perspectiveMatrix.elements);
+            let u_PerspectiveMatrix = gl.getUniformLocation(gl.program, 'u_PerspectiveMatrix');
+            gl.uniformMatrix4fv(u_PerspectiveMatrix, false, perspectiveMatrix.elements);
             perspectiveMatrix.setPerspective(
                 30, // 垂直视角
                 canvas.width/canvas.height, // aspect宽高比应与canvas的宽高比一直，才不会导致图片变形
