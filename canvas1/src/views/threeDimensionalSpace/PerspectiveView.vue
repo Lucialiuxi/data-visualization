@@ -71,6 +71,11 @@ export default {
             let viewMatrix = new Matrix4();
             let a_ViewMatrix = gl.getUniformLocation(gl.program, 'a_ViewMatrix');
             gl.uniformMatrix4fv(a_ViewMatrix, false, viewMatrix.elements);
+            viewMatrix.setLookAt(
+                0, 0, 5, // 视点
+                0, 0, -100, // 目标点
+                0, 1, 0, // 上方向
+            )
 
             // 透视投影矩阵
             let perspectiveMatrix = new Matrix4();
@@ -81,7 +86,7 @@ export default {
                 canvas.width/canvas.height, // aspect宽高比应与canvas的宽高比一直，才不会导致图片变形
                 1, // near
                 100, // far
-            )
+            );
 
             gl.clearColor(0.1, 0.2, 0.4, 1.0);
             gl.clear(gl.COLOR_BUFFER_BIT);
@@ -91,7 +96,7 @@ export default {
         initVertexBuffer(gl) {
             let n = 18; // 总的6个三角形 排成2列
 
-            let leftTriangles = [
+            let rightTriangles = [
                 // 绿色三角形 在最前面
                 0.75, 1.0, -0.4, 0.4, 1.0, 0.4, // xyz rgb
                 0.25, -1.0, -0.4, 0.4, 1.0, 0.4,
@@ -107,7 +112,7 @@ export default {
                 0.25, -1.0, 0.0, 0.4, 0.4, 1.0,
                 1.25, -1.0, 0.0, 1.0, 0.4, 0.4,
             ];
-            let rightTriangles = [
+            let leftTriangles = [
                 // 绿色三角形 在最前面
                 -0.75, 1.0, -0.4, 0.4, 1.0, 0.4,
                 -0.25, -1.0, -0.4, 0.4, 1.0, 0.4,
