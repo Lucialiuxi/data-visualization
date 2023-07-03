@@ -81,15 +81,15 @@ export default {
                 0, 1, 0, // 上方向
             );
 
+            gl.uniformMatrix4fv(u_ViewMatrix, false, viewMatrix.elements);
+            gl.uniformMatrix4fv(u_PerspectiveMatrix, false, perspectiveMatrix.elements);
+
             perspectiveMatrix.setPerspective(
                 30, // 垂直视角
                 canvas.width/canvas.height, // aspect宽高比应与canvas的宽高比一直，才不会导致图片变形
                 1, // near
                 100, // far
             );
-
-            gl.uniformMatrix4fv(u_ViewMatrix, false, viewMatrix.elements);
-            gl.uniformMatrix4fv(u_PerspectiveMatrix, false, perspectiveMatrix.elements);
 
             gl.clearColor(0.1, 0.2, 0.4, 1.0);
             gl.clear(gl.COLOR_BUFFER_BIT);
