@@ -17,7 +17,9 @@ import Matrix4 from '@lib/cuon-matrix.js';
  * 上方向键 far递增0.01
  * 下方向键 far递减0.01
  * 
- * 本例 将视点置于原点处，视线为Z轴负方向
+ * 
+ * 
+ * setLookAt创建矩阵，要在给矩阵赋值的uniformMatrix4fv方法之前执行
  */
 
 export default {
@@ -75,7 +77,17 @@ export default {
                 console.error('缓冲区对象创建失败');
                 return;
             }
-            const projMatrix = new Matrix4();
+
+            const viewMatrix = new Matrix4();
+            const modelMatrix = new Matrix4();
+
+            // 设置 视点、观察目标点 和 上方向
+            viewMatrix.setLookAt(
+                0, 0.2, 0, // 视点
+                0, 0, -1, // 观察目标点
+                0, 1, 0, // 上方向
+            );
+            let projMatrix = viewMatrix.multiply(modelMatrix);
 
             let u_ProjMatrix = gl.getUniformLocation(gl.program, 'u_ProjMatrix');
             this.drawHandle(gl, n, u_ProjMatrix, projMatrix, nf);
@@ -151,8 +163,8 @@ export default {
         },
         drawHandle(gl, n, u_ProjMatrix, Matrix, nf) {
             let { gl_near, gl_far } = this;
-            Matrix.setOrtho(-1, 1, -1, 1, gl_near, gl_far);
             gl.uniformMatrix4fv(u_ProjMatrix, false, Matrix.elements);
+            Matrix.setOrtho(-1, 1, -1, 1, gl_near, gl_far); // setOrtho执行要放在 指定矩阵值之后
 
             gl.clearColor(0.1, 0.2, 0.3, 1.0);
             gl.clear(gl.COLOR_BUFFER_BIT);
