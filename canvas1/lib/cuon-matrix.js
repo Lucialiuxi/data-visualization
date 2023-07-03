@@ -348,6 +348,7 @@ Matrix4.prototype.frustum = function(left, right, bottom, top, near, far) {
 };
 
 /**
+ * 设置透视投影矩阵
  * Set the perspective projection matrix by fovy and aspect.
  * @param fovy The angle between the upper and lower sides of the frustum.
  * @param aspect The aspect ratio of the frustum. (width/height)

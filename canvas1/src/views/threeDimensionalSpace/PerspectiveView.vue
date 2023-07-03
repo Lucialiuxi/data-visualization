@@ -34,7 +34,7 @@ export default {
                 uniform mat4 u_ViewMatrix; // 视图矩阵
 
                 void main() {
-                    gl_Position = u_ViewMatrix * a_Position;
+                    gl_Position = u_PerspectiveMatrix * u_ViewMatrix * a_Position;
                     v_Color = a_Color;
                 }
             `;
@@ -76,21 +76,23 @@ export default {
             let u_PerspectiveMatrix = gl.getUniformLocation(gl.program, 'u_PerspectiveMatrix');
 
             viewMatrix.setLookAt(
-                0, 0, 5, // 视点
+                // 0, 0, 5, // 视点
+                0, 0, 1, // 视点
                 0, 0, -100, // 目标点
                 0, 1, 0, // 上方向
             );
 
-            gl.uniformMatrix4fv(u_ViewMatrix, false, viewMatrix.elements);
-            gl.uniformMatrix4fv(u_PerspectiveMatrix, false, perspectiveMatrix.elements);
-
             perspectiveMatrix.setPerspective(
-                30, // 垂直视角
+                // 30, // 垂直视角
+                110, // 垂直视角
                 canvas.width/canvas.height, // aspect宽高比应与canvas的宽高比一直，才不会导致图片变形
                 1, // near
                 100, // far
             );
 
+            gl.uniformMatrix4fv(u_ViewMatrix, false, viewMatrix.elements);
+            gl.uniformMatrix4fv(u_PerspectiveMatrix, false, perspectiveMatrix.elements);
+            
             gl.clearColor(0.1, 0.2, 0.4, 1.0);
             gl.clear(gl.COLOR_BUFFER_BIT);
 
@@ -101,35 +103,35 @@ export default {
 
             let rightTriangles = [
                 // 绿色三角形 在最前面
-                0.6, 0.5, -0.4, 0.4, 1.0, 0.4, // xyz rgb
-                0.3, -0.5, -0.4, 0.4, 1.0, 0.4,
-                0.9, -0.5, -0.4, 1.0, 0.4, 0.4,
+                0.75, 1.0, -0.4, 0.4, 1.0, 0.4, // xyz rgb
+                0.25, -1.0, -0.4, 0.4, 1.0, 0.4,
+                1.25, -1.0, -0.4, 1.0, 0.4, 0.4,
 
                 // 黄色三角形
-                0.6, 0.5, -0.2, 1.0, 1.0, 0.4,
-                0.3, -0.5, -0.2, 1.0, 1.0, 0.4,
-                0.9, -0.5, -0.2, 1.0, 0.4, 0.4,
+                0.75, 1.0, -0.2, 1.0, 1.0, 0.4,
+                0.25, -1.0, -0.2, 1.0, 1.0, 0.4,
+                1.25, -1.0, -0.2, 1.0, 0.4, 0.4,
 
                 // 蓝色三角形在最前面
-                0.6, 0.5, 0.0, 0.4, 0.4, 1.0,
-                0.3, -0.5, 0.0, 0.4, 0.4, 1.0,
-                0.9, -0.5, 0.0, 1.0, 0.4, 0.4,
+                0.75, 1.0, 0.0, 0.4, 0.4, 1.0,
+                0.25, -1.0, 0.0, 0.4, 0.4, 1.0,
+                1.25, -1.0, 0.0, 1.0, 0.4, 0.4,
             ];
             let leftTriangles = [
                 // 绿色三角形 在最前面
-                -0.6, 0.5, -0.4, 0.4, 1.0, 0.4, // xyz rgb
-                -0.3, -0.5, -0.4, 0.4, 1.0, 0.4,
-                -0.9, -0.5, -0.4, 1.0, 0.4, 0.4,
+                -0.75, 1.0, -0.4, 0.4, 1.0, 0.4, // xyz rgb
+                -0.25, -1.0, -0.4, 0.4, 1.0, 0.4,
+                -1.25, -1.0, -0.4, 1.0, 0.4, 0.4,
 
                 // 黄色三角形
-                -0.6, 0.5, -0.2, 1.0, 1.0, 0.4,
-                -0.3, -0.5, -0.2, 1.0, 1.0, 0.4,
-                -0.9, -0.5, -0.2, 1.0, 0.4, 0.4,
+                -0.75, 1.0, -0.2, 1.0, 1.0, 0.4,
+                -0.25, -1.0, -0.2, 1.0, 1.0, 0.4,
+                -1.25, -1.0, -0.2, 1.0, 0.4, 0.4,
 
                 // 蓝色三角形在最前面
-                -0.6, 0.5, 0.0, 0.4, 0.4, 1.0,
-                -0.3, -0.5, 0.0, 0.4, 0.4, 1.0,
-                -0.9, -0.5, 0.0, 1.0, 0.4, 0.4,
+                -0.75, 1.0, 0.0, 0.4, 0.4, 1.0,
+                -0.25, -1.0, 0.0, 0.4, 0.4, 1.0,
+                -1.25, -1.0, 0.0, 1.0, 0.4, 0.4,
             ];
             let vertices = new Float32Array([
                 ...leftTriangles,
