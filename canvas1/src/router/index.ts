@@ -200,8 +200,13 @@ export const threeDimensionalSpace = {
     },
     {
       path: 'perspectiveView_mvp',
-      name: '透视投影1',
+      name: '透视投影-移动复制',
       component: () => import('../views/threeDimensionalSpace/PerspectiveView_mvp.vue'),
+    },
+    {
+      path: 'perspectiveView_mvpMatrix',
+      name: '透视投影-前后关系',
+      component: () => import('../views/threeDimensionalSpace/PerspectiveView_mvpMatrix.vue'),
     },
   ]
 }
