@@ -18,6 +18,7 @@
    * 1.开启隐藏面消除功能 gl.enable(gl.DEPTH_TEST);
    * 2.在绘制之前，清除深度缓冲区 gl.clear(gl.DEPTH_BUFFER_BIT);
    * 
+   * 隐藏面消除的前提：正确设置可视空间（正射投影 or 透视投影）。否则就可能产生错误的结果
    * 
    * gl.enable(cap)
    * 开启cap表示的功能 (capability)
