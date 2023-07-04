@@ -81,7 +81,7 @@ export default {
 
             // 设置 视点、观察目标点 和 上方向
             viewMatrix.setLookAt(
-                0, 0.2, 5, // 视点
+                0, 0, 5, // 视点
                 0, 0, -100, // 观察目标点
                 0, 1, 0, // 上方向
             );
@@ -100,10 +100,10 @@ export default {
 
             gl.clearColor(0.1, 0.2, 0.4, 1.0);
 
-            // 开启隐藏面消除功能
-            gl.enable(gl.DEPTH_TEST);
+            // 开启多边形偏移
+            // gl.enable(gl.POLYGON_OFFSET_FILL);
             // // 在绘制之前清除深度缓冲区【同时清除任意两个缓冲区时，都可以使用按位符|连接参数】
-            gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
+            gl.clear(gl.COLOR_BUFFER_BIT);
 
             // 指定加到每个顶点绘制后的z值上偏移量
             // gl.polygonOffset(1.0, 1.0);
@@ -118,8 +118,8 @@ export default {
              const trianglesAxis = [
                 // 绿色三角形
                  0.0, 0.8, -0.4, 0.0, 1.0, 0.0,
-                 -0.8, -0.8, -0.4, 0.0, 1.0, 0.0,
-                 0.8, -0.8, -0.4, 1.0, 0.0, 0.0,
+                 -0.8, -0.8, -0.4, 0.0, 0.0, 1.0,
+                 0.8, -0.8, -0.4, 0.0, 1.0, 0.0,
 
                 // 黄色三角形
                 0.0, 0.5, -0.4, 1.0, 0.0, 0.0, // x, y, z, r, g, b
