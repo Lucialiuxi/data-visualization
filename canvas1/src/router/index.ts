@@ -198,6 +198,11 @@ export const threeDimensionalSpace = {
       name: '透视投影',
       component: () => import('../views/threeDimensionalSpace/PerspectiveView.vue'),
     },
+    {
+      path: 'perspectiveView_mvp',
+      name: '透视投影1',
+      component: () => import('../views/threeDimensionalSpace/PerspectiveView_mvp.vue'),
+    },
   ]
 }
 const router = createRouter({
