@@ -15,7 +15,11 @@ import Matrix4 from '@lib/cuon-matrix.js';
  * 
  * 多边形偏移：
  *  1.启动多边形偏移： gl.enable(gl.POLYGON_OFFSET_FILL);
- *  2.在绘制之前指定用来计算偏移量的参数： gl.polygonOffset(1.0, 1.0);
+ *  2.在绘制之前指定用来计算偏移量的参数： gl.polygonOffset(factor, units);
+ * 
+ * gl.polygonOffset(factor, units);
+ * factor 为每个多边形设置可变深度偏移的比例因子，默认为0
+ * units 设置乘数，具体实现值与该乘数相乘以创建恒定的深度偏移，默认为0
  * 
  * 隐藏面消除的前提：正确设置可视空间（正射投影 or 透视投影）。否则就可能产生错误的结果
  * 
@@ -77,8 +81,8 @@ export default {
 
             // 设置 视点、观察目标点 和 上方向
             viewMatrix.setLookAt(
-                0, 0.5, 5, // 视点
-                0, 0, 0, // 观察目标点
+                0, 0.2, 5, // 视点
+                0, 0, -100, // 观察目标点
                 0, 1, 0, // 上方向
             );
 
@@ -89,17 +93,20 @@ export default {
                 100,
             );
 
-            let viewProjMatrix = projMatrix.multiply(viewMatrix);
+            let viewProjMatrix = projMatrix.multiply(viewMatrix); // 投影矩阵 * 视图矩阵
             let u_ViewProjMatrix = gl.getUniformLocation(gl.program, 'u_ViewProjMatrix'); 
             gl.uniformMatrix4fv(u_ViewProjMatrix, false, viewProjMatrix.elements);
 
 
             gl.clearColor(0.1, 0.2, 0.4, 1.0);
 
-            // 开启隐藏面消除功能【注释这两行看绘图就能看出区别】
+            // 开启隐藏面消除功能
             gl.enable(gl.DEPTH_TEST);
-            // 在绘制之前清除深度缓冲区【同时清除任意两个缓冲区时，都可以使用按位符|连接参数】
+            // // 在绘制之前清除深度缓冲区【同时清除任意两个缓冲区时，都可以使用按位符|连接参数】
             gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
+
+            // 指定加到每个顶点绘制后的z值上偏移量
+            // gl.polygonOffset(1.0, 1.0);
 
             gl.drawArrays(gl.TRIANGLES, 0, n);
         },
@@ -109,15 +116,15 @@ export default {
             let n = 6;
 
              const trianglesAxis = [
-                // 绿色三角形 在最后面
-                0.0, 0.6, -0.5, 1.0, 0.0, 0.0, // x, y, z, r, g, b
-                -0.6, -0.6, -0.5, 1.0, 1.0, 0.0,
-                0.6, -0.6, -0.5, 1.0, 1.0, 0.0,
+                // 绿色三角形
+                 0.0, 0.8, -0.4, 0.0, 1.0, 0.0,
+                 -0.8, -0.8, -0.4, 0.0, 1.0, 0.0,
+                 0.8, -0.8, -0.4, 1.0, 0.0, 0.0,
 
-                // 黄色三角形 在前边
-                 0.0, 0.5, -0.5, 0.0, 1.0, 0.0,
-                 -0.5, -0.5, -0.5, 0.0, 1.0, 0.0,
-                 0.5, -0.5, -0.5, 1.0, 0.0, 0.0,
+                // 黄色三角形
+                0.0, 0.5, -0.4, 1.0, 0.0, 0.0, // x, y, z, r, g, b
+                -0.5, -0.5, -0.4, 1.0, 1.0, 0.0,
+                0.5, -0.5, -0.4, 1.0, 1.0, 0.0,
             ];
             // 顶点位置
             let vertices = new Float32Array(trianglesAxis, 0, trianglesAxis.length);
