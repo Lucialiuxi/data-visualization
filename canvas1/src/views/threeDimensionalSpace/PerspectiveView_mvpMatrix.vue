@@ -101,16 +101,23 @@
                   100, // far
               );
               
-              gl.clearColor(0.1, 0.2, 0.4, 1.0);
-            //   gl.clear(gl.COLOR_BUFFER_BIT);
+
+            gl.clearColor(0.1, 0.2, 0.4, 1.0);
+            // gl.clear(gl.COLOR_BUFFER_BIT); 
+
+            // 开启隐藏面消除功能【注释这两行看绘图就能看出区别】
+            gl.enable(gl.DEPTH_TEST);
+            // 在绘制之前清除深度缓冲区【同时清除任意两个缓冲区时，都可以使用按位符|连接参数】
+            gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT); 
+
               this.draw(gl, u_MvpMatrix, modelMatrix, mvpMatrix, perspectiveMatrix, viewMatrix,n, { x: -0.75, y: 0, z: 0 });
               this.draw(gl, u_MvpMatrix, modelMatrix, mvpMatrix, perspectiveMatrix, viewMatrix,n, { x: 0.75, y: 0, z: 0 });
           },
           initVertexBuffer(gl) {
               let trianglesCount  = 3;
               let n = trianglesCount * 3;
-  
-              let triangles = [
+            
+              let vertices = new Float32Array([
                 // 蓝色三角形在最前面
                 0.0, 1.0, 0.0, 0.4, 0.4, 1.0,
                 -0.5, -1.0, 0.0, 0.4, 0.4, 1.0,
@@ -125,9 +132,6 @@
                 0.0, 1.0, -0.2, 1.0, 1.0, 0.4,
                 -0.5, -1.0, -0.2, 1.0, 1.0, 0.4,
                 0.5, -1.0, -0.2, 1.0, 0.4, 0.4,
-              ];
-              let vertices = new Float32Array([
-                  ...triangles,
               ], 0, n * 6);
   
               let FSIZE = vertices.BYTES_PER_ELEMENT;
@@ -147,10 +151,6 @@
               return n;
           },
           draw(gl, u_MvpMatrix, modelMatrix, mvpMatrix, perspectiveMatrix, viewMatrix,n, axis) {
-            // 开启隐藏面消除功能【注释这两行看绘图就能看出区别】
-            gl.enable(gl.COLOR_BUFFER_BIT | gl.DEPTH_TEST); // 同时清除任意两个缓冲区时，都可以使用按位符|连接参数
-            gl.clear(gl.DEPTH_BUFFER_BIT); // 在绘制之前清除深度缓冲区
-            
             modelMatrix.setTranslate(axis.x, axis.y, axis.z);
             /**
              * 首先将模型视图投影矩阵mvpMatrix设为投影矩阵perspectiveMatrix

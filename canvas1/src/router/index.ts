@@ -208,6 +208,11 @@ export const threeDimensionalSpace = {
       name: '透视投影-前后关系',
       component: () => import('../views/threeDimensionalSpace/PerspectiveView_mvpMatrix.vue'),
     },
+    {
+      path: 'zFighting',
+      name: '深度冲突',
+      component: () => import('../views/threeDimensionalSpace/ZFighting.vue'),
+    },
   ]
 }
 const router = createRouter({
