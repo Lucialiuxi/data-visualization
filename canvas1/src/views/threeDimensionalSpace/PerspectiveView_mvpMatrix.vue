@@ -25,6 +25,8 @@
    * gl.DEPTH_TEST 隐藏面消除
    * gl.BLEND 混合
    * gl.POLYGON_OFFSET_FILL 多边形位移
+   * 
+   * 模型视图投影矩阵 = 投影矩阵*视图矩阵*模型矩阵*顶点坐标
    */
   export default {
       mounted() {
@@ -110,14 +112,19 @@
             // 在绘制之前清除深度缓冲区【同时清除任意两个缓冲区时，都可以使用按位符|连接参数】
             gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT); 
 
-              this.draw(gl, u_MvpMatrix, modelMatrix, mvpMatrix, perspectiveMatrix, viewMatrix,n, { x: -0.75, y: 0, z: 0 });
-              this.draw(gl, u_MvpMatrix, modelMatrix, mvpMatrix, perspectiveMatrix, viewMatrix,n, { x: 0.75, y: 0, z: 0 });
+            this.draw(gl, u_MvpMatrix, modelMatrix, mvpMatrix, perspectiveMatrix, viewMatrix,n, { x: -0.75, y: 0, z: 0 });
+            this.draw(gl, u_MvpMatrix, modelMatrix, mvpMatrix, perspectiveMatrix, viewMatrix,n, { x: 0.75, y: 0, z: 0 });
           },
           initVertexBuffer(gl) {
               let trianglesCount  = 3;
               let n = trianglesCount * 3;
             
               let vertices = new Float32Array([
+                // 黄色三角形 在中间
+                0.0, 1.0, -0.2, 1.0, 1.0, 0.4,
+                -0.5, -1.0, -0.2, 1.0, 1.0, 0.4,
+                0.5, -1.0, -0.2, 1.0, 0.4, 0.4,
+
                 // 蓝色三角形在最前面
                 0.0, 1.0, 0.0, 0.4, 0.4, 1.0,
                 -0.5, -1.0, 0.0, 0.4, 0.4, 1.0,
@@ -127,11 +134,6 @@
                 0.0, 1.0, -0.4, 0.4, 1.0, 0.4, // xyz rgb
                 -0.5, -1.0, -0.4, 0.4, 1.0, 0.4,
                 0.5, -1.0, -0.4, 1.0, 0.4, 0.4,
-
-                // 黄色三角形 在中间
-                0.0, 1.0, -0.2, 1.0, 1.0, 0.4,
-                -0.5, -1.0, -0.2, 1.0, 1.0, 0.4,
-                0.5, -1.0, -0.2, 1.0, 0.4, 0.4,
               ], 0, n * 6);
   
               let FSIZE = vertices.BYTES_PER_ELEMENT;

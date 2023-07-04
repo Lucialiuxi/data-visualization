@@ -17,6 +17,9 @@ import Matrix4 from '@lib/cuon-matrix.js';
  *  1.启动多边形偏移： gl.enable(gl.POLYGON_OFFSET_FILL);
  *  2.在绘制之前指定用来计算偏移量的参数： gl.polygonOffset(1.0, 1.0);
  * 
+ * 隐藏面消除的前提：正确设置可视空间（正射投影 or 透视投影）。否则就可能产生错误的结果
+ * 
+ * 投影视图矩阵 = 投影矩阵 * 视图矩阵 * 顶点坐标
  */
 
 export default {
@@ -32,10 +35,10 @@ export default {
                 attribute vec4 a_Color;
                 varying vec4 v_Color;
 
-                uniform mat4 u_ProjMatrix; // 投影矩阵
+                uniform mat4 u_ViewProjMatrix; // 视图投影矩阵
 
                 void main() {
-                    gl_Position = u_ProjMatrix * a_Position;
+                    gl_Position = u_ViewProjMatrix * a_Position;
                     v_Color = a_Color;
                 }
             `;
@@ -67,28 +70,38 @@ export default {
                 console.error('缓冲区对象创建失败');
                 return;
             }
-
+            // 视图矩阵
             const viewMatrix = new Matrix4();
-            const modelMatrix = new Matrix4();
+            // 透视投影矩阵
+            const projMatrix = new Matrix4();
 
             // 设置 视点、观察目标点 和 上方向
             viewMatrix.setLookAt(
-                0, 0, 0, // 视点
-                0, 0, 1, // 观察目标点
+                0, 0.5, 5, // 视点
+                0, 0, 0, // 观察目标点
                 0, 1, 0, // 上方向
             );
 
-            let projMatrix = viewMatrix.multiply(modelMatrix);
-            let u_ProjMatrix = gl.getUniformLocation(gl.program, 'u_ProjMatrix');
-            
+            projMatrix.setPerspective(
+                30,
+                canvas.width/canvas.height,
+                1,
+                100,
+            );
+
+            let viewProjMatrix = projMatrix.multiply(viewMatrix);
+            let u_ViewProjMatrix = gl.getUniformLocation(gl.program, 'u_ViewProjMatrix'); 
+            gl.uniformMatrix4fv(u_ViewProjMatrix, false, viewProjMatrix.elements);
+
+
             gl.clearColor(0.1, 0.2, 0.4, 1.0);
 
             // 开启隐藏面消除功能【注释这两行看绘图就能看出区别】
             gl.enable(gl.DEPTH_TEST);
             // 在绘制之前清除深度缓冲区【同时清除任意两个缓冲区时，都可以使用按位符|连接参数】
-            gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT); 
+            gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
 
-            this.drawHandle(gl, n, u_ProjMatrix, projMatrix);
+            gl.drawArrays(gl.TRIANGLES, 0, n);
         },
         // 初始化缓冲区对象
         initVertexBuffer(gl) {
@@ -96,15 +109,15 @@ export default {
             let n = 6;
 
              const trianglesAxis = [
-                // 黄色三角形 在前边
-                 0.0, 0.5, -0.2, 1.0, 0.4, 0.4,
-                 -0.5, -0.5, -0.2, 1.0, 1.0, 0.4,
-                 0.5, -0.5, -0.2, 1.0, 0.4, 0.4,
-
                 // 绿色三角形 在最后面
-                0.0, 0.7, -0.2, 0.4, 1.0, 0.4, // x, y, z, r, g, b
-                -0.7, -0.7, -0.2, 0.4, 1.0, 0.4,
-                0.7, -0.7, -0.2, 0.4, 0.4, 0.4,
+                0.0, 0.6, -0.5, 1.0, 0.0, 0.0, // x, y, z, r, g, b
+                -0.6, -0.6, -0.5, 1.0, 1.0, 0.0,
+                0.6, -0.6, -0.5, 1.0, 1.0, 0.0,
+
+                // 黄色三角形 在前边
+                 0.0, 0.5, -0.5, 0.0, 1.0, 0.0,
+                 -0.5, -0.5, -0.5, 0.0, 1.0, 0.0,
+                 0.5, -0.5, -0.5, 1.0, 0.0, 0.0,
             ];
             // 顶点位置
             let vertices = new Float32Array(trianglesAxis, 0, trianglesAxis.length);
@@ -128,11 +141,6 @@ export default {
 
             return n;
         },
-        drawHandle(gl, n, u_ProjMatrix, Matrix) {
-            gl.uniformMatrix4fv(u_ProjMatrix, false, Matrix.elements);
-            Matrix.setOrtho(-1, 1, -1, 1, 0.0, 0.5); // setOrtho执行要放在 指定矩阵值之后
-            gl.drawArrays(gl.TRIANGLES, 0, n);
-        }
     }
 }
 </script>
