@@ -102,7 +102,7 @@ export default {
 
             let a_Color = gl.getAttribLocation(gl.program, 'a_Color');
             gl.vertexAttribPointer(a_Color, 3, gl.FLOAT, false, FSIZE * 6, FSIZE * 3);
-            gl.enableVertexAttribArray(a_Position);
+            gl.enableVertexAttribArray(a_Color);
 
             return n;
         },
