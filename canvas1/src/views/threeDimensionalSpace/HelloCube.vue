@@ -76,16 +76,16 @@ export default {
             gl.clear(gl.COLOR_BUFFER_BIT);
 
             gl.drawArrays(gl.TRIANGLE_STRIP, 0, n);
+            // gl.drawArrays(gl.TRIANGLE_FAN, 0, n);
         },
         initVertexBuffer(gl) {
             let n = 4;
-            // v0 白色 v1 品红色 v2 红色 v3 黄色
             let vertices = new Float32Array(n * 6);
             vertices.set([
-                1.0, 1.0, 1.0, 1.0, 1.0, 1.0, // v0
-                -1.0, 1.0, 1.0, 0.17, 0.0 ,0.18, // v1
-                -1.0, -1.0, 1.0, 1.0, 0.0, 0.0, // v2
-                1.0, -1.0, 1.0, 0.10, 0.11, 0.19, // v3
+                -0.1, 0.1, 0.0, 0.0, 1.0 ,0.0, 
+                -0.1, -0.1, 0.0, 0.0, 0.0, 1.0,
+                0.1, 0.1, 0.0, 1.0, 0.0, 0.0,
+                0.1, -0.1, 0.0, 0.1, 0.2, 0.3,
             ]);
 
             const FSIZE = gl.BYTES_PER_ELEMENT;

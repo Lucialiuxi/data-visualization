@@ -54,8 +54,8 @@
                 gl.clear(gl.COLOR_BUFFER_BIT);
 
                 // TRIANGLES和 TRIANGLE_FAN主要在区别在连接各顶点的方式不同
-                //gl.drawArrays(gl.TRIANGLE_STRIP, 0, n); // type 绘制类型 offset从第几个开始绘制 count绘制总个数
-                gl.drawArrays(gl.TRIANGLE_FAN, 0, n)
+                gl.drawArrays(gl.TRIANGLE_STRIP, 0, n); // type 绘制类型 offset从第几个开始绘制 count绘制总个数
+                // gl.drawArrays(gl.TRIANGLE_FAN, 0, n)
 
             },
             /**
