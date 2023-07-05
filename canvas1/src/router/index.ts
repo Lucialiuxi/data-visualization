@@ -213,6 +213,11 @@ export const threeDimensionalSpace = {
       name: '深度冲突',
       component: () => import('../views/threeDimensionalSpace/ZFighting.vue'),
     },
+    {
+      path: 'hello-cube',
+      name: '立方体-浅试一下',
+      component: () => import('../views/threeDimensionalSpace/HelloCube.vue'),
+    },
   ]
 }
 const router = createRouter({
