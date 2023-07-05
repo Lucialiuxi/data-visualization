@@ -76,7 +76,6 @@ export default {
             gl.clear(gl.COLOR_BUFFER_BIT);
 
             gl.drawArrays(gl.TRIANGLE_STRIP, 0, n);
-            // gl.drawArrays(gl.TRIANGLE_FAN, 0, n);
         },
         initVertexBuffer(gl) {
             let n = 4;
