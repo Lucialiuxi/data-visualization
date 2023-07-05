@@ -72,41 +72,40 @@ export default {
                 console.error('缓冲区对象创建失败');
                 return;
             }
-            // 视图矩阵
-            const viewMatrix = new Matrix4();
-            // 透视投影矩阵
-            const projMatrix = new Matrix4();
+            // 视图透视投影矩阵
+            const viewProjMatrix = new Matrix4();
 
-            // 设置 视点、观察目标点 和 上方向
-            viewMatrix.setLookAt(
-                0, 0, 5, // 视点
-                0, 0, -100, // 观察目标点
-                0, 1, 0, // 上方向
-            );
-
-            projMatrix.setPerspective(
+            viewProjMatrix.setPerspective(
                 30,
                 canvas.width/canvas.height,
                 1,
                 100,
             );
 
-            let viewProjMatrix = projMatrix.multiply(viewMatrix); // 投影矩阵 * 视图矩阵
+            // 设置 视点、观察目标点 和 上方向
+            viewProjMatrix.lookAt(
+                2.06, 2.5, 10.0, // 视点
+                0, 0, -2, // 观察目标点
+                0, 1, 0, // 上方向
+            );
+
             let u_ViewProjMatrix = gl.getUniformLocation(gl.program, 'u_ViewProjMatrix'); 
             gl.uniformMatrix4fv(u_ViewProjMatrix, false, viewProjMatrix.elements);
 
-
             gl.clearColor(0.1, 0.2, 0.4, 1.0);
 
-            // 开启多边形偏移
-            // gl.enable(gl.POLYGON_OFFSET_FILL);
-            // // 在绘制之前清除深度缓冲区【同时清除任意两个缓冲区时，都可以使用按位符|连接参数】
-            gl.clear(gl.COLOR_BUFFER_BIT);
+            gl.enable(gl.DEPTH_TEST);
+            gl.enable(gl.POLYGON_OFFSET_FILL);
+            // 在绘制之前清除深度缓冲区【同时清除任意两个缓冲区时，都可以使用按位符|连接参数】
+            gl.clear(gl.DEPTH_OFFSET_FILL | gl.COLOR_BUFFER_BIT);
 
-            // 指定加到每个顶点绘制后的z值上偏移量
-            // gl.polygonOffset(1.0, 1.0);
+            // 注释这三行可以看出来深度冲突
+            gl.drawArrays(gl.TRIANGLES, 0, n/2);
+            gl.polygonOffset(1.0, 1.0);
+            gl.drawArrays(gl.TRIANGLES, n/2, n/2);
 
-            gl.drawArrays(gl.TRIANGLES, 0, n);
+
+            // gl.drawArrays(gl.TRIANGLES, 0, n);
         },
         // 初始化缓冲区对象
         initVertexBuffer(gl) {
@@ -115,17 +114,17 @@ export default {
 
              const trianglesAxis = [
                 // 绿色三角形
-                 0.0, 0.8, -0.4, 0.0, 1.0, 0.0,
-                 -0.8, -0.8, -0.4, 0.0, 0.0, 1.0,
-                 0.8, -0.8, -0.4, 0.0, 1.0, 0.0,
+                 0.0, 1.5, -0.4, 0.0, 1.0, 0.0,
+                 -1.5, -1.5, -0.4, 0.0, 0.0, 1.0,
+                 1.5, -1.5, -0.4, 0.0, 1.0, 0.0,
 
                 // 黄色三角形
-                0.0, 0.5, -0.4, 1.0, 0.0, 0.0, // x, y, z, r, g, b
-                -0.5, -0.5, -0.4, 1.0, 1.0, 0.0,
-                0.5, -0.5, -0.4, 1.0, 1.0, 0.0,
+                0.0, 2.0, -0.4, 1.0, 0.0, 0.0, // x, y, z, r, g, b
+                -2.0, -2.0, -0.4, 1.0, 1.0, 0.0,
+                2.0, -2.0, -0.4, 1.0, 1.0, 0.0,
             ];
             // 顶点位置
-            let vertices = new Float32Array(trianglesAxis, 0, trianglesAxis.length);
+            let vertices = new Float32Array(trianglesAxis);
 
             const FSIZE = vertices.BYTES_PER_ELEMENT;
 
