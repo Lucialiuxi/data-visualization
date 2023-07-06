@@ -17,17 +17,22 @@
                 // 顶点着色器
                 let VSHADERS_SOURCE = `
                     attribute vec4 a_Position;
+                    attribute vec4 a_Color;
+
+                    varying vec4 v_Color;
+
                     void main() {
                         gl_Position = a_Position;
+                        v_Color = a_Color;
                     }
                 `;
 
                 // 片元着色器
                 let FSHADER_SOURCE = `
                     precision mediump float;
-                    uniform vec4 u_FragColor;
+                    varying vec4 v_Color;
                     void main() {
-                        gl_FragColor = u_FragColor;
+                        gl_FragColor = v_Color;
                     }
                 `;
 
@@ -49,7 +54,7 @@
                    return;
                 }
                 
-                gl.clearColor(0.2, 0.1, 0.7, 1.0);
+                gl.clearColor(0.2, 0.5, 0.8, 1.0);
 
                 gl.clear(gl.COLOR_BUFFER_BIT);
 
@@ -63,15 +68,16 @@
              * return number 定点个数
              */
             initVertexBuffer(gl) {
-                let vertices = new Float32Array(16);
-                vertices.set([
-                    -0.5, 0.5, 0.0,
-                    -0.5, -0.5, 0.0,
-                    0.5, 0.5, 0.0,
-                    0.5, -0.5, 0.0,
-                ], 0);
                 let n = 4;
+                let vertices = new Float32Array(n * 6);
+                vertices.set([
+                    -0.5, 0.5, 0.0,  1.0, 0.0, 0.0,
+                    -0.5, -0.5, 0.0, 0.0, 1.0, 0.0,
+                    0.5, 0.5, 0.0,   0.0, 0.0, 1.0,
+                    0.5, -0.5, 0.0,  1.0, 1.0, 1.0,
+                ], 0);
 
+                const FSIZE = vertices.BYTES_PER_ELEMENT;
                 let vertexBuffer = gl.createBuffer();
 
                 gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
@@ -79,14 +85,18 @@
                 gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW, 0, n);
 
                 let a_Position = gl.getAttribLocation(gl.program, 'a_Position');
-                let u_FragColor = gl.getUniformLocation(gl.program, 'u_FragColor');
                 //告诉显卡从当前绑定的缓冲区中读取定点数据
-                gl.vertexAttribPointer(a_Position, 3, gl.FLOAT, false, 0, 0);
-
+                gl.vertexAttribPointer(a_Position, 3, gl.FLOAT, false, FSIZE * 6, 0);
                 // 打开属性数组列表中指定索引处的顶点属性数组
                 gl.enableVertexAttribArray(a_Position);
 
-                gl.uniform4f(u_FragColor, 0.0, 1.0, 0.0, 0.5);
+
+                let a_Color = gl.getAttribLocation(gl.program, 'a_Color');
+                //告诉显卡从当前绑定的缓冲区中读取定点数据
+                gl.vertexAttribPointer(a_Color, 3, gl.FLOAT, false, FSIZE * 6, FSIZE * 3);
+                // 打开属性数组列表中指定索引处的顶点属性数组
+                gl.enableVertexAttribArray(a_Color);
+
                 return n;
             }
         }
