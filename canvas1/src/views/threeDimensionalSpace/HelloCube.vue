@@ -62,28 +62,30 @@ export default {
             let viewMatrix = new Matrix4();
             let projMatrix = new Matrix4();
             viewMatrix.setLookAt(
-                0.0, 0.0, 1.5, // 视点
+                2.5, 2.5, 5.5, // 视点
                 0, 0, -100, // 目标点
                 0, 1, 0, // 上方向
             );
             projMatrix.setPerspective(
-                110, // 垂直视角
+                70, // 垂直视角
                 canvas.width/canvas.height, // aspect宽高比应与canvas的宽高比一直，才不会导致图片变形
                 1, // near
                 100, // far
             );
+            projMatrix.translate(1.5, 1.5, 1.5);
             let u_ViewMatrix = gl.getUniformLocation(gl.program, 'u_ViewMatrix');
             gl.uniformMatrix4fv(u_ViewMatrix, false, viewMatrix.elements);
             let u_ProjMatrix = gl.getUniformLocation(gl.program, 'u_ProjMatrix');
             gl.uniformMatrix4fv(u_ProjMatrix, false, projMatrix.elements);
 
             gl.clearColor(0.1, 0.2, 0.3, 1.0);
-            gl.clear(gl.COLOR_BUFFER_BIT);
+            gl.enable(gl.DEPTH_TEST)
+            gl.clear(gl.DEPTH_OFFSET_FILL | gl.COLOR_BUFFER_BIT);
 
             gl.drawArrays(gl.TRIANGLE_STRIP, 0, n);
         },
         initVertexBuffer(gl) {
-            let n = 8;
+            let n = 24;
             /**
              *  v0 白色 1.0, 1.0, 1.0
              *  v1 品红色 0.67, 0, 0.73
@@ -112,14 +114,44 @@ export default {
             ];
             // quad1右侧面
             let quad3 = [
-                
+                0.5, -0.5, 0.5, 1.0, 1.0, 0.0, // v3
+                0.5, -0.5, -0.5, 0.0, 0.62, 0.42, // v4
+                0.5, 0.5, 0.5, 1.0, 1.0, 1.0, // v0
+                0.5, 0.5, -0.5, 0.4, 0.6, 0.6, // v5
             ];
 
-            let len = quad1.length;
+            // quad1左侧侧面
+            let quad4 = [
+                -0.5, -0.5, 0.5, 1.0, 0.0, 0.0, // v2
+                -0.5, -0.5, -0.5, 0.0, 0.0, 0.0, // v7
+                -0.5, 0.5, 0.5, 0.67, 0, 0.73, // v1
+                -0.5, 0.5, -0.5, 0.0, 0.0, 1.0, // v6
+            ];
+
+            // 正上方
+            let quad5 = [
+                -0.5, 0.5, 0.5, 0.67, 0, 0.73, // v1
+                -0.5, 0.5, -0.5, 0.0, 0.0, 1.0, // v6
+                0.5, 0.5, 0.5, 1.0, 1.0, 1.0, // v0
+                0.5, 0.5, -0.5, 0.4, 0.6, 0.6, // v5
+            ];
+
+            // 正下方
+            let quad6 = [
+                -0.5, -0.5, 0.5, 1.0, 0.0, 0.0, // v2
+                -0.5, -0.5, -0.5, 0.0, 0.0, 0.0, // v7
+                0.5, -0.5, 0.5, 1.0, 1.0, 0.0, // v3
+                0.5, -0.5, -0.5, 0.0, 0.62, 0.42, // v4
+            ];
+
             let vertices = new Float32Array([
                 ...quad1,
                 ...quad2,
-            ], 0, len);
+                ...quad3,
+                ...quad4,
+                ...quad5,
+                ...quad6,
+            ], 0, n * 6);
 
             const FSIZE = vertices.BYTES_PER_ELEMENT;
             let vertexBuffer  = gl.createBuffer();
