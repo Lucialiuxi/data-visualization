@@ -18,13 +18,15 @@ export default {
                 precision mediump float;
 
                 attribute vec4 a_Position;
-                uniform mat4 u_ViewProjMatrix; // 透视投影视图矩阵
-
                 attribute vec4 a_Color;
+
+                uniform mat4 u_ProjMatrix; // 透视投影矩阵
+                uniform mat4 u_ViewMatrix; // 视图矩阵
+
                 varying vec4 v_Color;
 
                 void main() {
-                    gl_Position = a_Position;
+                    gl_Position = u_ProjMatrix * u_ViewMatrix * a_Position;
                     v_Color = a_Color;
                 }
 
@@ -57,20 +59,23 @@ export default {
                 return;
             }
 
-            let viewProjMatrix = new Matrix4();
-            viewProjMatrix.setPerspective(
-                50,
-                canvas.width/canvas.hight,
-                1,
-                100,
+            let viewMatrix = new Matrix4();
+            let projMatrix = new Matrix4();
+            viewMatrix.setLookAt(
+                0.0, 0.0, 1.5, // 视点
+                0, 0, -100, // 目标点
+                0, 1, 0, // 上方向
             );
-            viewProjMatrix.lookAt(
-                  5, 5, 5, // 视点
-                  0, 0, -100, // 目标点
-                  0, 1, 0, // 上方向
+            projMatrix.setPerspective(
+                110, // 垂直视角
+                canvas.width/canvas.height, // aspect宽高比应与canvas的宽高比一直，才不会导致图片变形
+                1, // near
+                100, // far
             );
-            let u_ViewProjMatrix = gl.getUniformLocation(gl.program, 'u_ViewProjMatrix');
-            gl.uniformMatrix4fv(u_ViewProjMatrix, false, viewProjMatrix.elements);
+            let u_ViewMatrix = gl.getUniformLocation(gl.program, 'u_ViewMatrix');
+            gl.uniformMatrix4fv(u_ViewMatrix, false, viewMatrix.elements);
+            let u_ProjMatrix = gl.getUniformLocation(gl.program, 'u_ProjMatrix');
+            gl.uniformMatrix4fv(u_ProjMatrix, false, projMatrix.elements);
 
             gl.clearColor(0.1, 0.2, 0.3, 1.0);
             gl.clear(gl.COLOR_BUFFER_BIT);
@@ -78,22 +83,51 @@ export default {
             gl.drawArrays(gl.TRIANGLE_STRIP, 0, n);
         },
         initVertexBuffer(gl) {
-            let n = 4;
-            let vertices = new Float32Array(n * 6);
-            vertices.set([
-                -0.1, 0.1, 0.0, 0.0, 1.0 ,0.0, 
-                -0.1, -0.1, 0.0, 0.0, 0.0, 1.0,
-                0.1, 0.1, 0.0, 1.0, 0.0, 0.0,
-                0.1, -0.1, 0.0, 0.1, 0.2, 0.3,
-            ]);
+            let n = 8;
+            /**
+             *  v0 白色 1.0, 1.0, 1.0
+             *  v1 品红色 0.67, 0, 0.73
+             *  v2 红色   1.0, 0.0, 0.0
+             *  v3 黄色   1.0, 1.0, 0.0
+             * 
+             * v6 蓝色 0.0, 0.0, 1.0
+             * v7 黑色 0.0, 0.0, 0.0
+             * v5 青色 0.4, 0.6, 0.6
+             * v4 绿色 0.0, 0.62, 0.42
+             */
+            // 观察者正面
+            let quad1 = [
+                -0.5, 0.5, 0.5, 0.67, 0, 0.73, // v1
+                -0.5, -0.5, 0.5, 1.0, 0.0, 0.0, // v2
+                0.5, 0.5, 0.5, 1.0, 1.0, 1.0, // v0
+                0.5, -0.5, 0.5, 1.0, 1.0, 0.0, // v3
+            ];
 
-            const FSIZE = gl.BYTES_PER_ELEMENT;
+            // quad1的对面
+            let quad2 = [
+                -0.5, 0.5, -0.5, 0.0, 0.0, 1.0, // v6
+                -0.5, -0.5, -0.5, 0.0, 0.0, 0.0, // v7
+                0.5, 0.5, -0.5, 0.4, 0.6, 0.6, // v5
+                0.5, -0.5, -0.5, 0.0, 0.62, 0.42, // v4
+            ];
+            // quad1右侧面
+            let quad3 = [
+                
+            ];
+
+            let len = quad1.length;
+            let vertices = new Float32Array([
+                ...quad1,
+                ...quad2,
+            ], 0, len);
+
+            const FSIZE = vertices.BYTES_PER_ELEMENT;
             let vertexBuffer  = gl.createBuffer();
             if (!vertexBuffer) {
                 return -1;
             }
             gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-            gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+            gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW, 0, n);
 
             let a_Position = gl.getAttribLocation(gl.program, 'a_Position');
             gl.vertexAttribPointer(a_Position, 3, gl.FLOAT, false, FSIZE * 6, 0);
