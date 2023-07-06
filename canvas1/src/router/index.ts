@@ -214,9 +214,14 @@ export const threeDimensionalSpace = {
       component: () => import('../views/threeDimensionalSpace/ZFighting.vue'),
     },
     {
-      path: 'hello-cube',
-      name: '立方体-浅试一下',
-      component: () => import('../views/threeDimensionalSpace/HelloCube.vue'),
+      path: 'hello-cube-strip',
+      name: '立方体【条状带三角形】',
+      component: () => import('../views/threeDimensionalSpace/HelloCube_STRIP.vue'),
+    },
+    {
+      path: 'hello-cube-fan',
+      name: '立方体【扇形】',
+      component: () => import('../views/threeDimensionalSpace/HelloCube-FAN.vue'),
     },
   ]
 }
