@@ -223,6 +223,11 @@ export const threeDimensionalSpace = {
       name: '立方体【扇形】',
       component: () => import('../views/threeDimensionalSpace/HelloCube-FAN.vue'),
     },
+    {
+      path: 'hello-cube-drawElements',
+      name: '立方体【渲染图元】',
+      component: () => import('../views/threeDimensionalSpace/HelloCube_drawElements.vue'),
+    },
   ]
 }
 const router = createRouter({
