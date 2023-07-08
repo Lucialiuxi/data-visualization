@@ -7,7 +7,27 @@
 <script>
 import { getWebGLContext, initShaders } from '@lib/cuon-utils.js';
 import Matrix4 from '@lib/cuon-matrix.js';
-
+/**
+ * gl.drawElements(mode, count, type, offset);
+ * 执行着色器，按照mode参数指定的方式，
+ * 根据绑定到gl.ELEMENT_ARRAY_BUFFER的缓冲区的顶点索引值绘制图形
+ * mode 制定绘制的方式：
+ *  gl.POINTS 
+ *  gl.LINES 
+ *  gl.LINE_STRIP 
+ *  gl.LINE_LOOP
+ *  gl.TRIANGLES
+ *  gl.TRIANGLE_STRIP
+ *  gl.TRIANGLE_FAN 
+ * 
+ * count 指定绘制顶点的个数（整数型
+ * 
+ * type 指定索引值数据类型：
+ * gl.UNSIGNED_BYTE 
+ * gl.UNSIGNED_SHORT
+ * 
+ * gl.ELEMENT_ARRAY_BUFFER: 用于元素索引的 Buffer
+ */
 export default {
     mounted() {
         this.paint();
@@ -62,7 +82,7 @@ export default {
             let viewMatrix = new Matrix4();
             let projMatrix = new Matrix4();
             viewMatrix.setLookAt(
-                0.3, 0.3, 3, // 视点
+                3, 3, 3, // 视点
                 0, 0, 0, // 目标点
                 0, 1, 0, // 上方向
             );
@@ -78,10 +98,9 @@ export default {
             gl.uniformMatrix4fv(u_ProjMatrix, false, projMatrix.elements);
 
             gl.clearColor(0.1, 0.2, 0.3, 1.0);
-            gl.enable(gl.DEPTH_TEST)
+            gl.enable(gl.DEPTH_TEST);
             gl.clear(gl.DEPTH_OFFSET_FILL | gl.COLOR_BUFFER_BIT);
-
-            gl.drawElements(gl.TRIANGLES_FAN, n, gl.UNSIGNED_BYTE, 0);
+            gl.drawElements(gl.TRIANGLE_FAN, n, gl.UNSIGNED_BYTE, 0);
         },
         initVertexBuffer(gl) {
             /**
@@ -97,18 +116,18 @@ export default {
              */
 
             let cubeAxisColor = [
-                0.15, 0.15, 0.15, 1.0, 1.0, 1.0, // v0
-                -0.15, 0.15, 0.15, 0.67, 0, 0.73, // v1
-                -0.15, -0.15, 0.15, 1.0, 0.0, 0.0, // v2
-                0.15, -0.15, 0.15, 1.0, 1.0, 0.0, // v3
-                0.15, -0.15, -0.15, 0.0, 0.62, 0.42, // v4
-                0.15, 0.15, -0.15, 0.4, 0.6, 0.6, // v5
-                -0.15, 0.15, -0.15, 0.0, 0.0, 1.0, // v6
-                -0.15, -0.15, -0.15, 0.0, 0.0, 0.0, // v7
+                0.3, 0.3, 0.3, 1.0, 1.0, 1.0, // v0
+                -0.3, 0.3, 0.3, 0.67, 0, 0.73, // v1
+                -0.3, -0.3, 0.3, 1.0, 0.0, 0.0, // v2
+                0.3, -0.3, 0.3, 1.0, 1.0, 0.0, // v3
+                0.3, -0.3, -0.3, 0.0, 0.62, 0.42, // v4
+                0.3, 0.3, -0.3, 0.4, 0.6, 0.6, // v5
+                -0.3, 0.3, -0.3, 0.0, 0.0, 1.0, // v6
+                -0.3, -0.3, -0.3, 0.0, 0.0, 0.0, // v7
             ];
 
             let indexFan = [
-                0, 1, 2, 3, // 正面
+                0, 1, 2, 3,// 正面
                 0, 3, 4, 5, // 右面
                 0, 5, 6, 1, // 上面
                 7, 2, 3, 4,// 下面
