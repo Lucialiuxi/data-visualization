@@ -220,13 +220,18 @@ export const threeDimensionalSpace = {
     },
     {
       path: 'hello-cube-fan',
-      name: '立方体【扇形】',
+      name: '立方体【drawArrays三角扇】',
       component: () => import('../views/threeDimensionalSpace/HelloCube-FAN.vue'),
     },
     {
       path: 'hello-cube-drawElements',
-      name: '立方体【渲染图元】',
+      name: '立方体【drawElements三角扇】',
       component: () => import('../views/threeDimensionalSpace/HelloCube_drawElements.vue'),
+    },
+    {
+      path: 'hello-cube_drawElements_triangles',
+      name: '立方体【drawElements三角形】',
+      component: () => import('../views/threeDimensionalSpace/HelloCube_drawElements_triangles.vue'),
     },
   ]
 }
