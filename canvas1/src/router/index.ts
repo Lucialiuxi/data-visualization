@@ -233,6 +233,11 @@ export const threeDimensionalSpace = {
       name: '立方体【drawElements三角形】',
       component: () => import('../views/threeDimensionalSpace/HelloCube_drawElements_triangles.vue'),
     },
+    {
+      path: 'colored_cube',
+      name: '立方体【单色面】',
+      component: () => import('../views/threeDimensionalSpace/Colored_cube.vue',)
+    }
   ]
 }
 const router = createRouter({
