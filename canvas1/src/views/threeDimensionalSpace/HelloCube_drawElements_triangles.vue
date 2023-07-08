@@ -5,6 +5,8 @@
 </template>
 
 <script>
+
+// 想要放大绘制的立方体大小，就把setLookAt的视点的z值和目标点的z值设置接近顶点的z值。
 import { getWebGLContext, initShaders } from '@lib/cuon-utils.js';
 import Matrix4 from '@lib/cuon-matrix.js'
 export default {
@@ -57,8 +59,8 @@ export default {
             // 视图矩阵
             let viewMatrix = new Matrix4();
             viewMatrix.setLookAt(
-                5, 5, 25, // 观察者视点
-                0, 0, -100, // 目标点
+                4, 4, 10, // 观察者视点
+                0, 0, -2, // 目标点
                 0, 1, 0,// 上方向
             );
             projMatrix.setPerspective(

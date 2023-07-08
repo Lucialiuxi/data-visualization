@@ -416,7 +416,7 @@ Matrix4.prototype.perspective = function(fovy, aspect, near, far) {
 };
 
 /**
- * 将Matrix4实力设置为旋转变化矩阵
+ * 将Matrix4实力设置为缩放变化矩阵
  * Set the matrix for scaling.
  * @param x The scale factor along the X axis
  * @param y The scale factor along the Y axis
