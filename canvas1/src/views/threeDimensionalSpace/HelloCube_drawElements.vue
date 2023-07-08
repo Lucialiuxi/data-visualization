@@ -27,7 +27,13 @@ import Matrix4 from '@lib/cuon-matrix.js';
  * gl.UNSIGNED_SHORT
  * 
  * gl.ELEMENT_ARRAY_BUFFER: 用于元素索引的 Buffer
+ * 
+ * gl.drawArrays 和 gl.drawElements
+ * gl.drawArrays:从向量数组中绘制图元
+ * gl.drawElements:从数组数据中渲染渲染图元，根据gl.ELEMENT_ARRAY_BUFFER将缓冲区的顶点索引绑定到缓冲区与顶点一一对应
+ * 
  */
+
 export default {
     mounted() {
         this.paint();
