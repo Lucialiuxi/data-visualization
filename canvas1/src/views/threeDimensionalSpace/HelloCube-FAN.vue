@@ -65,8 +65,8 @@ export default {
             let viewMatrix = new Matrix4();
             let projMatrix = new Matrix4();
             viewMatrix.setLookAt(
-                -4, -4, 20, // 视点
-                0, 0, -100, // 目标点
+                -4, -4, 10, // 视点
+                0, 0, -10, // 目标点
                 0, 1, 0, // 上方向
             );
             projMatrix.setPerspective(
