@@ -1,6 +1,6 @@
 <template>
-  <div class="hello-cube-wrap">
-    <canvas id="hello-cube" height="600" width="600"></canvas>
+  <div class="colored-cube-wrap">
+    <canvas id="colored-cube" height="600" width="600"></canvas>
   </div>
 </template>
 
@@ -63,11 +63,12 @@ export default {
                 varying vec4 v_Color;
 
                 void main() {
-                    gl_FragColor = v_Color;
+                    gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+                    //gl_FragColor = v_Color;
                 }
             `;
 
-            let canvas = document.getElementById('hello-cube');
+            let canvas = document.getElementById('colored-cube');
             let gl = getWebGLContext(canvas);
             if (!gl) {
                 console.error('获取webGL上下文失败');
@@ -132,12 +133,6 @@ export default {
                 -0.3, 0.3, -0.3, // v6
                 -0.3, -0.3, -0.3, // v7
             ];
-             // 顶点坐标
-            let vertices = new Float32Array(vertexAxis, 0, vertexAxis.length);
-            let vertexBuffer  = gl.createBuffer();
-            gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-            gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
-
 
             // 顶点颜色
             let vertexColor = [
@@ -148,11 +143,13 @@ export default {
                 0.4, 0.6, 0.6, // 青色
                 0.0, 0.62, 0.42, // 绿色
             ];
+            
+             // 顶点坐标
+            let vertices = new Float32Array(vertexAxis, 0, vertexAxis.length);
+            this.initArrayBuffer(gl, vertices, 'a_Position');
              // 顶点颜色
             let colors = new Float32Array(vertexColor, 0, vertexColor.length);
-            let colorBuffer  = gl.createBuffer();
-            gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
-            gl.bufferData(gl.ARRAY_BUFFER, colors, gl.STATIC_DRAW);
+            this.initArrayBuffer(gl, colors, 'a_Color');
 
             // 顶点索引
             let vertexIndices = [
@@ -173,36 +170,33 @@ export default {
                 4, 4, 4, 4,
                 5, 5, 5, 5,
             ];
-            
             // 立方体每个面的三角扇顶点索引【绘制顺序】
-            let vertexIndex = new Uint8Array(vertexIndices, 0, vertexIndices.length);
-            let vertexIndexBuffer  = gl.createBuffer();
-            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, vertexIndexBuffer);
-            gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, vertexIndex, gl.STATIC_DRAW);
+            this.initElementArrayBuffer(gl, vertexIndices);
 
-            let colorIndex =  new Uint8Array(colorIndices, 0, colorIndices.length);
-            let colorIndexBuffer = gl.createBuffer();
-            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, colorIndexBuffer);
-            gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, colorIndex, gl.STATIC_DRAW);
+            this.initElementArrayBuffer(gl, colorIndices);
 
-
-
-            let a_Position = gl.getAttribLocation(gl.program, 'a_Position');
-            gl.vertexAttribPointer(a_Position, 3, gl.FLOAT, false, 0, 0);
-            gl.bindAttribLocation(gl.program, a_Position, 'a_Position');
-            gl.enableVertexAttribArray(a_Position);
-
-            let a_Color = gl.getAttribLocation(gl.program, 'a_Color');
-            gl.vertexAttribPointer(a_Color, 3, gl.FLOAT, false, 0, 0);
-            gl.bindAttribLocation(gl.program, a_Color, 'a_Color');
-            gl.enableVertexAttribArray(a_Color);
-
-
-            if (!vertexBuffer || !colorBuffer || !vertexIndexBuffer || !colorIndexBuffer) {
-                return -1;
-            }
             return vertexIndices.length;
         },
+        initArrayBuffer(gl, typeArray, attribAttr) {
+            let buffer  = gl.createBuffer();
+            if (!buffer) return -1;
+            gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+            gl.bufferData(gl.ARRAY_BUFFER, typeArray, gl.STATIC_DRAW);
+            let attrib = gl.getAttribLocation(gl.program, attribAttr);
+            gl.vertexAttribPointer(attrib, 3, gl.FLOAT, false, 0, 0);
+            gl.enableVertexAttribArray(attrib);
+            return true;
+        },
+        initElementArrayBuffer(gl, indices) {
+            // 立方体每个面的三角扇顶点索引【绘制顺序】
+            let index = new Uint8Array(indices, 0, indices.length);
+            let indexBuffer  = gl.createBuffer();
+            if (!indexBuffer) {
+                return -1;
+            }
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+            gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, index, gl.STATIC_DRAW);
+        }
     }
 }
 </script>
