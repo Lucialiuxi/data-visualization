@@ -7,30 +7,10 @@
 <script>
 import { getWebGLContext, initShaders } from '@lib/cuon-utils.js';
 import Matrix4 from '@lib/cuon-matrix.js';
-/**
- * gl.drawElements(mode, count, type, offset);
- * 执行着色器，按照mode参数指定的方式，
- * 根据绑定到gl.ELEMENT_ARRAY_BUFFER的缓冲区的顶点索引值绘制图形
- * mode 制定绘制的方式：
- *  gl.POINTS 
- *  gl.LINES 
- *  gl.LINE_STRIP 
- *  gl.LINE_LOOP
- *  gl.TRIANGLES
- *  gl.TRIANGLE_STRIP
- *  gl.TRIANGLE_FAN 
- * 
- * count 指定绘制顶点的个数（整数型
- * 
- * type 指定索引值数据类型：
- * gl.UNSIGNED_BYTE 
- * gl.UNSIGNED_SHORT
- * 
- * gl.ELEMENT_ARRAY_BUFFER: 用于元素索引的 Buffer
- * 
- * gl.drawArrays 和 gl.drawElements
- * gl.drawArrays:从向量数组中绘制图元
- * gl.drawElements:从数组数据中渲染渲染图元，根据gl.ELEMENT_ARRAY_BUFFER将缓冲区的顶点索引绑定到缓冲区与顶点一一对应
+/*
+ *
+ * 绘制每个面是单色的立方体，颜色放到缓冲对象最后的2个面渲染会出现误差，
+ * 最后的2个面原本设置是单色的，但渲染出来是2个颜色
  * 
  */
 
@@ -88,7 +68,7 @@ export default {
             let viewMatrix = new Matrix4();
             let projMatrix = new Matrix4();
             viewMatrix.setLookAt(
-                -3, -3, 13, // 视点
+                3, 3, 13, // 视点
                 0, 0, 0, // 目标点
                 0, 1, 0, // 上方向
             );
@@ -106,61 +86,70 @@ export default {
             gl.clearColor(0.1, 0.2, 0.3, 1.0);
             gl.enable(gl.DEPTH_TEST);
             gl.clear(gl.DEPTH_OFFSET_FILL | gl.COLOR_BUFFER_BIT);
-            gl.drawElements(gl.TRIANGLE_FAN, n, gl.UNSIGNED_BYTE, 0);
+            gl.drawElements(gl.TRIANGLES, n, gl.UNSIGNED_BYTE, 0);
         },
         initVertexBuffers(gl) {
-            let colorObj = {
-                magenta: [ 0.67, 0, 0.73 ], // 品红色
-                red: [ 1.0, 0.0, 0.0 ],
-                yellow: [ 1.0, 1.0, 0.0 ],
-                blue: [ 0.0, 0.0, 1.0 ],
-                cyan: [ 0.4, 0.6, 0.6 ], // 青色
-                green: [ 0.0, 0.62, 0.42 ],
-            };
-            let axisObj = {
-                v0: [ 1.0, 1.0, 1.0 ],
-                v1: [ -1.0, 1.0, 1.0 ],
-                v2: [ -1.0, -1.0, 1.0 ],
-                v3: [ 1.0, -1.0, 1.0 ],
-                v4: [ 1.0, -1.0, -1.0 ],
-                v5: [ 1.0, 1.0, -1.0 ],
-                v6: [ -1.0, 1.0, -1.0 ],
-                v7: [ -1.0, -1.0, -1.0 ],
-            }
+            // 品红色
+            let magenta = [ 0.67, 0, 0.73 ],
+                red = [ 1.0, 0.0, 0.0 ],
+                yellow = [ 1.0, 1.0, 0.0 ],
+                blue = [ 0.0, 0.0, 1.0 ],
+                // 青色
+                cyan = [ 0.4, 0.6, 0.6 ],
+                green = [ 0.0, 0.62, 0.42 ]; 
+
+            
+            let v0 = [ 1.0, 1.0, 1.0 ],
+                v1 = [ -1.0, 1.0, 1.0 ],
+                v2 = [ -1.0, -1.0, 1.0 ],
+                v3 = [ 1.0, -1.0, 1.0 ],
+                v4 = [ 1.0, -1.0, -1.0 ],
+                v5 = [ 1.0, 1.0, -1.0 ],
+                v6 = [ -1.0, 1.0, -1.0 ],
+                v7 = [ -1.0, -1.0, -1.0 ];
+
              // 顶点坐标
             let vertexAxis = [
-                // 正面
-                ...axisObj.v0, ...axisObj.v1, ...axisObj.v2, ...axisObj.v3,
-                // 右面
-                ...axisObj.v0, ...axisObj.v3, ...axisObj.v4, ...axisObj.v5,
-                // 正上面
-                ...axisObj.v0, ...axisObj.v5, ...axisObj.v6, ...axisObj.v1,
-                // 正下面
-                ...axisObj.v7, ...axisObj.v2, ...axisObj.v3, ...axisObj.v4,
-                // 正后面
-                ...axisObj.v7, ...axisObj.v4, ...axisObj.v5, ...axisObj.v6,
                 // 左面
-                ...axisObj.v7, ...axisObj.v6, ...axisObj.v1, ...axisObj.v2,
+                ...v6, ...v7, ...v2,
+                ...v6, ...v2,...v1, 
+                // 右面
+                ...v0, ...v3, ...v4, 
+                ...v0, ...v4, ...v5,
+                // 正面
+                ...v0, ...v1, ...v2, 
+                ...v0, ...v2, ...v3,
+                // 背面
+                ...v7, ...v4, ...v5, 
+                ...v7, ...v5, ...v6,
+                // 上面
+                ...v0, ...v5, ...v6, 
+                ...v0, ...v6, ...v1,
+                // 下面
+                ...v7, ...v2, ...v3, 
+                ...v7, ...v3, ...v4,
             ];
 
             // 顶点颜色
             let vertexColor = [
-                // 正面
-                ...colorObj.green, ...colorObj.green, ...colorObj.green, ...colorObj.green,
-                // 右面
-                ...colorObj.magenta, ...colorObj.magenta, ...colorObj.magenta, ...colorObj.magenta,
-
-                // 正上面
-                ...colorObj.red, ...colorObj.red, ...colorObj.red, ...colorObj.red,
-
-                // 正下面
-                ...colorObj.yellow, ...colorObj.yellow, ...colorObj.yellow, ...colorObj.yellow,
-
-                // 正后面
-                ...colorObj.blue, ...colorObj.blue, ...colorObj.blue, ...colorObj.blue, ...colorObj.blue,
-
                 // 左面
-                ...colorObj.cyan, ...colorObj.cyan, ...colorObj.cyan, ...colorObj.cyan,
+                ...cyan, ...cyan, ...cyan, 
+                ...cyan, ...cyan, ...cyan,
+                // 右面
+                ...magenta, ...magenta, ...magenta, 
+                ...magenta, ...magenta, ...magenta,
+                // 正面
+                ...green, ...green, ...green, 
+                ...green, ...green, ...green,
+                // 背面
+                ...blue, ...blue, ...blue, ...blue, 
+                ...blue, ...blue, ...blue, ...blue,
+                // 上面
+                ...red, ...red, ...red, 
+                ...red, ...red, ...red,
+                // 下面
+                ...yellow, ...yellow, ...yellow, 
+                ...yellow, ...yellow, ...yellow,
             ];
 
              // 顶点坐标
@@ -172,12 +161,12 @@ export default {
 
             // 索引
             let indices = [
-                0, 1, 2, 3,// 正面
-                4, 5, 6, 7, // 右面
-                8, 9, 10, 11, // 上面
-                12, 12, 14, 15,// 下面
-                16, 17, 18, 19, // 背面
-                20, 21, 22, 23,// 左面
+                0, 1, 2, 3, 4, 5, 
+                6, 7, 8, 9, 10, 11,
+                12, 13, 14, 15, 16, 17, 
+                18, 19, 20, 21, 22, 23, 
+                24, 25, 26, 27, 28, 29, 
+                30, 31, 32, 33, 34, 35,
             ];
             // 立方体每个面的三角扇顶点索引【绘制顺序】
             this.initElementArrayBuffer(gl, indices);
