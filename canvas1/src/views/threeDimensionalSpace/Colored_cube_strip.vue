@@ -9,7 +9,10 @@ import { getWebGLContext, initShaders } from '@lib/cuon-utils.js';
 import Matrix4 from '@lib/cuon-matrix.js';
 
 /**
- * 三角带绘制立方体，绘制渲染没问题，但是 观察者在不同的角度，正下面的颜色会串
+ * 未解决问题：
+ * 三角带绘制立方体，顶点绘制渲染没问题，
+ * 但是 观察者在不同的角度，正下面的颜色会串
+ * 观察者 在 前右下方 和 后有左下方 正下方面都会和左边串色
  */
 export default {
     mounted() {
@@ -65,7 +68,12 @@ export default {
             let viewMatrix = new Matrix4();
             let projMatrix = new Matrix4();
             viewMatrix.setLookAt(
-                3, -3, 13, // 视点
+                // 有问题的视点
+                // 3, -3, 13,
+                // -3, -3, -13,
+
+                3, 3, 13, // 观察者视点
+
                 0, 0, 0, // 目标点
                 0, 1, 0, // 上方向
             );
@@ -86,13 +94,13 @@ export default {
             gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
             
             gl.drawElements(gl.TRIANGLE_STRIP, n, gl.UNSIGNED_BYTE, 0);
-            // gl.drawElements(gl.TRIANGLE_STRIP, 6, gl.UNSIGNED_BYTE, 0);
-            // gl.polygonOffset(1.0, 1.0);
-            // gl.drawElements(gl.TRIANGLE_STRIP, 6, gl.UNSIGNED_BYTE, 6);
-            // gl.polygonOffset(1.0, 1.0);
-            // gl.drawElements(gl.TRIANGLE_STRIP, 6, gl.UNSIGNED_BYTE, 12);
-            // gl.polygonOffset(1.0, 1.0);
-            // gl.drawElements(gl.TRIANGLE_STRIP, 6, gl.UNSIGNED_BYTE, 18);
+            gl.drawElements(gl.TRIANGLE_STRIP, 6, gl.UNSIGNED_BYTE, 0);
+            gl.polygonOffset(0.0, 0.1);
+            gl.drawElements(gl.TRIANGLE_STRIP, 6, gl.UNSIGNED_BYTE, 6);
+            gl.polygonOffset(0.1, 0.2);
+            gl.drawElements(gl.TRIANGLE_STRIP, 6, gl.UNSIGNED_BYTE, 12);
+            gl.polygonOffset(0.2, 0.3);
+            gl.drawElements(gl.TRIANGLE_STRIP, 6, gl.UNSIGNED_BYTE, 18);
         },
         initVertexBuffers(gl) {
             // 品红色
