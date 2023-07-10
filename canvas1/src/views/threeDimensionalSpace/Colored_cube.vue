@@ -7,12 +7,6 @@
 <script>
 import { getWebGLContext, initShaders } from '@lib/cuon-utils.js';
 import Matrix4 from '@lib/cuon-matrix.js';
-/*
- *
- * 绘制每个面是单色的立方体，颜色放到缓冲对象最后的2个面渲染会出现误差，
- * 最后的2个面原本设置是单色的，但渲染出来是2个颜色
- * 
- */
 
 export default {
     mounted() {
