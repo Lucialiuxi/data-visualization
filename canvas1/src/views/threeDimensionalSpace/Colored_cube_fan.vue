@@ -7,7 +7,9 @@
 <script>
 import { getWebGLContext, initShaders } from '@lib/cuon-utils.js';
 import Matrix4 from '@lib/cuon-matrix.js';
-
+/**
+ *  立方体无法用三角扇画出来【无论是2个三角扇 还是6个三角扇】
+ */
 export default {
     mounted() {
         this.paint();
@@ -62,7 +64,7 @@ export default {
             let viewMatrix = new Matrix4();
             let projMatrix = new Matrix4();
             viewMatrix.setLookAt(
-                5, 3, 13, // 视点
+                -5, -3, -13, // 视点
                 0, 0, 0, // 目标点
                 0, 1, 0, // 上方向
             );
@@ -91,6 +93,7 @@ export default {
                 blue = [ 0.0, 0.0, 1.0 ],
                 // 青色
                 cyan = [ 0.4, 0.6, 0.6 ],
+                white = [ 1.0, 1.0, 1.0 ],
                 green = [ 0.0, 0.62, 0.42 ]; 
 
             
@@ -105,18 +108,19 @@ export default {
 
              // 顶点坐标
             let vertexAxis = [
-                // 上面
-                ...v0, ...v5, ...v6, ...v1,
-                // 下面
-                ...v7, ...v2, ...v3, ...v4,
-                // 左面
-                ...v7, ...v6, ...v1,...v2, 
-                // 右面
-                ...v0, ...v3, ...v4, ...v5,
                 // 正面
                 ...v0, ...v1, ...v2, ...v3,
+                // 右面
+                ...v0, ...v3, ...v4, ...v5,
+                // 上面
+                ...v0, ...v5, ...v6, ...v1,
+                
+                // 左面
+                ...v7, ...v6, ...v1,...v2, 
                 // 背面
                 ...v7, ...v4, ...v5, ...v6,
+                // 下面
+                ...v7, ...v2, ...v3, ...v4,
             ];
 
             // 顶点颜色
@@ -124,7 +128,7 @@ export default {
                 ...green, ...green, ...green, ...green,
                 ...magenta, ...magenta, ...magenta, ...magenta,
                 ...blue, ...blue, ...blue, ...blue, 
-                ...cyan, ...cyan, ...cyan, ...cyan, 
+                ...white, ...white, ...white, ...white, 
                 ...red, ...red, ...red, ...red, 
                 ...yellow, ...yellow, ...yellow, ...yellow,
             ];
