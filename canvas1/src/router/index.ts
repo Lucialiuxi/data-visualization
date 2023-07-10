@@ -215,7 +215,7 @@ export const threeDimensionalSpace = {
     },
     {
       path: 'hello-cube-strip',
-      name: '立方体【条状带三角形】',
+      name: '立方体【drawArrays条状带三角形】',
       component: () => import('../views/threeDimensionalSpace/HelloCube_STRIP.vue'),
     },
     {
@@ -230,7 +230,7 @@ export const threeDimensionalSpace = {
     },
     {
       path: 'hello-cube_drawElements_triangles',
-      name: '立方体【drawElements三角形】',
+      name: '立方体【drawElements-三角形】',
       component: () => import('../views/threeDimensionalSpace/HelloCube_drawElements_triangles.vue'),
     },
     {
@@ -250,6 +250,23 @@ export const threeDimensionalSpace = {
     },
   ]
 }
+
+// 光照
+const light = {
+  path: '/light/:id?',
+  component: () => import('../views/HomeView.vue'),
+  name: 'light',
+  props: {
+    params: '光照',
+  },
+  children: [
+    {
+      path: 'white-cube',
+      name: '白色立方体',
+      component: () => import('../views/light/WhiteCube.vue'),
+    }
+  ]
+};
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -265,6 +282,7 @@ const router = createRouter({
     advanceRoutes,
     rasterizeRoutes,
     threeDimensionalSpace,
+    light,
   ],
 })
 
