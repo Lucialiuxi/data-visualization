@@ -85,7 +85,9 @@ export default {
 
             gl.clearColor(0.1, 0.2, 0.3, 1.0);
             gl.enable(gl.DEPTH_TEST);
-            gl.clear(gl.DEPTH_OFFSET_FILL | gl.COLOR_BUFFER_BIT);
+            gl.enable(gl.POLYGON_OFFSET_FILL);
+            gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
+            
             gl.drawElements(gl.TRIANGLES, n, gl.UNSIGNED_BYTE, 0);
         },
         initVertexBuffers(gl) {
@@ -110,44 +112,38 @@ export default {
 
              // 顶点坐标
             let vertexAxis = [
-                // 左面
-                ...v6, ...v7, ...v2,
-                ...v6, ...v2,...v1, 
-                // 右面
-                ...v0, ...v3, ...v4, 
-                ...v0, ...v4, ...v5,
-                // 正面
-                ...v0, ...v1, ...v2, 
-                ...v0, ...v2, ...v3,
-                // 背面
-                ...v7, ...v4, ...v5, 
-                ...v7, ...v5, ...v6,
                 // 上面
                 ...v0, ...v5, ...v6, 
                 ...v0, ...v6, ...v1,
                 // 下面
                 ...v7, ...v2, ...v3, 
                 ...v7, ...v3, ...v4,
+                // 左面
+                ...v6, ...v7, ...v2,
+                ...v6, ...v2,...v1, 
+                // 右面
+                ...v5, ...v0, ...v3, 
+                ...v5, ...v3, ...v4,
+                // 正面
+                ...v0, ...v1, ...v2, 
+                ...v0, ...v2, ...v3,
+                // 背面
+                ...v7, ...v4, ...v5, 
+                ...v7, ...v5, ...v6,
             ];
 
             // 顶点颜色
             let vertexColor = [
-                // 左面
-                ...cyan, ...cyan, ...cyan, 
-                ...cyan, ...cyan, ...cyan,
-                // 右面
-                ...magenta, ...magenta, ...magenta, 
-                ...magenta, ...magenta, ...magenta,
-                // 正面
                 ...green, ...green, ...green, 
                 ...green, ...green, ...green,
-                // 背面
+                ...magenta, ...magenta, ...magenta, 
+                ...magenta, ...magenta, ...magenta,
                 ...blue, ...blue, ...blue, ...blue, 
                 ...blue, ...blue, ...blue, ...blue,
-                // 上面
+                ...cyan, ...cyan, ...cyan, 
+                ...cyan, ...cyan, ...cyan,
                 ...red, ...red, ...red, 
                 ...red, ...red, ...red,
-                // 下面
                 ...yellow, ...yellow, ...yellow, 
                 ...yellow, ...yellow, ...yellow,
             ];
