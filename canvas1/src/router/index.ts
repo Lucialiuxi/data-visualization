@@ -220,12 +220,12 @@ export const threeDimensionalSpace = {
     },
     {
       path: 'hello-cube-fan',
-      name: '立方体【drawArrays三角扇】',
+      name: '立方体【drawArrays三角扇-wrong】',
       component: () => import('../views/threeDimensionalSpace/HelloCube-FAN.vue'),
     },
     {
       path: 'hello-cube-drawElements',
-      name: '立方体【drawElements三角扇】',
+      name: '立方体【drawElements三角扇-wrong】',
       component: () => import('../views/threeDimensionalSpace/HelloCube_drawElements.vue'),
     },
     {
@@ -240,8 +240,13 @@ export const threeDimensionalSpace = {
     },
     {
       path: 'colored_cube_fan',
-      name: '立方体【单色面-三角扇】',
+      name: '立方体【单色面-三角扇-wrong】',
       component: () => import('../views/threeDimensionalSpace/Colored_cube_fan.vue',)
+    },
+    {
+      path: 'colored_cube_strip',
+      name: '立方体【单色面-三角带】',
+      component: () => import('../views/threeDimensionalSpace/Colored_cube_strip.vue',)
     },
   ]
 }
