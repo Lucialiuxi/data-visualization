@@ -235,9 +235,14 @@ export const threeDimensionalSpace = {
     },
     {
       path: 'colored_cube',
-      name: '立方体【单色面】',
+      name: '立方体【单色面-三角形】',
       component: () => import('../views/threeDimensionalSpace/Colored_cube.vue',)
-    }
+    },
+    {
+      path: 'colored_cube_fan',
+      name: '立方体【单色面-三角扇】',
+      component: () => import('../views/threeDimensionalSpace/Colored_cube_fan.vue',)
+    },
   ]
 }
 const router = createRouter({
