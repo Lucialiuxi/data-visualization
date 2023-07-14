@@ -43,6 +43,7 @@ export default {
 
                    // 计算漫反射光的颜色
                    vec3 diffuseColor = u_LightColor * vec3(a_Color) * LDotN;
+                   
                    v_Color = vec4(diffuseColor, a_Color.a);
                 }
 
@@ -76,7 +77,7 @@ export default {
             let viewMatrix = new Matrix4();
             let projMatrix = new Matrix4();
             viewMatrix.setLookAt(
-                3, 3, 13, // 视点
+                3, 3, 7, // 视点
                 0, 0, 0, // 目标点
                 0, 1, 0, // 上方向
             );
@@ -91,6 +92,9 @@ export default {
             let u_ProjMatrix = gl.getUniformLocation(gl.program, 'u_ProjMatrix');
             gl.uniformMatrix4fv(u_ProjMatrix, false, projMatrix.elements);
 
+            let a_Color = gl.getAttribLocation(gl.program, 'a_Color');
+            gl.vertexAttrib4f(a_Color, 1.0, 0.0, 0.0, 1.0);
+
             // 光线颜色
             let u_LightColor = gl.getUniformLocation(gl.program, 'u_LightColor');
             // 设置光线颜色（白色）
@@ -102,7 +106,7 @@ export default {
             lightDirection.normalize(); // 归一化
             gl.uniform3fv(u_LightDirection, lightDirection.elements);
 
-            gl.clearColor(0.1, 0.2, 0.3, 1.0);
+            gl.clearColor(0.1, 0.2, 0.0, 1.0);
             gl.enable(gl.DEPTH_TEST);
             gl.enable(gl.POLYGON_OFFSET_FILL);
             gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
@@ -151,20 +155,26 @@ export default {
 
            // 每个面的法向量[一个平面只有一个法向量]
             let normals = [
-                // 上面【对应2个三角形的法向量】
-                ...top, ...top, ...top, ...top, ...top, ...top,
-                // 下面
-                ...bottom, ...bottom, ...bottom, ...bottom, ...bottom, ...bottom, 
-                // 左面
-                ...left, ...left, ...left, ...left, ...left, ...left, 
-                // 右面
-                ...right, ...right, ...right, ...right, ...right, ...right, 
-                // 正面
-                ...front, ...front, ...front, ...front, ...front, ...front, 
-                // 背面
-                ...behind, ...behind, ...behind, ...behind, ...behind, ...behind,
+                ...top, ...top, ...top, 
+                ...top, ...top, ...top,
+
+                ...bottom, ...bottom, ...bottom, 
+                ...bottom, ...bottom, ...bottom, 
+
+                ...left, ...left, ...left, 
+                ...left, ...left, ...left, 
+
+                ...right, ...right, ...right, 
+                ...right, ...right, ...right, 
+
+                ...front, ...front, ...front, 
+                ...front, ...front, ...front,
+                 
+                ...behind, ...behind, ...behind, 
+                ...behind, ...behind, ...behind,
             ];
 
+            console.log(normals.length,vertexAxis.length)
             let normalsArray = new Float32Array(normals, 0, normals.length);
             this.initArrayBuffer(gl, normalsArray, 'a_Normal');
 

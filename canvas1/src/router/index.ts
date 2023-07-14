@@ -263,7 +263,7 @@ const light = {
     {
       path: 'white-cube',
       name: '白色立方体',
-      component: () => import('../views/light/WhiteCube.vue'),
+      component: () => import('../views/light/RedCube.vue'),
     }
   ]
 };
