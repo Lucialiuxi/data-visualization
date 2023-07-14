@@ -270,14 +270,6 @@ const light = {
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-    {
-      path: '/',
-      component: () => import('../views/HomeView.vue'),
-      name: 'enter',
-      props: {
-        params: '准备开始学习吧'
-      },
-    },
     singleRoutes,
     advanceRoutes,
     rasterizeRoutes,

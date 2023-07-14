@@ -717,6 +717,7 @@ var Vector3 = function(opt_src) {
 }
 
 /**
+ * 归一化参数
   * Normalize.
   * @return this
   */
@@ -748,4 +749,5 @@ var Vector4 = function(opt_src) {
   this.elements = v;
 }
 
+export { Vector3, Vector4 };
 export  default Matrix4;

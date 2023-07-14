@@ -6,8 +6,11 @@
 
 <script>
 import { getWebGLContext, initShaders } from '@lib/cuon-utils.js';
-import Matrix4 from '@lib/cuon-matrix.js';
+import Matrix4, { Vector3 } from '@lib/cuon-matrix.js';
 
+/**
+ * 漫反射光颜色 = 入射光颜色 * 表面基地色 * （光线方向·法线方向）
+ */
 export default {
     mounted() {
         this.paint();
@@ -18,19 +21,37 @@ export default {
                 precision mediump float;
 
                 attribute vec4 a_Position;
+                attribute vec4 a_Normal; // 法向量
+                attribute vec4 a_Color;
 
                 uniform mat4 u_ProjMatrix; // 透视投影矩阵
                 uniform mat4 u_ViewMatrix; // 视图矩阵
+                
+                uniform vec3 u_LightColor; // 光线颜色
+                uniform vec3 u_LightDirection; // 归一化的世界坐标
+
+                varying vec4 v_Color;
 
                 void main() {
                     gl_Position = u_ProjMatrix * u_ViewMatrix * a_Position;
+
+                    // 对a_Normal进行归一化,保持矢量方向不变但长度为1 normalize()是计算归一化的内置函数
+                    vec3 normal = normalize(vec3(a_Normal)); 
+
+                    // 计算光线方向和法向量的点积。内置函数dot：计算点积；内置函数max：比较大小，返回最小值
+                   float LDotN = max(dot(u_LightDirection, normal), 0.0); // 点积小于0，意味着入射角大于90度，入射角大于90度说明光线照射在表面的背面
+
+                   // 计算漫反射光的颜色
+                   vec3 diffuseColor = u_LightColor * vec3(a_Color) * LDotN;
+                   v_Color = vec4(diffuseColor, a_Color.a);
                 }
 
             `;
             let FSHADER_SOURCE = `
                 precision mediump float;
+                varying vec4 v_Color;
                 void main() {
-                    gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+                    gl_FragColor = v_Color;
                 }
             `;
 
@@ -70,6 +91,17 @@ export default {
             let u_ProjMatrix = gl.getUniformLocation(gl.program, 'u_ProjMatrix');
             gl.uniformMatrix4fv(u_ProjMatrix, false, projMatrix.elements);
 
+            // 光线颜色
+            let u_LightColor = gl.getUniformLocation(gl.program, 'u_LightColor');
+            // 设置光线颜色（白色）
+            gl.uniform3f(u_LightColor, 1.0, 1.0, 1.0);
+            // 法线方向
+            let u_LightDirection = gl.getUniformLocation(gl.program, 'u_LightColor');
+            // 设置光线方向（世界坐标系下的）
+            let lightDirection = new Vector3([0.5, 3.0, 4.0]);
+            lightDirection.normalize(); // 归一化
+            gl.uniform3fv(u_LightDirection, lightDirection.elements);
+
             gl.clearColor(0.1, 0.2, 0.3, 1.0);
             gl.enable(gl.DEPTH_TEST);
             gl.enable(gl.POLYGON_OFFSET_FILL);
@@ -78,6 +110,7 @@ export default {
             gl.drawElements(gl.TRIANGLES, n, gl.UNSIGNED_BYTE, 0);
         },
         initVertexBuffers(gl) {
+            // 立方体每个点的坐标
             let v0 = [ 1.0, 1.0, 1.0 ],
                 v1 = [ -1.0, 1.0, 1.0 ],
                 v2 = [ -1.0, -1.0, 1.0 ],
@@ -108,8 +141,35 @@ export default {
                 ...v7, ...v4, ...v5, 
                 ...v7, ...v5, ...v6,
             ];
+            // 每个面的法向量
+            let top = [  0.0, 1.0, 0.0 ], 
+            bottom = [ 0.0, -1.0, 0.0 ],
+            left = [ -1.0, 0.0, 0.0 ],
+            right = [ 1.0, 0.0, 0.0 ],
+            front = [ 0.0, 0.0, 1.0 ],
+            behind = [ 0.0, 0.0, -1.0];
 
-             // 顶点坐标
+           // 每个面的法向量[一个平面只有一个法向量]
+            let normals = [
+                // 上面【对应2个三角形的法向量】
+                ...top, ...top, ...top, ...top, ...top, ...top,
+                // 下面
+                ...bottom, ...bottom, ...bottom, ...bottom, ...bottom, ...bottom, 
+                // 左面
+                ...left, ...left, ...left, ...left, ...left, ...left, 
+                // 右面
+                ...right, ...right, ...right, ...right, ...right, ...right, 
+                // 正面
+                ...front, ...front, ...front, ...front, ...front, ...front, 
+                // 背面
+                ...behind, ...behind, ...behind, ...behind, ...behind, ...behind,
+            ];
+
+            let normalsArray = new Float32Array(normals, 0, normals.length);
+            this.initArrayBuffer(gl, normalsArray, 'a_Normal');
+
+
+            // 顶点坐标
             let vertices = new Float32Array(vertexAxis, 0, vertexAxis.length);
             this.initArrayBuffer(gl, vertices, 'a_Position');
 
@@ -124,6 +184,7 @@ export default {
             ];
             // 立方体每个面的三角扇顶点索引【绘制顺序】
             this.initElementArrayBuffer(gl, indices);
+
 
             return indices.length;
         },
