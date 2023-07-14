@@ -261,7 +261,7 @@ const light = {
   },
   children: [
     {
-      path: 'white-cube',
+      path: 'red-cube',
       name: '白色立方体',
       component: () => import('../views/light/RedCube.vue'),
     }

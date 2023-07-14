@@ -74,10 +74,12 @@ export default {
                 return;
             }
 
+            this.lightEffect(gl);
+
             let viewMatrix = new Matrix4();
             let projMatrix = new Matrix4();
             viewMatrix.setLookAt(
-                3, 3, 7, // 视点
+                3, 3, 13, // 视点
                 0, 0, 0, // 目标点
                 0, 1, 0, // 上方向
             );
@@ -95,23 +97,24 @@ export default {
             let a_Color = gl.getAttribLocation(gl.program, 'a_Color');
             gl.vertexAttrib4f(a_Color, 1.0, 0.0, 0.0, 1.0);
 
+            gl.clearColor(0.1, 0.2, 0.3, 1.0);
+            gl.enable(gl.DEPTH_TEST);
+            gl.enable(gl.POLYGON_OFFSET_FILL);
+            gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
+            
+            gl.drawElements(gl.TRIANGLES, n, gl.UNSIGNED_BYTE, 0);
+        },
+        lightEffect(gl) {
             // 光线颜色
             let u_LightColor = gl.getUniformLocation(gl.program, 'u_LightColor');
             // 设置光线颜色（白色）
-            gl.uniform3f(u_LightColor, 1.0, 1.0, 1.0);
+            gl.uniform4f(u_LightColor, 1.0, 1.0, 1.0, 1.0);
             // 法线方向
             let u_LightDirection = gl.getUniformLocation(gl.program, 'u_LightColor');
             // 设置光线方向（世界坐标系下的）
             let lightDirection = new Vector3([0.5, 3.0, 4.0]);
             lightDirection.normalize(); // 归一化
             gl.uniform3fv(u_LightDirection, lightDirection.elements);
-
-            gl.clearColor(0.1, 0.2, 0.0, 1.0);
-            gl.enable(gl.DEPTH_TEST);
-            gl.enable(gl.POLYGON_OFFSET_FILL);
-            gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
-            
-            gl.drawElements(gl.TRIANGLES, n, gl.UNSIGNED_BYTE, 0);
         },
         initVertexBuffers(gl) {
             // 立方体每个点的坐标
@@ -174,7 +177,7 @@ export default {
                 ...behind, ...behind, ...behind,
             ];
 
-            console.log(normals.length,vertexAxis.length)
+
             let normalsArray = new Float32Array(normals, 0, normals.length);
             this.initArrayBuffer(gl, normalsArray, 'a_Normal');
 
@@ -219,7 +222,7 @@ export default {
             }
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
             gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, index, gl.STATIC_DRAW);
-        }
+        },
     }
 }
 </script>
