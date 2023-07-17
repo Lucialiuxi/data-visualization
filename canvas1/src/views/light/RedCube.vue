@@ -108,7 +108,7 @@ export default {
             // 光线颜色
             let u_LightColor = gl.getUniformLocation(gl.program, 'u_LightColor');
             // 设置光线颜色（白色）
-            gl.uniform4f(u_LightColor, 1.0, 1.0, 1.0, 1.0);
+            gl.uniform3f(u_LightColor, 1.0, 1.0, 1.0);
             // 法线方向
             let u_LightDirection = gl.getUniformLocation(gl.program, 'u_LightColor');
             // 设置光线方向（世界坐标系下的）

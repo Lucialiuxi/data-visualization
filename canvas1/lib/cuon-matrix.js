@@ -733,7 +733,6 @@ Vector3.prototype.normalize = function() {
    }
    g = 1/g;
    v[0] = c*g; v[1] = d*g; v[2] = e*g;
-   console.log(c)
    return this;
 };
 
