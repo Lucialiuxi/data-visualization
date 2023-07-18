@@ -1,6 +1,6 @@
 <template>
   <div class="white-cube-wrap">
-    <p>漫反射--平行光+环境光</p>
+    <p>漫反射--环境光</p>
     <canvas id="white-cube" height="600" width="600"></canvas>
   </div>
 </template>
@@ -11,21 +11,14 @@ import Matrix4, { Vector3 } from '@lib/cuon-matrix.js';
 
 /**
  * 漫反射光颜色 = 入射光颜色 * 表面基地色 * （光线方向·法线方向）
+ * 
+ * 环境反射光颜色 = 入射光颜色 * 表面基地色
+ * 
+ * 表面的反射光颜色 = 漫反射颜色 + 环境反射光颜色
  */
 export default {
-    data() {
-        return {
-            gl_x: 0,
-            gl_y: 0,
-            gl_z: 0,
-            timer: null,
-        }
-    },
     mounted() {
         this.paint();
-    },
-    unmounted() {
-        this.timer = null;
     },
     methods: {
         paint() {
@@ -38,7 +31,9 @@ export default {
 
                 uniform mat4 u_MvpMatrix; // 视图投影矩阵
                 
-                uniform vec3 u_LightColor; // 光线颜色
+                uniform vec3 u_LightColor; // 入射光颜色
+                uniform vec3 u_EnvironmentColor; // 环境光颜色
+
                 uniform vec3 u_LightDirection; // 归一化的世界坐标
 
                 varying vec4 v_Color;
@@ -54,8 +49,9 @@ export default {
 
                    // 计算漫反射光的颜色
                    vec3 diffuseColor = u_LightColor * vec3(a_Color) * LDotN;
-                   
-                   v_Color = vec4(diffuseColor, a_Color.a);
+                   // 计算环境光产生的反射光颜色
+                   vec3 ambient = u_EnvironmentColor * vec3(a_Color);
+                   v_Color = vec4(diffuseColor + ambient, a_Color.a);
                 }
 
             `;
@@ -82,7 +78,7 @@ export default {
             let n = this.initVertexBuffers(gl);
             if (n < 0) return;
 
-            gl.clearColor(0, 0, 0, 1);
+            gl.clearColor(0.1, 0.2, 0.3, 1.0);
             gl.enable(gl.DEPTH_TEST);
 
             this.lightEffect(gl);
@@ -95,18 +91,27 @@ export default {
                 100, // far
             );
             mvpMatrix.lookAt(
-                3, 3, 10, // 视点
+                3, 3, 13, // 视点
                 0, 0, 0, // 目标点
                 0, 1, 0, // 上方向
             );
+            let u_MvpMatrix = gl.getUniformLocation(gl.program, 'u_MvpMatrix');
+            u_MvpMatrix && gl.uniformMatrix4fv(u_MvpMatrix, false, mvpMatrix.elements);
+
+            gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
             
-            this.animationHandle(gl, mvpMatrix, n);
+            gl.drawElements(gl.TRIANGLES, n, gl.UNSIGNED_BYTE, 0);
         },
         lightEffect(gl) {
             // 光线颜色
             let u_LightColor = gl.getUniformLocation(gl.program, 'u_LightColor');
             // 设置光线颜色（白色）
             gl.uniform3f(u_LightColor, 1.0, 1.0, 1.0);
+
+            // 环境光颜色
+            let u_EnvironmentColor = gl.getUniformLocation(gl.program, 'u_EnvironmentColor');
+            gl.uniform3f(u_EnvironmentColor, 0.2, 0.2, 0.2);
+
             // 法线方向
             let u_LightDirection = gl.getUniformLocation(gl.program, 'u_LightDirection');
             
@@ -229,15 +234,6 @@ export default {
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
             gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, index, gl.STATIC_DRAW);
         },
-        animationHandle(gl, mvpMatrix, n) {
-            this.timer = setInterval(() => {
-                mvpMatrix.rotate(1, 1, 1, 1);
-                let u_MvpMatrix = gl.getUniformLocation(gl.program, 'u_MvpMatrix');
-                u_MvpMatrix && gl.uniformMatrix4fv(u_MvpMatrix, false, mvpMatrix.elements);
-                gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
-                gl.drawElements(gl.TRIANGLES, n, gl.UNSIGNED_BYTE, 0);
-            }, 10)
-        }
     }
 }
 </script>

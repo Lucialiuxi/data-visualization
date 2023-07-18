@@ -262,14 +262,19 @@ const light = {
   children: [
     {
       path: 'red-cube',
-      name: '红色立方体',
+      name: '红色立方体-[漫反射]',
       component: () => import('../views/light/RedCube.vue'),
     },
     {
       path: 'red-cube-animation',
-      name: '红色立方体-动画',
+      name: '红色立方体-[漫反射 动画]',
       component: () =>  import('../views/light/RedCube_animation.vue'),
-    }
+    },
+    {
+      path: 'red-cube-ambient',
+      name: '红色立方体-[平行光+环境光]',
+      component: () =>  import('../views/light/RedCube_ambient.vue'),
+    },
   ]
 };
 const router = createRouter({
