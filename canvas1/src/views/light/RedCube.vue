@@ -35,13 +35,13 @@ export default {
                     gl_Position = u_MvpMatrix * a_Position;
 
                     // 对a_Normal进行归一化,保持矢量方向不变但长度为1 normalize()是计算归一化的内置函数
-                    vec3 normal = normalize(vec3(a_Normal)); 
+                    vec3 normal = normalize(vec3(a_Normal.xyz)); 
 
                     // 计算光线方向和法向量的点积。内置函数dot：计算点积；内置函数max：比较大小，返回最小值
                    float LDotN = max(dot(u_LightDirection, normal), 0.0); // 点积小于0，意味着入射角大于90度，入射角大于90度说明光线照射在表面的背面
 
                    // 计算漫反射光的颜色
-                   vec3 diffuseColor = u_LightColor * vec3(a_Color) * LDotN;
+                   vec3 diffuseColor = u_LightColor * a_Color.rgb * LDotN;
                    
                    v_Color = vec4(diffuseColor, a_Color.a);
                 }
@@ -100,7 +100,7 @@ export default {
             // 设置光线颜色（白色）
             gl.uniform3f(u_LightColor, 1.0, 1.0, 1.0);
             // 法线方向
-            let u_LightDirection = gl.getUniformLocation(gl.program, 'u_LightColor');
+            let u_LightDirection = gl.getUniformLocation(gl.program, 'u_LightDirection');
             
             // 设置光线方向（世界坐标系下的）
             let lightDirection = new Vector3([0.5, 3.0, 4.0]);
