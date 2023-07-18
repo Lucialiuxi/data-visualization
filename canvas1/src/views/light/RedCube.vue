@@ -24,8 +24,7 @@ export default {
                 attribute vec4 a_Normal; // 法向量
                 attribute vec4 a_Color;
 
-                uniform mat4 u_ProjMatrix; // 透视投影矩阵
-                uniform mat4 u_ViewMatrix; // 视图矩阵
+                uniform mat4 u_MvpMatrix; // 视图投影矩阵
                 
                 uniform vec3 u_LightColor; // 光线颜色
                 uniform vec3 u_LightDirection; // 归一化的世界坐标
@@ -33,7 +32,7 @@ export default {
                 varying vec4 v_Color;
 
                 void main() {
-                    gl_Position = u_ProjMatrix * u_ViewMatrix * a_Position;
+                    gl_Position = u_MvpMatrix * a_Position;
 
                     // 对a_Normal进行归一化,保持矢量方向不变但长度为1 normalize()是计算归一化的内置函数
                     vec3 normal = normalize(vec3(a_Normal)); 
@@ -76,23 +75,20 @@ export default {
 
             this.lightEffect(gl);
 
-            let viewMatrix = new Matrix4();
-            let projMatrix = new Matrix4();
-            viewMatrix.setLookAt(
-                3, 3, 13, // 视点
-                0, 0, 0, // 目标点
-                0, 1, 0, // 上方向
-            );
-            projMatrix.setPerspective(
+            let mvpMatrix = new Matrix4();
+            mvpMatrix.setPerspective(
                 30, // 垂直视角
                 canvas.width/canvas.height, // aspect宽高比应与canvas的宽高比一直，才不会导致图片变形
                 1, // near
                 100, // far
             );
-            let u_ViewMatrix = gl.getUniformLocation(gl.program, 'u_ViewMatrix');
-            gl.uniformMatrix4fv(u_ViewMatrix, false, viewMatrix.elements);
-            let u_ProjMatrix = gl.getUniformLocation(gl.program, 'u_ProjMatrix');
-            gl.uniformMatrix4fv(u_ProjMatrix, false, projMatrix.elements);
+            mvpMatrix.lookAt(
+                3, 3, 13, // 视点
+                0, 0, 0, // 目标点
+                0, 1, 0, // 上方向
+            );
+            let u_MvpMatrix = gl.getUniformLocation(gl.program, 'u_MvpMatrix');
+            gl.uniformMatrix4fv(u_MvpMatrix, false, mvpMatrix.elements);
 
             let a_Color = gl.getAttribLocation(gl.program, 'a_Color');
             gl.vertexAttrib4f(a_Color, 1.0, 0.0, 0.0, 1.0);
