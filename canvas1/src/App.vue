@@ -27,12 +27,17 @@ export default {
       return fullPath;
     },
     getFirstList() {
-      let list = routes.filter(item => {
+      let newList = [...routes];
+      let list = [];
+      newList.forEach(item => {
         if(item?.props?.default?.params) {
           let newItem = Object.assign({}, item);
           delete newItem.children;
-          return newItem;
-        }
+          list.push({
+            ...newItem,
+            displayName: item.props.default.params
+          });
+        } 
       });
       return list;
     }
@@ -58,7 +63,7 @@ export default {
             v-for="route of getFirstList()" 
             :key="route.path"
             :to ="route.path"
-          >{{route?.name}}</RouterLink>
+          >{{route?.displayName || route?.name}}</RouterLink>
 
       </nav>
       <nav>

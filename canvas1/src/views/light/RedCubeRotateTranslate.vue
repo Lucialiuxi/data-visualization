@@ -15,6 +15,13 @@ import Matrix4, { Vector3 } from '@lib/cuon-matrix.js';
  * 环境反射光颜色 = 入射光颜色 * 表面基地色
  * 
  * 表面的反射光颜色 = 漫反射颜色 + 环境反射光颜色
+ * 
+ * 平移不改变法向量；旋转改变法向量
+ * 
+ * 求逆转值矩阵的2个步骤：
+ * 1.求原矩阵的逆矩阵： Matrix4.setInverseOf(m)
+ * 2.将上一步求得的逆矩阵进行转置： Matrix4.transpose()
+ * 
  */
 export default {
     mounted() {
@@ -29,7 +36,8 @@ export default {
                 attribute vec4 a_Normal; // 法向量
                 attribute vec4 a_Color;
 
-                uniform mat4 u_MvpMatrix; // 视图投影矩阵
+                uniform mat4 u_MvpMatrix; // 模型视图投影矩阵
+                uniform mat4 u_NormalMatrix; // 法向量矩阵-用来对顶点的法向量进行变换
                 
                 uniform vec3 u_LightColor; // 入射光颜色
                 uniform vec3 u_EnvironmentColor; // 环境光颜色
@@ -41,16 +49,16 @@ export default {
                 void main() {
                     gl_Position = u_MvpMatrix * a_Position;
 
-                    // 对a_Normal进行归一化,保持矢量方向不变但长度为1 normalize()是计算归一化的内置函数
-                    vec3 normal = normalize(vec3(a_Normal)); 
+                    // 计算变换后的法向量并归一化
+                    vec3 normal = normalize((u_NormalMatrix * a_Normal).xyz); 
 
                     // 计算光线方向和法向量的点积。内置函数dot：计算点积；内置函数max：比较大小，返回最小值
                    float LDotN = max(dot(u_LightDirection, normal), 0.0); // 点积小于0，意味着入射角大于90度，入射角大于90度说明光线照射在表面的背面
 
                    // 计算漫反射光的颜色
-                   vec3 diffuseColor = u_LightColor * vec3(a_Color) * LDotN;
+                   vec3 diffuseColor = u_LightColor * a_Color.rgb * LDotN;
                    // 计算环境光产生的反射光颜色
-                   vec3 ambient = u_EnvironmentColor * vec3(a_Color);
+                   vec3 ambient = u_EnvironmentColor * a_Color.rgb;
                    v_Color = vec4(diffuseColor + ambient, a_Color.a);
                 }
 
@@ -83,23 +91,40 @@ export default {
 
             this.lightEffect(gl);
 
-            let mvpMatrix = new Matrix4();
+            let modelMatrix = new Matrix4(); // 模型矩阵
+            let mvpMatrix = new Matrix4(); // 模型视图投影矩阵
+            let normalMatrix = new Matrix4(); // 用来变换法向量的矩阵
+
+            let u_MvpMatrix = gl.getUniformLocation(gl.program, 'u_MvpMatrix');
+            let u_NormalMatrix = gl.getUniformLocation(gl.program, 'u_NormalMatrix');
+
+            // 计算模型模型矩阵
+            modelMatrix.setTranslate(0, 1, 0); // 沿y轴平移
+            modelMatrix.rotate(40, 0, 0, 1); // 绕z轴旋转
+
+            // 设置透视投影矩阵
             mvpMatrix.setPerspective(
-                30, // 垂直视角
-                canvas.width/canvas.height, // aspect宽高比应与canvas的宽高比一直，才不会导致图片变形
+                30,
+                1,
                 1, // near
                 100, // far
             );
             mvpMatrix.lookAt(
-                3, 3, 13, // 视点
+                6, 2.5, 6, // 视点
                 0, 0, 0, // 目标点
                 0, 1, 0, // 上方向
             );
-            let u_MvpMatrix = gl.getUniformLocation(gl.program, 'u_MvpMatrix');
-            u_MvpMatrix && gl.uniformMatrix4fv(u_MvpMatrix, false, mvpMatrix.elements);
+            mvpMatrix.multiply(modelMatrix);
+            gl.uniformMatrix4fv(u_MvpMatrix, false, mvpMatrix.elements);
+
+            // 根据模型矩阵计算用来变换法向量的矩阵
+            normalMatrix.setInverseOf(modelMatrix);
+            // 对自身进行转置操作
+            normalMatrix.transpose();
+            gl.uniformMatrix4fv(u_NormalMatrix, false, normalMatrix.elements);
+
 
             gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
-            
             gl.drawElements(gl.TRIANGLES, n, gl.UNSIGNED_BYTE, 0);
         },
         lightEffect(gl) {
@@ -233,7 +258,7 @@ export default {
             }
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
             gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, index, gl.STATIC_DRAW);
-        },
+        }
     }
 }
 </script>

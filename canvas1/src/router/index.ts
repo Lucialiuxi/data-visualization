@@ -85,6 +85,7 @@ export const advanceRoutes = {
   path: '/advance/:id?',
   component: () => import('../views/HomeView.vue'),
   name: 'advance',
+  aliasOf: '进阶(Matrix4函数)',
   props: {
     params: '进阶(Matrix4函数)'
   },
@@ -262,19 +263,24 @@ const light = {
   children: [
     {
       path: 'red-cube',
-      name: '红色立方体-[漫反射]',
+      name: '漫反射',
       component: () => import('../views/light/RedCube.vue'),
     },
     {
       path: 'red-cube-animation',
-      name: '红色立方体-[漫反射 动画]',
+      name: '漫反射 动画',
       component: () =>  import('../views/light/RedCube_animation.vue'),
     },
     {
       path: 'red-cube-ambient',
-      name: '红色立方体-[平行光+环境光]',
+      name: '漫反射-[平行光+环境光]',
       component: () =>  import('../views/light/RedCube_ambient.vue'),
     },
+    {
+      path: 'red-cube-rotate-translate',
+      name: '漫反射-旋转+平移',
+      component: () => import('../views/light/RedCubeRotateTranslate.vue'),
+    }
   ]
 };
 const router = createRouter({

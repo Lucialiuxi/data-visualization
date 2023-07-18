@@ -134,6 +134,7 @@ Matrix4.prototype.multiplyVector4 = function(pos) {
 };
 
 /**
+ * 对自身进行转置操作，并将自身设为转之后的结果
  * Transpose the matrix.
  * @return this
  */
@@ -153,6 +154,7 @@ Matrix4.prototype.transpose = function() {
 };
 
 /**
+ * 使自身成为传入矩阵other的逆矩阵
  * Calculate the inverse matrix of specified matrix, and set to this.
  * @param other The source matrix
  * @return this
