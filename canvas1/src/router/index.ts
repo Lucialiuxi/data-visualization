@@ -262,8 +262,13 @@ const light = {
   children: [
     {
       path: 'red-cube',
-      name: '白色立方体',
+      name: '红色立方体',
       component: () => import('../views/light/RedCube.vue'),
+    },
+    {
+      path: 'red-cube-animation',
+      name: '红色立方体-动画',
+      component: () =>  import('../views/light/RedCube_animation.vue'),
     }
   ]
 };

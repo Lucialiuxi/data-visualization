@@ -11,10 +11,25 @@ import Matrix4, { Vector3 } from '@lib/cuon-matrix.js';
 
 /**
  * 漫反射光颜色 = 入射光颜色 * 表面基地色 * （光线方向·法线方向）
+ * 
+ * 环境反射光颜色 = 入射光颜色 * 表面基地色
+ * 
+ * 表面的反射光颜色 = 漫反射颜色 + 环境反射光颜色
  */
 export default {
+    data() {
+        return {
+            gl_x: 0,
+            gl_y: 0,
+            gl_z: 0,
+            timer: null,
+        }
+    },
     mounted() {
         this.paint();
+    },
+    unmounted() {
+        this.timer = null;
     },
     methods: {
         paint() {
@@ -71,7 +86,7 @@ export default {
             let n = this.initVertexBuffers(gl);
             if (n < 0) return;
 
-            gl.clearColor(0.1, 0.2, 0.3, 1.0);
+            gl.clearColor(0, 0, 0, 1);
             gl.enable(gl.DEPTH_TEST);
 
             this.lightEffect(gl);
@@ -84,16 +99,12 @@ export default {
                 100, // far
             );
             mvpMatrix.lookAt(
-                3, 3, 13, // 视点
+                3, 3, 10, // 视点
                 0, 0, 0, // 目标点
                 0, 1, 0, // 上方向
             );
-            let u_MvpMatrix = gl.getUniformLocation(gl.program, 'u_MvpMatrix');
-            u_MvpMatrix && gl.uniformMatrix4fv(u_MvpMatrix, false, mvpMatrix.elements);
-
-            gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
             
-            gl.drawElements(gl.TRIANGLES, n, gl.UNSIGNED_BYTE, 0);
+            this.animationHandle(gl, mvpMatrix, n);
         },
         lightEffect(gl) {
             // 光线颜色
@@ -222,6 +233,15 @@ export default {
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
             gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, index, gl.STATIC_DRAW);
         },
+        animationHandle(gl, mvpMatrix, n) {
+            this.timer = setInterval(() => {
+                mvpMatrix.rotate(1, 1, 1, 1);
+                let u_MvpMatrix = gl.getUniformLocation(gl.program, 'u_MvpMatrix');
+                u_MvpMatrix && gl.uniformMatrix4fv(u_MvpMatrix, false, mvpMatrix.elements);
+                gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
+                gl.drawElements(gl.TRIANGLES, n, gl.UNSIGNED_BYTE, 0);
+            }, 10)
+        }
     }
 }
 </script>
