@@ -68,10 +68,10 @@ export default {
             }
 
             let n = this.initVertexBuffers(gl);
-            if (n < 0) {
-                console.error('顶点缓冲对象创建失败');
-                return;
-            }
+            if (n < 0) return;
+
+            gl.clearColor(0.1, 0.2, 0.3, 1.0);
+            gl.enable(gl.DEPTH_TEST);
 
             this.lightEffect(gl);
 
@@ -88,14 +88,8 @@ export default {
                 0, 1, 0, // 上方向
             );
             let u_MvpMatrix = gl.getUniformLocation(gl.program, 'u_MvpMatrix');
-            gl.uniformMatrix4fv(u_MvpMatrix, false, mvpMatrix.elements);
+            u_MvpMatrix && gl.uniformMatrix4fv(u_MvpMatrix, false, mvpMatrix.elements);
 
-            let a_Color = gl.getAttribLocation(gl.program, 'a_Color');
-            gl.vertexAttrib4f(a_Color, 1.0, 0.0, 0.0, 1.0);
-
-            gl.clearColor(0.1, 0.2, 0.3, 1.0);
-            gl.enable(gl.DEPTH_TEST);
-            gl.enable(gl.POLYGON_OFFSET_FILL);
             gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
             
             gl.drawElements(gl.TRIANGLES, n, gl.UNSIGNED_BYTE, 0);
@@ -107,10 +101,11 @@ export default {
             gl.uniform3f(u_LightColor, 1.0, 1.0, 1.0);
             // 法线方向
             let u_LightDirection = gl.getUniformLocation(gl.program, 'u_LightColor');
+            
             // 设置光线方向（世界坐标系下的）
             let lightDirection = new Vector3([0.5, 3.0, 4.0]);
             lightDirection.normalize(); // 归一化
-            gl.uniform3fv(u_LightDirection, lightDirection.elements);
+            u_LightDirection && gl.uniform3fv(u_LightDirection, lightDirection.elements);
         },
         initVertexBuffers(gl) {
             // 立方体每个点的坐标
@@ -125,24 +120,18 @@ export default {
 
              // 顶点坐标
             let vertexAxis = [
-                // 上面
-                ...v0, ...v5, ...v6, 
-                ...v0, ...v6, ...v1,
-                // 下面
-                ...v7, ...v2, ...v3, 
-                ...v7, ...v3, ...v4,
-                // 左面
-                ...v6, ...v7, ...v2,
-                ...v6, ...v2,...v1, 
-                // 右面
-                ...v5, ...v0, ...v3, 
-                ...v5, ...v3, ...v4,
                 // 正面
-                ...v0, ...v1, ...v2, 
-                ...v0, ...v2, ...v3,
+                ...v0, ...v1, ...v2, ...v3,
+                // 右面
+                ...v0, ...v3, ...v4,...v5,
+                // 上面
+                ...v0, ...v5, ...v6, ...v1,
+                // 左面
+                ...v1, ...v6, ...v7, ...v2, 
+                // 下面
+                ...v7, ...v4, ...v3, ...v2,
                 // 背面
-                ...v7, ...v4, ...v5, 
-                ...v7, ...v5, ...v6,
+                ...v4, ...v7, ...v6, ...v5,
             ];
             // 每个面的法向量
             let top = [  0.0, 1.0, 0.0 ], 
@@ -154,29 +143,34 @@ export default {
 
            // 每个面的法向量[一个平面只有一个法向量]
             let normals = [
-                ...top, ...top, ...top, 
-                ...top, ...top, ...top,
+                ...front, ...front, ...front, ...front,
 
-                ...bottom, ...bottom, ...bottom, 
-                ...bottom, ...bottom, ...bottom, 
+                ...right, ...right, ...right, ...right, 
 
-                ...left, ...left, ...left, 
-                ...left, ...left, ...left, 
+                ...top, ...top, ...top, ...top,
 
-                ...right, ...right, ...right, 
-                ...right, ...right, ...right, 
+                ...left, ...left, ...left,  ...left, 
 
-                ...front, ...front, ...front, 
-                ...front, ...front, ...front,
-                 
-                ...behind, ...behind, ...behind, 
-                ...behind, ...behind, ...behind,
+                ...bottom, ...bottom, ...bottom, ...bottom, 
+
+                ...behind, ...behind, ...behind, ...behind,
             ];
 
+            let red = [1.0, 0.0, 0.0];
+            let colors = [
+                ...red, ...red, ...red, ...red,
+                ...red, ...red, ...red, ...red,
+                ...red, ...red, ...red, ...red,
+                ...red, ...red, ...red, ...red,
+                ...red, ...red, ...red, ...red,
+                ...red, ...red, ...red, ...red,
+            ];
 
             let normalsArray = new Float32Array(normals, 0, normals.length);
             this.initArrayBuffer(gl, normalsArray, 'a_Normal');
 
+            let colorArray = new Float32Array(colors, 0, colors.length);
+            this.initArrayBuffer(gl, colorArray, 'a_Color');
 
             // 顶点坐标
             let vertices = new Float32Array(vertexAxis, 0, vertexAxis.length);
@@ -184,12 +178,12 @@ export default {
 
             // 索引
             let indices = [
-                0, 1, 2, 3, 4, 5, 
-                6, 7, 8, 9, 10, 11,
-                12, 13, 14, 15, 16, 17, 
-                18, 19, 20, 21, 22, 23, 
-                24, 25, 26, 27, 28, 29, 
-                30, 31, 32, 33, 34, 35,
+                0, 1, 2,   0, 2, 3,    // front
+                4, 5, 6,   4, 6, 7,    // right
+                8, 9,10,   8,10,11,    // top
+                12,13,14,  12,14,15,    // left
+                16,17,18,  16,18,19,    // bottom
+                20,21,22,  20,22,23     // back
             ];
             // 立方体每个面的三角扇顶点索引【绘制顺序】
             this.initElementArrayBuffer(gl, indices);
@@ -200,12 +194,20 @@ export default {
         // 初始化顶点缓冲对象
         initArrayBuffer(gl, typeArray, attribAttr) {
             let buffer  = gl.createBuffer();
-            if (!buffer) return -1;
+            if (!buffer) {
+                console.error('创建缓冲对象失败');
+                return -1;
+            }
             gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
             gl.bufferData(gl.ARRAY_BUFFER, typeArray, gl.STATIC_DRAW);
             let attrib = gl.getAttribLocation(gl.program, attribAttr);
+            if (attrib < 0) {
+                console.error(attribAttr + '顶点属性储存位置获取失败');
+                return -1;
+            }
             gl.vertexAttribPointer(attrib, 3, gl.FLOAT, false, 0, 0);
-            gl.enableVertexAttribArray(attrib);
+            gl.enableVertexAttribArray(attrib);  
+            gl.bindBuffer(gl.ARRAY_BUFFER, null);
             return true;
         },
         // 初始化顶点缓冲对象
