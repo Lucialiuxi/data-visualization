@@ -18,7 +18,7 @@ import Matrix4, { Vector3 } from '@lib/cuon-matrix.js';
  * 
  * 平移不改变法向量；旋转改变法向量
  * 
- * 求逆转值矩阵的2个步骤：
+ * 求逆转置矩阵的2个步骤：
  * 1.求原矩阵的逆矩阵： Matrix4.setInverseOf(m)
  * 2.将上一步求得的逆矩阵进行转置： Matrix4.transpose()
  * 
