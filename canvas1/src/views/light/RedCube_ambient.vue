@@ -29,7 +29,7 @@ export default {
                 attribute vec4 a_Normal; // 法向量
                 attribute vec4 a_Color;
 
-                uniform mat4 u_MvpMatrix; // 视图投影矩阵
+                uniform mat4 u_MvpMatrix; // 模型视图投影矩阵
                 
                 uniform vec3 u_LightColor; // 入射光颜色
                 uniform vec3 u_EnvironmentColor; // 环境光颜色

@@ -263,23 +263,28 @@ const light = {
   children: [
     {
       path: 'red-cube',
-      name: '漫反射',
+      name: '平行光',
       component: () => import('../views/light/RedCube.vue'),
     },
     {
       path: 'red-cube-animation',
-      name: '漫反射 动画',
+      name: '平行光 动画',
       component: () =>  import('../views/light/RedCube_animation.vue'),
     },
     {
       path: 'red-cube-ambient',
-      name: '漫反射-[平行光+环境光]',
+      name: '平行光+环境光',
       component: () =>  import('../views/light/RedCube_ambient.vue'),
     },
     {
       path: 'red-cube-rotate-translate',
-      name: '漫反射-旋转+平移',
+      name: '平行光+环境光-[旋转+平移]',
       component: () => import('../views/light/RedCubeRotateTranslate.vue'),
+    },
+    {
+      path: 'point-lighted-cube',
+      name: '点光源光',
+      component: () => import('../views/light/PointLightedCube.vue'),
     }
   ]
 };
