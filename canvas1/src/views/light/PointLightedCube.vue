@@ -34,16 +34,15 @@ export default {
                 void main(){
                     gl_Position = u_MvpMatrix * a_Position;
 
-                    // // 归一化法向量
-                    // vec3 normal = normalize(a_Normal);
+                    // 归一化法向量
+                    vec3 normal = normalize(vec3(a_Normal));
 
-                    // // 光线方向和法线方向的点积
-                    // vec3 dotLN = dot(u_LightDirection * normal);
+                    // 光线方向和法线方向的点积
+                    vec3 dotLN = dot(u_LightDirection * normal);
 
-                    // vec3 diffuseColor = u_LightColor * a_Color * dotLN;
+                    vec3 diffuseColor = u_LightColor * a_Color * dotLN;
 
-                    // v_Color = vec4(diffuseColor, a_Color.b);
-                    v_Color = a_Color;
+                    v_Color = vec4(diffuseColor, a_Color.b);
                 }
 
             `;
@@ -131,14 +130,32 @@ export default {
                 // 底面 
                 ...v2, ...v7, ...v3, ...v4,
             ];
+
+
             let red = [ 1, 0, 0 ];
             let colors = [ 
-                red, red, red, red, 
-                red, red, red, red,
-                red, red, red, red, 
-                red, red, red, red,
-                red, red, red, red, 
-                red, red, red, red,
+                ...red, ...red, ...red, ...red, 
+                ...red, ...red, ...red, ...red, 
+                ...red, ...red, ...red, ...red, 
+                ...red, ...red, ...red, ...red, 
+                ...red, ...red, ...red, ...red, 
+                ...red, ...red, ...red, ...red, 
+            ];
+            // 每个面的法向量
+            let top = [  0.0, 1.0, 0.0 ], 
+                bottom = [ 0.0, -1.0, 0.0 ],
+                left = [ -1.0, 0.0, 0.0 ],
+                right = [ 1.0, 0.0, 0.0 ],
+                front = [ 0.0, 0.0, 1.0 ],
+                back = [ 0.0, 0.0, -1.0];
+            // 法向量
+            let normals = [
+                ...front, ...front, ...front, ...front, 
+                ...back, ...back, ...back, ...back, 
+                ...left, ...left, ...left, ...left, 
+                ...right, ...right, ...right, ...right, 
+                ...top, ...top, ...top, ...top, 
+                ...bottom, ...bottom, ...bottom, ...bottom, 
             ];
             let indices = [
                 // 正面 
@@ -157,8 +174,12 @@ export default {
 
             let vertexArray = new Float32Array(vertexAxis, 0, vertexAxis.length);
             this.initArrayBuffer(gl, 'a_Position', vertexArray);
+
             let colorArray = new Float32Array(colors, 0, colors.length);
             this.initArrayBuffer(gl, 'a_Color', colorArray);
+
+            let normalArray = new Float32Array(normals, 0, normals.length);
+            this.initArrayBuffer(gl, 'a_Normal', normalArray);
 
             let indicesArray = new Uint8Array(indices, 0, indices.length);
             this.initElementArrayBuffer(gl, indicesArray);
@@ -185,7 +206,7 @@ export default {
 
             let vertexAttrib = gl.getAttribLocation(gl.program, attr);
             if (vertexAttrib < 0) {
-                console.error('获取' + vertexAttrib + '储存下标位置失败');
+                console.error('获取' + attr + '储存下标位置失败');
                 return;
             }
             gl.vertexAttribPointer(vertexAttrib, 3, gl.FLOAT, false, 0, 0);
