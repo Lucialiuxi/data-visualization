@@ -40,7 +40,7 @@ export default {
                     // 光线方向和法线方向的点积
                     float dotLN = max(dot(u_LightDirection, normal), 0.0);
 
-                    vec3 diffuseColor = u_LightColor * a_Color * dotLN;
+                    vec3 diffuseColor = u_LightColor * a_Color.rgb * dotLN;
 
                     v_Color = vec4(diffuseColor, a_Color.b);
                 }
@@ -75,7 +75,7 @@ export default {
             this.matrixHandle(gl, canvas);
             this.lightHandle(gl);
 
-            gl.clearColor(0, 0, 0, 1);
+            gl.clearColor(0.2, 0.2, 0.5, 1);
             gl.clear(gl.COLOR_BUFFER_BIT);
 
             /**
@@ -89,13 +89,13 @@ export default {
         },
         lightHandle(gl) {
             let u_LightColor = gl.getUniformLocation(gl.program, 'u_LightColor');
-            gl.uniform4f(u_LightColor, 1, 1, 1, 1);
+            gl.uniform3f(u_LightColor, 1, 1, 1);
             
             // 法线方向
             let u_LightDirection = gl.getUniformLocation(gl.program, 'u_LightDirection');
-            let lightDirection = new Vector3([3.0, 4.0, 5.0]);
+            let lightDirection = new Vector3([0.5, 4.0, 5.0]);
             lightDirection.normalize();
-            gl.uniform3fv(u_LightDirection, false, u_LightDirection.elements);
+            gl.uniform3fv(u_LightDirection, lightDirection.elements);
         },
         matrixHandle(gl, canvas) {
             // let modelMatrix = new Matrix4(); // 模型矩阵【处理旋转、平移、缩放等】
@@ -143,7 +143,7 @@ export default {
             ];
 
 
-            let red = [ 1, 0, 0 ];
+            let red = [ 1.0, 1.0, 0.0 ];
             let colors = [ 
                 ...red, ...red, ...red, ...red, 
                 ...red, ...red, ...red, ...red, 
