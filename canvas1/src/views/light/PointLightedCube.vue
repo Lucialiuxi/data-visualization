@@ -22,7 +22,7 @@ export default {
 
                 attribute vec4 a_Position;
                 attribute vec4 a_Color;
-                attribute vec3 a_Normal; // 法向量
+                attribute vec4 a_Normal; // 法向量
 
                 uniform mat4 u_MvpMatrix; // 模型视图投影矩阵
 
@@ -38,7 +38,7 @@ export default {
                     vec3 normal = normalize(vec3(a_Normal));
 
                     // 光线方向和法线方向的点积
-                    vec3 dotLN = dot(u_LightDirection * normal);
+                    float dotLN = max(dot(u_LightDirection, normal), 0.0);
 
                     vec3 diffuseColor = u_LightColor * a_Color * dotLN;
 
@@ -73,6 +73,7 @@ export default {
 
             let n = this.initVertexBuffers(gl);
             this.matrixHandle(gl, canvas);
+            this.lightHandle(gl);
 
             gl.clearColor(0, 0, 0, 1);
             gl.clear(gl.COLOR_BUFFER_BIT);
@@ -85,6 +86,16 @@ export default {
              *  offset 指定元素数组缓冲区中的偏移量
              */
             gl.drawElements(gl.TRIANGLE_STRIP, n, gl.UNSIGNED_BYTE, 0);
+        },
+        lightHandle(gl) {
+            let u_LightColor = gl.getUniformLocation(gl.program, 'u_LightColor');
+            gl.uniform4f(u_LightColor, 1, 1, 1, 1);
+            
+            // 法线方向
+            let u_LightDirection = gl.getUniformLocation(gl.program, 'u_LightDirection');
+            let lightDirection = new Vector3([3.0, 4.0, 5.0]);
+            lightDirection.normalize();
+            gl.uniform3fv(u_LightDirection, false, u_LightDirection.elements);
         },
         matrixHandle(gl, canvas) {
             // let modelMatrix = new Matrix4(); // 模型矩阵【处理旋转、平移、缩放等】
