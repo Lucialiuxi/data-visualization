@@ -291,6 +291,11 @@ const light = {
       name: '点光源光-动画',
       component: () => import('../views/light/PointLightedCube_animation.vue'),
     },
+    {
+      path: 'point-lighted-cube-per-fragment',
+      name: '点光源-逐片元计算',
+      component: () => import('../views/light/PointLightedCube_perFragment.vue'),
+    }
   ]
 };
 const router = createRouter({

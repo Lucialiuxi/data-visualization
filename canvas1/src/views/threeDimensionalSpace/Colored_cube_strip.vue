@@ -68,12 +68,7 @@ export default {
             let viewMatrix = new Matrix4();
             let projMatrix = new Matrix4();
             viewMatrix.setLookAt(
-                // 有问题的视点
-                // 3, -3, 13,
-                // -3, -3, -13,
-
-                3, 3, 13, // 观察者视点
-
+                3, 3, 13,
                 0, 0, 0, // 目标点
                 0, 1, 0, // 上方向
             );
@@ -91,16 +86,12 @@ export default {
             gl.clearColor(0.1, 0.2, 0.3, 1.0);
             gl.enable(gl.DEPTH_TEST);
             gl.enable(gl.POLYGON_OFFSET_FILL);
+            gl.polygonOffset(0.01, 0.01);
             gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
             
-            gl.drawElements(gl.TRIANGLE_STRIP, n, gl.UNSIGNED_BYTE, 0);
-            gl.drawElements(gl.TRIANGLE_STRIP, 6, gl.UNSIGNED_BYTE, 0);
-            gl.polygonOffset(0.0, 0.1);
-            gl.drawElements(gl.TRIANGLE_STRIP, 6, gl.UNSIGNED_BYTE, 6);
-            gl.polygonOffset(0.1, 0.2);
-            gl.drawElements(gl.TRIANGLE_STRIP, 6, gl.UNSIGNED_BYTE, 12);
-            gl.polygonOffset(0.2, 0.3);
-            gl.drawElements(gl.TRIANGLE_STRIP, 6, gl.UNSIGNED_BYTE, 18);
+            gl.drawElements(gl.TRIANGLE_STRIP, 8, gl.UNSIGNED_BYTE, 0);
+            gl.drawElements(gl.TRIANGLE_STRIP, 8, gl.UNSIGNED_BYTE,  n/6 * 2);
+            gl.drawElements(gl.TRIANGLE_STRIP, 8, gl.UNSIGNED_BYTE, n/6 * 4);
         },
         initVertexBuffers(gl) {
             // 品红色
