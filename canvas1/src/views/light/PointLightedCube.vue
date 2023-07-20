@@ -34,15 +34,16 @@ export default {
                 void main(){
                     gl_Position = u_MvpMatrix * a_Position;
 
-                    // 归一化法向量
-                    vec3 normal = normalize(vec3(a_Normal));
+                    // 对a_Normal进行归一化,保持矢量方向不变但长度为1 normalize()是计算归一化的内置函数
+                    vec3 normal = normalize(vec3(a_Normal)); 
 
-                    // 光线方向和法线方向的点积
-                    float dotLN = max(dot(u_LightDirection, normal), 0.0);
+                    // 计算光线方向和法向量的点积。内置函数dot：计算点积；内置函数max：比较大小，返回最小值
+                   float LDotN = max(dot(u_LightDirection, normal), 0.0); // 点积小于0，意味着入射角大于90度，入射角大于90度说明光线照射在表面的背面
 
-                    vec3 diffuseColor = u_LightColor * a_Color.rgb * dotLN;
-
-                    v_Color = vec4(diffuseColor, a_Color.a);
+                   // 计算漫反射光的颜色
+                   vec3 diffuseColor = u_LightColor * vec3(a_Color) * LDotN;
+                   
+                   v_Color = vec4(diffuseColor, a_Color.a);
                 }
 
             `;
@@ -76,7 +77,10 @@ export default {
             this.lightHandle(gl);
 
             gl.clearColor(0.2, 0.2, 0.5, 1);
-            gl.clear(gl.COLOR_BUFFER_BIT);
+            
+            // 开启隐藏面消除功能
+            gl.enable(gl.DEPTH_TEST);
+            gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
 
             /**
              *  gl.drawElements(mode, count, type, offset)
@@ -89,18 +93,16 @@ export default {
         },
         lightHandle(gl) {
             let u_LightColor = gl.getUniformLocation(gl.program, 'u_LightColor');
-            gl.uniform3f(u_LightColor, 1, 1, 1);
+            gl.uniform3f(u_LightColor, 1, 1, 1);// 光线颜色设置为白色
             
             // 法线方向
             let u_LightDirection = gl.getUniformLocation(gl.program, 'u_LightDirection');
-            let lightDirection = new Vector3([0.5, 4.0, 5.0]);
+            let lightDirection = new Vector3([0.5, 3.0, 4.0]);
             lightDirection.normalize();
             gl.uniform3fv(u_LightDirection, lightDirection.elements);
         },
         matrixHandle(gl, canvas) {
-            // let modelMatrix = new Matrix4(); // 模型矩阵【处理旋转、平移、缩放等】
             let mvpMatrix = new Matrix4(); //  模型视图投影矩阵【设置可视空间、组合视图和模型矩阵】
-            // let normalMatrix = new Matrix4(); // 法向量矩阵
             mvpMatrix.setPerspective(
                 30,
                 canvas.width/canvas.height,
@@ -108,7 +110,7 @@ export default {
                 100,
             );
             mvpMatrix.lookAt(
-                -3, -3, 7,
+                3, 3, -13,
                 0, 0, 0,
                 0, 1, 0,
             );
@@ -127,8 +129,8 @@ export default {
                 v6 = [ -1.0, 1.0, -1.0 ],
                 v7 = [ -1.0, -1.0, -1.0 ];
 
-             // 顶点坐标
-             let vertexAxis = [
+              // 顶点坐标
+            let vertexAxis = [
                 // 正面
                 ...v0, ...v1, ...v2, ...v3,
                 // 右面
@@ -151,29 +153,34 @@ export default {
                 // 青色
                 cyan = [ 0.4, 0.6, 0.6 ],
                 green = [ 0.0, 0.62, 0.42 ]; 
-            let colors = [ 
-                ...magenta, ...magenta, ...magenta, ...magenta, 
-                ...red, ...red, ...red, ...red, 
-                ...yellow, ...yellow, ...yellow, ...yellow, 
-                ...blue, ...blue, ...blue, ...blue, 
-                ...cyan, ...cyan, ...cyan, ...cyan, 
-                ...green, ...green, ...green, ...green, 
+            let colors = [
+                ...magenta, ...magenta, ...magenta, ...magenta,
+                ...red, ...red, ...red, ...red,
+                ...yellow, ...yellow, ...yellow, ...yellow,
+                ...blue, ...blue, ...blue, ...blue,
+                ...cyan, ...cyan, ...cyan, ...cyan,
+                ...green, ...green, ...green, ...green,
             ];
             // 每个面的法向量
             let top = [  0.0, 1.0, 0.0 ], 
-                bottom = [ 0.0, -1.0, 0.0 ],
-                left = [ -1.0, 0.0, 0.0 ],
-                right = [ 1.0, 0.0, 0.0 ],
-                front = [ 0.0, 0.0, 1.0 ],
-                back = [ 0.0, 0.0, -1.0];
-            // 法向量
+            bottom = [ 0.0, -1.0, 0.0 ],
+            left = [ -1.0, 0.0, 0.0 ],
+            right = [ 1.0, 0.0, 0.0 ],
+            front = [ 0.0, 0.0, 1.0 ],
+            behind = [ 0.0, 0.0, -1.0];
+            // 每个面的法向量[一个平面只有一个法向量]
             let normals = [
-                ...front, ...front, ...front, ...front, 
+                ...front, ...front, ...front, ...front,
+
                 ...right, ...right, ...right, ...right, 
-                ...top, ...top, ...top, ...top, 
-                ...left, ...left, ...left, ...left, 
+
+                ...top, ...top, ...top, ...top,
+
+                ...left, ...left, ...left,  ...left, 
+
                 ...bottom, ...bottom, ...bottom, ...bottom, 
-                ...back, ...back, ...back, ...back, 
+
+                ...behind, ...behind, ...behind, ...behind,
             ];
              // 索引
              let indices = [
@@ -184,7 +191,7 @@ export default {
                 16,17,18,  16,18,19,    // bottom
                 20,21,22,  20,22,23     // back
             ];
-            console.log(vertexAxis.length, colors.length, normals.length)
+            // console.log(vertexAxis.length, colors.length, normals.length)
 
 
             let vertexArray = new Float32Array(vertexAxis, 0, vertexAxis.length);
