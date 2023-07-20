@@ -285,7 +285,12 @@ const light = {
       path: 'point-lighted-cube',
       name: '点光源光',
       component: () => import('../views/light/PointLightedCube.vue'),
-    }
+    },
+    {
+      path: 'point-lighted-cube-animation',
+      name: '点光源光-动画',
+      component: () => import('../views/light/PointLightedCube_animation.vue'),
+    },
   ]
 };
 const router = createRouter({
