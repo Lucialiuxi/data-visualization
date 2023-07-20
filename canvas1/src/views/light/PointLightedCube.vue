@@ -7,8 +7,13 @@
 
 <script>
 /**
- * 环境反射光颜色 = 入射光颜色 * 表面基底色
+ * 环境反射光颜色 = 环境光颜色 * 表面基底色
  * 表面的反射光颜色 = 漫反射光颜色 + 环境反射光颜色
+ * 
+ * 计算变换后的法向量：
+ * 1.在片元做色漆中申明法向量矩阵u_NormalMatrix
+ * 2.求逆转矩阵 Matrix4.setInverseOf(m)
+ * 3.对逆转矩阵进行转置 Matrix4.transpose()
  */
 
 import { getWebGLContext, initShaders } from '@lib/cuon-utils.js';
@@ -28,31 +33,39 @@ export default {
                 attribute vec4 a_Color;
                 attribute vec4 a_Normal; // 法向量
 
+                uniform mat4 u_ModelMatrix; // 模型矩阵
                 uniform mat4 u_MvpMatrix; // 模型视图投影矩阵
+                uniform mat4 u_NormalMatrix; // 法向量变换矩阵
 
                 uniform vec3 u_LightColor; // 入射光颜色
                 uniform vec3 u_AmbientColor; // 环境光颜色
-                uniform vec3 u_LightDirection; // 入射光方向【归一化的世界坐标】
+                uniform vec3 u_LightPosition; // 点光源位置
 
                 varying vec4 v_Color;
 
                 void main(){
                     gl_Position = u_MvpMatrix * a_Position;
 
-                    // 对a_Normal进行归一化,保持矢量方向不变但长度为1 normalize()是计算归一化的内置函数
-                    vec3 normal = normalize(vec3(a_Normal)); 
+                    // 计算变换后的法向量 并归一化
+                    vec3 normal = normalize(vec3(u_NormalMatrix * a_Normal)); 
+
+                    // 计算顶点的世界坐标
+                    vec4 vertexPosition = u_ModelMatrix * a_Position;
+
+                    // 光线方向 = 光源坐标 - 顶点坐标
+                    vec3 lightDirection = normalize(u_LightPosition - vec3(vertexPosition));
 
                     // 计算光线方向和法向量的点积。内置函数dot：计算点积；内置函数max：比较大小，返回最小值
-                   float LDotN = max(dot(u_LightDirection, normal), 0.0); // 点积小于0，意味着入射角大于90度，入射角大于90度说明光线照射在表面的背面
+                   float LDotN = max(dot(lightDirection.xyz, normal), 0.0); // 点积小于0，意味着入射角大于90度，入射角大于90度说明光线照射在表面的背面
 
-                   // 环境反射光颜色 = 入射光颜色 * 表面基底色
-                   vec3 ambientColor = u_LightDirection * a_Color.rgb;
+                   // 环境反射光颜色 = 环境光颜色 * 表面基底色
+                   vec3 ambientReflectColor = u_AmbientColor * a_Color.rgb;
 
                    // 计算漫反射光的颜色
                    vec3 diffuseColor = u_LightColor * vec3(a_Color) * LDotN;
                    
                    // 表面发射光颜色 = 漫反射光颜色+环境反射光颜色
-                   v_Color = vec4(diffuseColor + ambientColor, a_Color.a);
+                   v_Color = vec4(diffuseColor + ambientReflectColor, a_Color.a);
                 }
 
             `;
@@ -85,7 +98,7 @@ export default {
             this.matrixHandle(gl, canvas);
             this.lightHandle(gl);
 
-            gl.clearColor(0.2, 0.2, 0.5, 1);
+            gl.clearColor(0, 0, 0, 1);
 
             // 开启隐藏面消除功能
             gl.enable(gl.DEPTH_TEST);
@@ -101,17 +114,25 @@ export default {
             gl.drawElements(gl.TRIANGLES, n, gl.UNSIGNED_BYTE, 0);
         },
         lightHandle(gl) {
+            // 入射光颜色
             let u_LightColor = gl.getUniformLocation(gl.program, 'u_LightColor');
             gl.uniform3f(u_LightColor, 1, 1, 1);// 光线颜色设置为白色
             
-            // 法线方向
-            let u_LightDirection = gl.getUniformLocation(gl.program, 'u_LightDirection');
-            let lightDirection = new Vector3([0.5, 3.0, 4.0]);
-            lightDirection.normalize();
-            gl.uniform3fv(u_LightDirection, lightDirection.elements);
+            // 环境光颜色
+            let u_AmbientColor = gl.getUniformLocation(gl.program, 'u_AmbientColor');
+            gl.uniform3f(u_AmbientColor, 0.2, 0.2, 0.2);
+
+            // 点光源的世界坐标
+            let u_LightPosition = gl.getUniformLocation(gl.program, 'u_LightDirection');
+            gl.uniform3f(u_LightPosition, 0.0, 3.0, 4.0);
         },
         matrixHandle(gl, canvas) {
+            let modelMatrix = new Matrix4(); // 模型矩阵【设置旋转、平移、缩放】
             let mvpMatrix = new Matrix4(); //  模型视图投影矩阵【设置可视空间、组合视图和模型矩阵】
+            let normalMatrix = new Matrix4(); // 法向量变换矩阵
+
+            // 计算模型矩阵
+            modelMatrix.setRotate(90, 0, 0, 1); // 绕z轴旋转90°
             mvpMatrix.setPerspective(
                 30,
                 canvas.width/canvas.height,
@@ -119,10 +140,23 @@ export default {
                 100,
             );
             mvpMatrix.lookAt(
-                3, 3, 13,
+                -3, -3, 13,
                 0, 0, 0,
                 0, 1, 0,
             );
+
+            mvpMatrix.multiply(modelMatrix);
+
+            // 求mvpMatrix得逆转矩阵
+            normalMatrix.setInverseOf(mvpMatrix);
+            // 对modelMatrix进行转置
+            normalMatrix.transpose();
+
+            let u_ModelMatrix = gl.getUniformLocation(gl.program, 'u_ModelMatrix');
+            gl.uniformMatrix4fv(u_ModelMatrix, false, modelMatrix.elements);
+
+            let u_NormalMatrix = gl.getUniformLocation(gl.program, 'u_NormalMatrix');
+            gl.uniformMatrix4fv(u_NormalMatrix, false, normalMatrix.elements);
 
             let u_MvpMatrix = gl.getUniformLocation(gl.program, 'u_MvpMatrix');
             gl.uniformMatrix4fv(u_MvpMatrix, false, mvpMatrix.elements);
@@ -251,6 +285,7 @@ export default {
  *  1、不能值列举8个顶点坐标，用索引排列来画立方体，法向量无法跟顶面对应，需要对应每个面。
  *  2、三维图形再绘制之前必须消除隐藏面，否则视觉上会出现错乱
  *  3、必须加上环境光颜色，否则只有光照方向的面会显示正确的颜色
+ *  4、要非常注意着色器中的矢量、矩阵的类型，同类型的才能进行加减，对同类型的矢量或矩阵计算后赋值的申明类型也要相同
  * 
  */
 </script>
