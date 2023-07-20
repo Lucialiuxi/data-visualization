@@ -6,6 +6,11 @@
 </template>
 
 <script>
+/**
+ * 
+ * 环境反射光颜色 = 入射光颜色 * 表面基底色
+ * 表面的反射光颜色 = 漫反射光颜色 + 环境反射光颜色
+ */
 
 import { getWebGLContext, initShaders } from '@lib/cuon-utils.js';
 import Matrix4, { Vector3 } from '@lib/cuon-matrix.js';
@@ -27,6 +32,7 @@ export default {
                 uniform mat4 u_MvpMatrix; // 模型视图投影矩阵
 
                 uniform vec3 u_LightColor; // 入射光颜色
+                uniform vec3 u_AmbientColor; // 环境光颜色
                 uniform vec3 u_LightDirection; // 入射光方向【归一化的世界坐标】
 
                 varying vec4 v_Color;
@@ -40,10 +46,14 @@ export default {
                     // 计算光线方向和法向量的点积。内置函数dot：计算点积；内置函数max：比较大小，返回最小值
                    float LDotN = max(dot(u_LightDirection, normal), 0.0); // 点积小于0，意味着入射角大于90度，入射角大于90度说明光线照射在表面的背面
 
+                   // 环境反射光颜色 = 入射光颜色 * 表面基底色
+                   vec3 ambientColor = u_LightDirection * a_Color.rgb;
+
                    // 计算漫反射光的颜色
                    vec3 diffuseColor = u_LightColor * vec3(a_Color) * LDotN;
                    
-                   v_Color = vec4(diffuseColor, a_Color.a);
+                   // 表面发射光颜色 = 漫反射光颜色+环境反射光颜色
+                   v_Color = vec4(diffuseColor + ambientColor, a_Color.a);
                 }
 
             `;
@@ -77,7 +87,7 @@ export default {
             this.lightHandle(gl);
 
             gl.clearColor(0.2, 0.2, 0.5, 1);
-            
+
             // 开启隐藏面消除功能
             gl.enable(gl.DEPTH_TEST);
             gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
@@ -110,7 +120,7 @@ export default {
                 100,
             );
             mvpMatrix.lookAt(
-                3, 3, -13,
+                3, 3, 13,
                 0, 0, 0,
                 0, 1, 0,
             );

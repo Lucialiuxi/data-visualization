@@ -10,9 +10,9 @@ import { getWebGLContext, initShaders } from '@lib/cuon-utils.js';
 import Matrix4, { Vector3 } from '@lib/cuon-matrix.js';
 
 /**
- * 漫反射光颜色 = 入射光颜色 * 表面基地色 * （光线方向·法线方向）
+ * 漫反射光颜色 = 入射光颜色 * 表面基底色 * （光线方向·法线方向）
  * 
- * 环境反射光颜色 = 入射光颜色 * 表面基地色
+ * 环境反射光颜色 = 入射光颜色 * 表面基底色
  * 
  * 表面的反射光颜色 = 漫反射颜色 + 环境反射光颜色
  */
