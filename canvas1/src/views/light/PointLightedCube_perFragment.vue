@@ -21,47 +21,50 @@ export default {
                 attribute vec4 a_Color;
                 attribute vec4 a_Normal; // 法向量-即法线方向
 
-                uniform mat4 u_ModelMatrix; // 模型矩阵
                 uniform mat4 u_MvpMatrix; // 模型视图投影矩阵
                 uniform mat4 u_NormalMatrix; // 法向量变换矩阵
-
-                uniform vec3 u_LightColor; // 入射光颜色 
-                uniform vec3 u_LightPosition; // 点光源位置
-                uniform vec3 u_AmbientColor; // 环境光颜色
+                uniform mat4 u_ModelMatrix; // 模型矩阵
 
                 varying vec4 v_Color;
+                varying vec3 v_Normal; // 计算变换后的法向量
+                varying vec3 v_VertexPosition; // 顶点的世界坐标
 
                 void main () {
                     gl_Position = u_MvpMatrix * a_Position;
-
+                    
                     // 计算变换后的法向量并归一化 矩阵右乘矢量： 矩阵*矢量=矢量
-                    vec3 normal = normalize(vec3(u_NormalMatrix * a_Normal));
+                    v_Normal = normalize(vec3(u_NormalMatrix * a_Normal));
 
-                    // 顶点的世界坐标
-                    vec3 vertexPosition = vec3(u_ModelMatrix * a_Position);
+                    v_VertexPosition = vec3(u_ModelMatrix * a_Position);
 
-                    // 计算光线方向
-                    vec3 lightDirection = normalize(u_LightPosition - vertexPosition);
-
-                    // cosø = 光线方向*法线方向
-                    float dotLN = max(dot(lightDirection, normal), 0.0);
-
-                    // 漫反射颜色 = 入射光颜色 * 表面基地色 * cosø
-                    vec3 diffuseColor = u_LightColor * a_Color.rgb * dotLN;
-
-                    // 环境反射光颜色 = 环境光颜色 * 表面基底色
-                    vec3 ambientReflectColor = u_AmbientColor * a_Color.rgb;
-
-                    v_Color = vec4(diffuseColor + ambientReflectColor, a_Color.a);
+                    v_Color = a_Color;
                 }
             `;
             let FSHADER_SOURCE = `
                 precision mediump float;
 
                 varying vec4 v_Color;
+                varying vec3 v_Normal; // 计算变换后的法向量
+                varying vec3 v_VertexPosition; // 顶点的世界坐标
+
+                uniform vec3 u_LightColor; // 入射光颜色 
+                uniform vec3 u_LightPosition; // 点光源位置
+                uniform vec3 u_AmbientColor; // 环境光颜色
 
                 void main() {
-                    gl_FragColor = v_Color;
+
+                    // 计算光线方向
+                    vec3 lightDirection = normalize(u_LightPosition - v_VertexPosition);
+
+                    // cosø = 光线方向*法线方向
+                    float dotLN = max(dot(lightDirection, v_Normal), 0.0);
+
+                    // 漫反射颜色 = 入射光颜色 * 表面基地色 * cosø
+                    vec3 diffuseColor = u_LightColor * v_Color.rgb * dotLN;
+
+                    // 环境反射光颜色 = 环境光颜色 * 表面基底色
+                    vec3 ambientReflectColor = u_AmbientColor * v_Color.rgb;
+                    gl_FragColor = vec4(diffuseColor + ambientReflectColor, v_Color.a);
                 }
             `;
             
