@@ -125,7 +125,7 @@ export default {
             // 计算法向量变换的矩阵
             let normalMatrix = new Matrix4();
         
-            modelMatrix.setRotate(30, 1, 1, 1); // 绕Z轴旋转30°
+            modelMatrix.setRotate(30, 0, 0, 1); // 绕Z轴旋转30°
 
             // 创建矩阵 & 设置透视投影可视空间
             mvpMatrix.setPerspective(
@@ -136,7 +136,7 @@ export default {
             );
             // 设置观察信息
             mvpMatrix.lookAt(
-                3, 3, 7, // 观察视点
+                -7, -7, -7, // 观察视点
                 0, 0, 0, // 观察目标点
                 0, 1, 0, // 上方向
             );
@@ -241,10 +241,15 @@ export default {
 }
 /**
  * 出现的错误：
- *  1. 立方体是纯黑色:
- *  问题：光线方向公式用错
+ *  1. 问题立方体是纯黑色
+ *  原因：光线方向公式用错
  *  光线方向 = normalize(光源位置 - 顶点的世界坐标)
  *  ⭐️顶点的世界坐标 = 模型矩阵 * 顶点坐标
+ * 
+ *  2.问题：立方体的每一个面都是背光的效果
+ *  原因：
+ *  
+ * 
  */
 </script>
 
