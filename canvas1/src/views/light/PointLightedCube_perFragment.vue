@@ -114,7 +114,7 @@ export default {
 
             // 点光源位置
             let u_LightPosition = this.getUniformLocation(gl, 'u_LightPosition');
-            gl.uniform3f(u_LightPosition, 0.0, 3.0, 4.0);
+            gl.uniform3f(u_LightPosition, 4.0, -3.0, 4.0);
         },
         // 矩阵相关
         matrixHandle(gl, canvas) {
@@ -136,7 +136,7 @@ export default {
             );
             // 设置观察信息
             mvpMatrix.lookAt(
-                -7, -7, -7, // 观察视点
+                -5, 2, 7, // 观察视点
                 0, 0, 0, // 观察目标点
                 0, 1, 0, // 上方向
             );
@@ -192,6 +192,22 @@ export default {
                 ...cyan, ...cyan, ...cyan, ...cyan,
                 ...green, ...green, ...green, ...green,
             ];
+            // 每个面的法向量
+            let top = [  0.0, 1.0, 0.0 ], 
+                bottom = [ 0.0, -1.0, 0.0 ],
+                left = [ -1.0, 0.0, 0.0 ],
+                right = [ 1.0, 0.0, 0.0 ],
+                front = [ 0.0, 0.0, 1.0 ],
+                back = [ 0.0, 0.0, -1.0];
+            // 法向量
+            let normals = [
+               ...front, ...front, ...front, ...front,
+               ...back, ...back, ...back, ...back,
+               ...left, ...left, ...left, ...left,
+               ...right, ...right, ...right, ...right,
+               ...top, ...top, ...top, ...top,
+               ...bottom, ...bottom, ...bottom, ...bottom,
+            ];
             // 索引
             let indices = [
                 0, 1, 2, 3,
@@ -204,6 +220,7 @@ export default {
 
             this.initArrayBuffer(gl, vertexAxis, 'a_Position');
             this.initArrayBuffer(gl, colors, 'a_Color');
+            this.initArrayBuffer(gl, normals, 'a_Normal');
             this.initElementArrayBuffer(gl, indices);
             return indices.length;
         },
@@ -248,6 +265,7 @@ export default {
  * 
  *  2.问题：立方体的每一个面都是背光的效果
  *  原因：
+ *      没有在缓冲对象中定义和存储法向量
  *  
  * 
  */
