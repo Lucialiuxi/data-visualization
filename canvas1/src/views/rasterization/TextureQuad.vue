@@ -104,7 +104,6 @@ export default {
             let image = new Image();
             // 注册图片加载时间的响应函数
             image.onload = () => {
-                console.log('图像加载完成')
                 this.loadTexture(gl, n, texture, u_Sampler, image);
             };
             // 浏览器开始加载图像

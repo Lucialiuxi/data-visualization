@@ -234,8 +234,6 @@ export default {
                 16,17,18,  16,18,19,    // bottom
                 20,21,22,  20,22,23     // back
             ];
-            // console.log(vertexAxis.length, colors.length, normals.length)
-
 
             let vertexArray = new Float32Array(vertexAxis, 0, vertexAxis.length);
             this.initArrayBuffer(gl, 'a_Position', vertexArray);

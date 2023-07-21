@@ -99,7 +99,6 @@ export default {
 
             // 系统支持的经度范围
             let systemPrecision = gl.getShaderPrecisionFormat(gl.VERTEX_SHADER, gl.HIGH_FLOAT);
-            console.log('systemPrecision', systemPrecision)
 
             // 强类型数组中每个元素占用的字节数
             const FSIZE = vertices.BYTES_PER_ELEMENT;
@@ -135,7 +134,6 @@ export default {
             // 创建一个图片对象
             let image = new Image();
             image.onload = () => {
-                console.log('---',i,u_Sampler, image)
                 this.loadTexture(gl, n, texture, u_Sampler, image, i);
             }
             image.src = this.textureArray[i].imgSrc;
@@ -178,8 +176,6 @@ export default {
             gl.clear(gl.COLOR_BUFFER_BIT);
 
             if (this.textureArray.every(item => !!item.textureLoaded)) {
-                console.log(this.textureArray)
-                console.log('执行了')
                 gl.drawArrays(gl.TRIANGLE_STRIP, false, n);
             }
         }

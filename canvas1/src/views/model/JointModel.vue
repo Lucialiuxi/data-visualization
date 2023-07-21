@@ -252,7 +252,6 @@ export default {
                 44, 45, 46,  44, 46, 47,
             ];
 
-            console.log('indices', indices.length)
             let a_Color = gl.getAttribLocation(gl.program, 'a_Color');
             if(!a_Color) {
                 console.error('获取a_Color存储下标失败');

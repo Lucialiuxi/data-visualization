@@ -14,7 +14,7 @@ export default {
     paint() {
         let canvas= document.getElementById('example');
         if (!canvas) {
-          console.log("没有找到canvas");
+          console.error("没有找到canvas");
           return;
         }
          /*
@@ -29,7 +29,7 @@ export default {
         // 初始化WebGL 上下文
         const gl = canvas.getContext('webgl');
         if (!gl) {
-          console.log('无法初始化WebGL， 你的浏览器、操作系统或者硬件可能不支持WebGL');
+          console.error('无法初始化WebGL， 你的浏览器、操作系统或者硬件可能不支持WebGL');
           return;
         }
         gl.clearColor(0, 0, 0, 1.0);
@@ -40,7 +40,7 @@ export default {
       // 获取webgl绘图上下文
       let gl = getWebGLContext(canvas);
       if (!gl) {
-        console.log('获取webgl渲染上下文失败');
+        console.error('获取webgl渲染上下文失败');
         return;
       }
 
