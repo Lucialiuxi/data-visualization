@@ -22,9 +22,9 @@ export default {
                 attribute vec4 a_Color;
                 attribute vec4 a_Normal; // 法向量
 
-                uniform mat4 a_MvpMatrix; // 模型视图投影矩阵
-                uniform mat4 a_ModelMatrix; // 模型矩阵
-                uniform mat4 a_NormalMatrix; // 法向量变换矩阵
+                uniform mat4 u_MvpMatrix; // 模型视图投影矩阵
+                uniform mat4 u_ModelMatrix; // 模型矩阵
+                uniform mat4 u_NormalMatrix; // 法向量变换矩阵
 
                 uniform vec3 u_LightPosition; // 点光源坐标
 
@@ -33,13 +33,13 @@ export default {
                 varying vec3 v_LightDirection; // 点光源方向方向
                 
                 void main() {
-                    gl_Position = a_MvpMatrix * a_Position;
+                    gl_Position = u_MvpMatrix * a_Position;
                     
                     // 变换后的法向量
-                    v_Normal = vec3(a_NormalMatrix * a_Normal);
+                    v_Normal = vec3(u_NormalMatrix * a_Normal);
 
                     // 点光源坐标是在世界坐标 所以要先把顶点坐标转化成世界坐标
-                    vec3 vertexPosition = vec3(a_ModelMatrix * a_Position);
+                    vec3 vertexPosition = vec3(u_ModelMatrix * a_Position);
                     // 光线方向
                     v_LightDirection = normalize(u_LightPosition - vertexPosition);
 
@@ -131,7 +131,7 @@ export default {
             // 法向量变换矩阵
             let normalMatrix = new Matrix4();
 
-            modelMatrix.setRotate(30, 0, 0, 1);
+            modelMatrix.setRotate(-3, 0.0, 0, 1);
 
             mvpMatrix.setPerspective(
                 30,
@@ -141,8 +141,8 @@ export default {
             );
             mvpMatrix.lookAt(
                 3, 3, 7,
-                0, 0, 0,
-                0, 1, 0,
+                0, 0.0, 0,
+                0, 1, 0.0,
             );
 
             mvpMatrix.multiply(modelMatrix);
@@ -158,39 +158,55 @@ export default {
         },
         // 创建缓冲对象
         initVertexBuffers(gl) {
-            // 小臂 顶点坐标
-            let v0 = [ 0.2, 1.0, 0.2 ],
-                v1 = [ -0.2, 1.0, 0.2 ],
-                v2 = [ -0.2, 0, 0.2 ],
-                v3 = [ 0.2, 0, 0.2 ],
-                v4 = [ 0.2, 0, -0.2 ],
-                v5 = [ 0.2, 1.0, -0.2 ],
-                v6 = [ -0.2, 1.0, -0.2 ],
-                v7 = [ -0.2, 0, -0.2 ];
             // 大臂 顶点坐标
-            let v8 = [ 0.2, 0, 0.3 ],
-                v9 = [ -0.2, 0, 0.3 ],
-                v10 = [ -0.2, -1.0, 0.3 ],
-                v11 = [ 0.2, -1.0, 0.3 ],
-                v12 = [ 0.2, -1.0, -0.3 ],
-                v13 = [ 0.2, 0, -0.2 ],
-                v14 = [ -0.2, 0, -0.2 ],
+            let v0 = [ 0.2, 1.0, 0.3 ],
+                v1 = [ -0.2, 1.0, 0.3 ],
+                v2 = [ -0.2, 0.0, 0.3 ],
+                v3 = [ 0.2, 0.0, 0.3 ],
+                v4 = [ 0.2, 0.0, -0.3 ],
+                v5 = [ 0.2, 1.0, -0.3 ],
+                v6 = [ -0.2, 1.0, -0.3 ],
+                v7 = [ -0.2, 0.0, -0.3 ];
+            // 小臂 顶点坐标
+            let v8 = [ 0.2, 0.0, 0.2 ],
+                v9 = [ -0.2, 0.0, 0.2 ],
+                v10 = [ -0.2, -1.0, 0.2 ],
+                v11 = [ 0.2, -1.0, 0.2 ],
+                v12 = [ 0.2, -1.0, -0.2 ],
+                v13 = [ 0.2, 0.0, -0.2 ],
+                v14 = [ -0.2, 0.0, -0.2 ],
                 v15 = [ -0.2, -1.0, -0.2 ];
 
             // 顶点坐标
             let vertexAxis = [
+                // --------- 大臂
                 // front
                 ...v0, ...v1, ...v2, ...v3,
-                // // back
-                // ...v4, ... v5, ...v6, ...v7,
-                // // left
-                // ...v1, ...v2, ...v6, ...v7,
-                // // right
-                // ...v0, ...v3, ...v4, ...v5,
-                // // top
-                // ...v0, ...v1, ...v6, ...v5,
-                // // bottom
-                // ...v2, ...v3, ...v4, ...v7,
+                // back
+                ...v4, ... v5, ...v6, ...v7,
+                // left
+                ...v1, ...v2, ...v6, ...v7,
+                // right
+                ...v0, ...v3, ...v4, ...v5,
+                // top
+                ...v0, ...v1, ...v6, ...v5,
+                // bottom
+                ...v2, ...v3, ...v4, ...v7,
+
+
+                // --------- 小臂
+                // front
+                ...v8, ...v9, ...v10, ...v11,
+                // back
+                ...v12, ... v13, ...v14, ...v15,
+                // left
+                ...v9, ...v10, ...v14, ...v15,
+                // right
+                ...v8, ...v11, ...v12, ...v13,
+                // top
+                ...v8, ...v9, ...v14, ...v13,
+                // bottom
+                ...v10, ...v11, ...v12, ...v15,
             ];
 
             // 每个面的法向量
@@ -203,21 +219,37 @@ export default {
 
             let normals = [
                 ...front, ...front, ...front, ...front,
-                // ...back, ...back, ...back, ...back,
-                // ...left, ...left, ...left, ...left,
-                // ...right, ...right, ...right, ...right,
-                // ...top, ...top, ...top, ...top,
-                // ...bottom, ...bottom, ...bottom, ...bottom,
+                ...back, ...back, ...back, ...back,
+                ...left, ...left, ...left, ...left,
+                ...right, ...right, ...right, ...right,
+                ...top, ...top, ...top, ...top,
+                ...bottom, ...bottom, ...bottom, ...bottom,
+
+                ...front, ...front, ...front, ...front,
+                ...back, ...back, ...back, ...back,
+                ...left, ...left, ...left, ...left,
+                ...right, ...right, ...right, ...right,
+                ...top, ...top, ...top, ...top,
+                ...bottom, ...bottom, ...bottom, ...bottom,
             ];
 
             // 索引
             let indices = [
+                // --------- 大臂
                 0, 1, 2,  0, 2, 3, // front
-                // 4, 5, 6,  4, 6, 7, // back
-                // 8, 9, 10,  8, 10, 11, // left
-                // 12, 13, 14,  12, 14, 15, // right
-                // 16, 17, 18,  16, 18, 19, // top
-                // 20, 21, 22,  20, 22, 23, // bottom
+                4, 5, 6,  4, 6, 7, // back
+                8, 9, 10,  8, 10, 11, // left
+                12, 13, 14,  12, 14, 15, // right
+                16, 17, 18,  16, 18, 19, // top
+                20, 21, 22,  20, 22, 23, // bottom
+
+                // --------- 小臂
+                24, 25, 26,  24, 26, 27, 
+                28, 29, 30,  28, 30, 31,
+                32, 33, 34,  32, 34, 35,
+                36, 37, 38,  36, 38, 39,
+                40, 41, 42,  40, 42, 43,
+                44, 45, 46,  44, 46, 47,
             ];
 
             console.log('indices', indices.length)
@@ -235,7 +267,7 @@ export default {
         },
         // 创建顶点缓冲对象
         initArrayBuffer(gl, array, attr) {
-            let typeArray = new Float32Array(array, 0, array.length);
+            let typeArray = new Float32Array(array, 0.0, array.length);
             let buffer = gl.createBuffer();
             if (!buffer) {
                 console.error('创建顶点缓冲对象失败');
@@ -250,13 +282,13 @@ export default {
                 console.error('获取储存变量'+ attr + '的下标失败');
                 return;
             }
-            gl.vertexAttribPointer(location, 3, gl.FLOAT, false, 0, 0);
+            gl.vertexAttribPointer(location, 3, gl.FLOAT, false, 0.0, 0);
             gl.enableVertexAttribArray(location);
             gl.bindBuffer(gl.ARRAY_BUFFER, null);
         },
         // 创建索引缓冲对象
         initElementArrayBuffer(gl, array) {
-            let typeArray = new Uint8Array(array, 0, array.length);
+            let typeArray = new Uint8Array(array, 0.0, array.length);
             let buffer = gl.createBuffer();
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffer);
             gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, typeArray, gl.STATIC_DRAW);
