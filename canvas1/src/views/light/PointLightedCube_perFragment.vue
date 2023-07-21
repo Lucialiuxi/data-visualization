@@ -33,8 +33,9 @@ export default {
                     gl_Position = u_MvpMatrix * a_Position;
                     
                     // 计算变换后的法向量并归一化 矩阵右乘矢量： 矩阵*矢量=矢量
-                    v_Normal = normalize(vec3(u_NormalMatrix * a_Normal));
+                    v_Normal = vec3(u_NormalMatrix * a_Normal);
 
+                    // 顶点的世界坐标
                     v_VertexPosition = vec3(u_ModelMatrix * a_Position);
 
                     v_Color = a_Color;
@@ -52,12 +53,14 @@ export default {
                 uniform vec3 u_AmbientColor; // 环境光颜色
 
                 void main() {
-
                     // 计算光线方向
                     vec3 lightDirection = normalize(u_LightPosition - v_VertexPosition);
 
+                    // 归一化法向量
+                    vec3 normal = normalize(v_Normal);
+
                     // cosø = 光线方向*法线方向
-                    float dotLN = max(dot(lightDirection, v_Normal), 0.0);
+                    float dotLN = max(dot(lightDirection, normal), 0.0);
 
                     // 漫反射颜色 = 入射光颜色 * 表面基地色 * cosø
                     vec3 diffuseColor = u_LightColor * v_Color.rgb * dotLN;
