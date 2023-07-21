@@ -298,6 +298,23 @@ const light = {
     }
   ]
 };
+
+// 层次模型
+const models = {
+  path: '/model/:id?',
+  component: () => import('../views/HomeView.vue'),
+  name: 'model',
+  props: {
+    params: '层次模型',
+  },
+  children: [
+    {
+      path: 'joint-model',
+      name: '单关节模型',
+      component: () => import('../views/model/JointModel.vue'), 
+    }
+  ],
+}
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -306,6 +323,7 @@ const router = createRouter({
     rasterizeRoutes,
     threeDimensionalSpace,
     light,
+    models,
   ],
 })
 
