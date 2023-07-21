@@ -19,14 +19,40 @@ export default {
                 
                 attribute vec4 a_Position;
                 attribute vec4 a_Color;
+                attribute vec4 a_Normal; // 法向量-即法线方向
 
+                uniform mat4 u_ModelMatrix; // 模型矩阵
                 uniform mat4 u_MvpMatrix; // 模型视图投影矩阵
+                uniform mat4 u_NormalMatrix; // 法向量变换矩阵
+
+                uniform vec3 u_LightColor; // 入射光颜色 
+                uniform vec3 u_LightPosition; // 点光源位置
+                uniform vec3 u_AmbientColor; // 环境光颜色
 
                 varying vec4 v_Color;
 
                 void main () {
                     gl_Position = u_MvpMatrix * a_Position;
-                    v_Color = a_Color;
+
+                    // 计算变换后的法向量并归一化 矩阵右乘矢量： 矩阵*矢量=矢量
+                    vec3 normal = normalize(vec3(u_NormalMatrix * a_Normal));
+
+                    // 顶点的世界坐标
+                    vec3 vertexPosition = vec3(u_ModelMatrix * a_Position);
+
+                    // 计算光线方向
+                    vec3 lightDirection = normalize(u_LightPosition - vertexPosition);
+
+                    // cosø = 光线方向*法线方向
+                    float dotLN = max(dot(lightDirection, normal), 0.0);
+
+                    // 漫反射颜色 = 入射光颜色 * 表面基地色 * cosø
+                    vec3 diffuseColor = u_LightColor * a_Color.rgb * dotLN;
+
+                    // 环境反射光颜色 = 环境光颜色 * 表面基底色
+                    vec3 ambientReflectColor = u_AmbientColor * a_Color.rgb;
+
+                    v_Color = vec4(diffuseColor + ambientReflectColor, a_Color.a);
                 }
             `;
             let FSHADER_SOURCE = `
@@ -52,6 +78,7 @@ export default {
             let n = this.initVertexBuffers(gl);
 
             this.matrixHandle(gl, canvas);
+            this.lightEffect(gl);
 
             gl.clearColor(0.4, 0.6, 0.9, 1.0);
             // 消除隐藏面
@@ -67,31 +94,62 @@ export default {
             gl.drawElements(gl.TRIANGLE_STRIP, 8, gl.UNSIGNED_BYTE,  n/6 * 2);
             gl.drawElements(gl.TRIANGLE_STRIP, 8, gl.UNSIGNED_BYTE, n/6 * 4);
         },
+        getUniformLocation(gl, attr) {
+            let location = gl.getUniformLocation(gl.program, attr);
+            if (location < 0) {
+                console.error('获取 '+ attr + ' 下标失败');
+                return;
+            }
+            return location;
+        },
         // 光照相关
         lightEffect(gl) {
+            // 光线颜色
+            let u_LightColor = this.getUniformLocation(gl, 'u_LightColor');
+            gl.uniform3f(u_LightColor, 1.0, 1.0, 1.0);
 
+            // 环境光颜色
+            let u_AmbientColor = this.getUniformLocation(gl, 'u_AmbientColor');
+            gl.uniform3f(u_AmbientColor, 0.2, 0.2, 0.2);
+
+            // 点光源位置
+            let u_LightPosition = this.getUniformLocation(gl, 'u_LightPosition');
+            gl.uniform3f(u_LightPosition, 0.0, 3.0, 4.0);
         },
         // 矩阵相关
         matrixHandle(gl, canvas) {
+            // 模型矩阵
+            let modelMatrix = new Matrix4();
+            // 模型视图投影矩阵
             let mvpMatrix = new Matrix4();
+            // 计算法向量变换的矩阵
+            let normalMatrix = new Matrix4();
+        
+            modelMatrix.setRotate(30, 1, 1, 1); // 绕Z轴旋转30°
+
+            // 创建矩阵 & 设置透视投影可视空间
             mvpMatrix.setPerspective(
                 30,
                 canvas.width/canvas.height,
                 1,
                 100,
             );
+            // 设置观察信息
             mvpMatrix.lookAt(
-                3, 3, 7,
-                0, 0, 0,
-                0, 1, 0,
+                3, 3, 7, // 观察视点
+                0, 0, 0, // 观察目标点
+                0, 1, 0, // 上方向
             );
 
-            let u_MvpMatrix = gl.getUniformLocation(gl.program, 'u_MvpMatrix');
-            if (u_MvpMatrix < 0) {
-                console.error('获取 u_MvpMatrix 下标失败');
-                return;
-            }
+            mvpMatrix.multiply(modelMatrix);
+
+            let u_ModelMatrix = this.getUniformLocation(gl, 'u_ModelMatrix');
+            let u_MvpMatrix = this.getUniformLocation(gl, 'u_MvpMatrix');
+            let u_NormalMatrix = this.getUniformLocation(gl, 'u_NormalMatrix');
+
+            gl.uniformMatrix4fv(u_ModelMatrix, false,  modelMatrix.elements);
             gl.uniformMatrix4fv(u_MvpMatrix, false,  mvpMatrix.elements);
+            gl.uniformMatrix4fv(u_NormalMatrix, false,  normalMatrix.elements);
         },
         // 创建顶点缓冲对象
         initVertexBuffers(gl) {
@@ -181,6 +239,13 @@ export default {
         }
     }
 }
+/**
+ * 出现的错误：
+ *  1. 立方体是纯黑色:
+ *  问题：光线方向公式用错
+ *  光线方向 = normalize(光源位置 - 顶点的世界坐标)
+ *  ⭐️顶点的世界坐标 = 模型矩阵 * 顶点坐标
+ */
 </script>
 
 <style>
