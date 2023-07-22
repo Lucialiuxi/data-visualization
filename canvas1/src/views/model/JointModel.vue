@@ -10,10 +10,16 @@ import Matrix4 from '@lib/cuon-matrix.js';
 
 /**
  * 运动描述：
- *  大臂arm1旋转运动， 带动小臂arm2：上下方向键控制arm2绕joint1关节垂直转动
- *  小臂arm2绕肘关节运动，但不影响大臂arm1：左右方向键控制小臂arm2水平运动
+ *  大臂arm1：左右方向键控制arm1(同时带动整条手臂)水平转动（绕Y轴）；
+ *  小臂arm2：上下方向键控制arm2绕joint1关节垂直转动（绕Z轴）。
  */
 export default {
+    data() {
+        return {
+            verticalAngle: 0, // 垂直角度
+            horizontalAngle: 0, // 水平角度
+        }
+    },
     mounted() {
         this.paint();
     },
@@ -92,17 +98,27 @@ export default {
             }
 
             let n = this.initVertexBuffers(gl);
-            this.matrixHandle(gl, canvas);
+
             this.lightEffect(gl);
 
-            gl.clearColor(0.86, 0.82, 1, 1);
-            // 隐藏面消除
-            gl.enable(gl.DEPTH_TEST);
-            // 多边形位移
-            gl.enable(gl.POLYGON_OFFSET_FILL);
+            this.draw(gl, n, canvas);
 
-            gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
-            gl.drawElements(gl.TRIANGLES, n, gl.UNSIGNED_BYTE, 0);
+            document.onkeydown = ({ keyCode }) => {
+                switch(keyCode){
+                    case 37: // 左键
+                    this.draw(gl, n, canvas, 'left');
+                    break;
+                    case 39:  // 右键
+                    this.draw(gl, n, canvas, 'right');
+                    break;
+                    case 38: // 上键
+                    this.draw(gl, n, canvas, 'up');
+                    break;
+                    case 40:  // 下键
+                    this.draw(gl, n, canvas, 'down');
+                    break;
+                }
+            };
         },
         // 光照
         lightEffect(gl) {
@@ -127,8 +143,21 @@ export default {
             }
             gl.uniformMatrix4fv(location, false, matrix.elements);
         },
+        // 运动的时候重新绘制
+        draw(gl, n, canvas, direction) {
+            this.matrixHandle(gl, canvas, direction);
+
+            gl.clearColor(0.86, 0.82, 1, 1);
+            // 隐藏面消除
+            gl.enable(gl.DEPTH_TEST);
+            // 多边形位移
+            gl.enable(gl.POLYGON_OFFSET_FILL);
+
+            gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
+            gl.drawElements(gl.TRIANGLES, n, gl.UNSIGNED_BYTE, 0);
+        },
         // 矩阵
-        matrixHandle(gl, canvas) {
+        matrixHandle(gl, canvas, direction) {
             // 模型矩阵
             let modelMatrix = new Matrix4();
             // 模型视图矩阵
@@ -136,7 +165,18 @@ export default {
             // 法向量变换矩阵
             let normalMatrix = new Matrix4();
 
-            modelMatrix.setRotate(-3, 0, 0, 1);
+            if (direction === 'up' || direction === 'down') {
+
+                if (direction === 'up') this.verticalAngle+=5;
+                if (direction === 'down') this.verticalAngle-=5;
+                modelMatrix.setRotate(this.verticalAngle, 0, 0, 1);
+
+            } else if (direction === 'left' || direction === 'right') {
+
+                if (direction === 'left') this.horizontalAngle+=5;
+                if (direction === 'right') this.horizontalAngle-=5;
+                modelMatrix.setRotate(this.horizontalAngle, 0, 1, 0);
+            }
 
             mvpMatrix.setPerspective(
                 30,
@@ -300,7 +340,3 @@ export default {
     },
 }
 </script>
-
-<style>
-
-</style>
