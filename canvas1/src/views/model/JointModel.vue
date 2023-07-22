@@ -18,6 +18,10 @@ export default {
         return {
             verticalAngle: 0, // 垂直角度
             horizontalAngle: 0, // 水平角度
+            modelMatrix: new Matrix4(),// 模型矩阵
+            modelMatrix: new Matrix4(), // 模型视图矩阵,
+            mvpMatrix: new Matrix4(),// 法向量变换矩阵,
+            normalMatrix: new Matrix4(),
         }
     },
     mounted() {
@@ -154,51 +158,50 @@ export default {
             gl.enable(gl.POLYGON_OFFSET_FILL);
 
             gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
-            gl.drawElements(gl.TRIANGLES, n, gl.UNSIGNED_BYTE, 0);
+
+            if (direction === 'up' || direction === 'down') {
+                gl.drawElements(gl.TRIANGLES, n/2, gl.UNSIGNED_BYTE, n/2);
+
+            } else {
+                gl.drawElements(gl.TRIANGLES, n, gl.UNSIGNED_BYTE, 0);
+            }
         },
         // 矩阵
         matrixHandle(gl, canvas, direction) {
-            // 模型矩阵
-            let modelMatrix = new Matrix4();
-            // 模型视图矩阵
-            let mvpMatrix = new Matrix4();
-            // 法向量变换矩阵
-            let normalMatrix = new Matrix4();
-
             if (direction === 'up' || direction === 'down') {
 
                 if (direction === 'up') this.verticalAngle+=5;
                 if (direction === 'down') this.verticalAngle-=5;
-                modelMatrix.setRotate(this.verticalAngle, 0, 0, 1);
+                this.modelMatrix.rotate(this.verticalAngle, 0, 0, 1);
 
             } else if (direction === 'left' || direction === 'right') {
 
                 if (direction === 'left') this.horizontalAngle+=5;
                 if (direction === 'right') this.horizontalAngle-=5;
-                modelMatrix.setRotate(this.horizontalAngle, 0, 1, 0);
+                this.modelMatrix.rotate(this.horizontalAngle, 0, 1, 0);
             }
 
-            mvpMatrix.setPerspective(
+            this.mvpMatrix.setPerspective(
                 30,
                 canvas.width/canvas.height,
                 1,
                 100,
             );
-            mvpMatrix.lookAt(
+            this.mvpMatrix.lookAt(
                 3, 3, 7,
                 0, 0, 0,
                 0, 1, 0,
             );
 
-            mvpMatrix.multiply(modelMatrix);
+            this.mvpMatrix.multiply(this.modelMatrix);
 
             // 求逆转矩阵
-            normalMatrix.setInverseOf(modelMatrix); // 求modelMatrix的逆矩阵
-            normalMatrix.transpose(); // 在对本身进行转置
+            this.normalMatrix.setInverseOf(this.modelMatrix); // 求modelMatrix的逆矩阵
+            this.normalMatrix.transpose(); // 在对本身进行转置
 
-            this.uniformMatrixHandle(gl, 'u_ModelMatrix', modelMatrix);
-            this.uniformMatrixHandle(gl, 'u_MvpMatrix', mvpMatrix);
-            this.uniformMatrixHandle(gl, 'u_NormalMatrix', normalMatrix);
+            this.uniformMatrixHandle(gl, 'u_ModelMatrix', this.modelMatrix);
+            this.uniformMatrixHandle(gl, 'u_MvpMatrix', this.mvpMatrix);
+            this.uniformMatrixHandle(gl, 'u_NormalMatrix', this.normalMatrix);
 
         },
         // 创建缓冲对象
