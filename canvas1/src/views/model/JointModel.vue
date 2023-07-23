@@ -203,25 +203,31 @@ export default {
             gl.drawElements(gl.TRIANGLES, n, gl.UNSIGNED_BYTE, 0);
         },
         draw(gl, n) {
-            this.modelMatrix.setTranslate(0, 0, 0); 
             // --- arm1 ----
-            // if (['left', 'right'].includes(this.key)) {
-            //     console.log('绕y')
-            //     this.modelMatrix.translate(0, 0, 0);
-            //     this.modelMatrix.rotate(this.horizontalAngle, 0, 1, 0);
-            // }
-            // this.drawBox(
-            //     gl, 
-            //     n, 
-            //     this.modelMatrix, 
-            //     this.mvpMatrix, 
-            //     this.normalMatrix, 
-            // );
-            // --- arm2 ----
             if(!this.key) {
-                console.log('移动2')
-                this.modelMatrix.translate(0, 1.2, 0);
+                this.modelMatrix.setTranslate(0, -1.2, 0); 
+            } else if (['left', 'right'].includes(this.key)) {
+                this.modelMatrix.translate(0, 0, 0); 
+                this.modelMatrix.rotate(this.horizontalAngle, 0, 1, 0);
+            } else {
+                this.modelMatrix.setTranslate(0, 0, 0); 
+            }
+            
+            // up\down的时候 arm1跑到arm2的位置了
+            // left/right的时候，arm1和arm2 一起上y轴正方向平移
+
+            this.drawBox(
+                gl, 
+                n, 
+                this.modelMatrix, 
+                this.mvpMatrix, 
+                this.normalMatrix, 
+            );
+            // --- arm2 ----
+            if (!this.key) {
+                this.modelMatrix.setTranslate(0, 1.2, 0); 
             } else if (['up', 'down'].includes(this.key)) {
+                this.modelMatrix.setTranslate(0, 0, 0); 
                 this.modelMatrix.setRotate(this.verticalAngle, 0, 0, 1); // 用rotate不是每次都生效
             }
             this.drawBox(
