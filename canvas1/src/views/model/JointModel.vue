@@ -154,8 +154,7 @@ export default {
             gl.uniformMatrix4fv(location, false, matrix.elements);
         },
         // 运动的时候重新绘制
-        draw(gl, n, direction) {
-
+        draw(gl, n) {
             gl.clearColor(0.86, 0.82, 1, 1);
             // 隐藏面消除
             gl.enable(gl.DEPTH_TEST);
@@ -164,18 +163,17 @@ export default {
 
             gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
 
-            if (direction === 'up' || direction === 'down') {
-                gl.drawElements(gl.TRIANGLES, n/2, gl.UNSIGNED_BYTE, n/2);
-
-            } else {
-                gl.drawElements(gl.TRIANGLES, n, gl.UNSIGNED_BYTE, 0);
-            }
+            gl.drawElements(gl.TRIANGLES, n, gl.UNSIGNED_BYTE, 0);
+        },
+        drawBox(gl, n, modelMatrix, mvpMatrix, normalMatrix) {
+            this.uniformMatrixHandle(gl, 'u_ModelMatrix', modelMatrix);
+            this.uniformMatrixHandle(gl, 'u_MvpMatrix', mvpMatrix);
+            this.uniformMatrixHandle(gl, 'u_NormalMatrix', normalMatrix);
+            this.draw(gl, n);
         },
         move(gl, n, direction) {
             if (direction) {
                 let modelMatrix = new Matrix4().set(this.modelMatrix);
-                let normalMatrix = new Matrix4().set(this.normalMatrix);
-                let mvpMatrix = new Matrix4().set(this.mvpMatrix);
                 if (direction === 'up') {
                     this.verticalAngle += 5;
                     this.modelMatrix = modelMatrix.setRotate(5, 0, 0, 1);
@@ -188,31 +186,17 @@ export default {
 
                 } else if (direction === 'right') {
                     this.horizontalAngle -= 5;
-                    this.modelMatrix = modelMatrix.setRotate(5, 0, 1, 0);
+                    this.modelMatrix = modelMatrix.setRotate(-5, 0, 1, 0);
 
-                } 
-                // 求逆转矩阵
-                normalMatrix.setInverseOf(modelMatrix); // 求modelMatrix的逆矩阵
-                normalMatrix.transpose(); // 在对本身进行转置
-
-                this.normalMatrix = normalMatrix;
-
-                this.mvpMatrix = mvpMatrix.multiply(this.modelMatrix)
-
-                this.uniformMatrixHandle(gl, 'u_ModelMatrix', this.modelMatrix);
-                this.uniformMatrixHandle(gl, 'u_MvpMatrix', this.mvpMatrix);
-                this.uniformMatrixHandle(gl, 'u_NormalMatrix', this.normalMatrix);
-                this.draw(gl, n, direction);
-            } else {
-                // 求逆转矩阵
-                this.normalMatrix.setInverseOf(this.modelMatrix); // 求modelMatrix的逆矩阵
-                this.normalMatrix.transpose(); // 在对本身进行转置
-
-                this.uniformMatrixHandle(gl, 'u_ModelMatrix', this.modelMatrix);
-                this.uniformMatrixHandle(gl, 'u_MvpMatrix', this.mvpMatrix);
-                this.uniformMatrixHandle(gl, 'u_NormalMatrix', this.normalMatrix);
-                this.draw(gl, n, direction);
+                }
             }
+            // arm1
+            // 求逆转矩阵
+            this.normalMatrix.setInverseOf(this.modelMatrix); // 求modelMatrix的逆矩阵
+            this.normalMatrix.transpose(); // 在对本身进行转置
+            this.mvpMatrix.multiply(this.modelMatrix)
+            this.drawBox(gl, n, this.modelMatrix, this.mvpMatrix, this.normalMatrix);
+
         },
         // 矩阵
         matrixHandle(gl, canvas) {
@@ -233,7 +217,6 @@ export default {
         },
         // 创建缓冲对象
         initVertexBuffers(gl) {
-            //  小臂顶点坐标
             let v0 = [ 0.22, 1.0, 0.3 ],
                 v1 = [ -0.22, 1.0, 0.3 ],
                 v2 = [ -0.22, 0.0, 0.3 ],
@@ -242,19 +225,9 @@ export default {
                 v5 = [ 0.22, 1.0, -0.2 ],
                 v6 = [ -0.22, 1.0, -0.2 ],
                 v7 = [ -0.22, 0.0, -0.2 ];
-            // 大臂顶点坐标
-            let v8 = [ 0.2, 0.0, 0.2 ],
-                v9 = [ -0.2, 0.0, 0.2 ],
-                v10 = [ -0.2, -1.0, 0.2 ],
-                v11 = [ 0.2, -1.0, 0.2 ],
-                v12 = [ 0.2, -1.0, -0.2 ],
-                v13 = [ 0.2, 0.0, -0.2 ],
-                v14 = [ -0.2, 0.0, -0.2 ],
-                v15 = [ -0.2, -1.0, -0.2 ];
 
             // 顶点坐标
             let vertexAxis = [
-                // --------- 小臂
                 // front
                 ...v0, ...v1, ...v2, ...v3,
                 // back
@@ -267,21 +240,6 @@ export default {
                 ...v0, ...v1, ...v6, ...v5,
                 // bottom
                 ...v2, ...v3, ...v4, ...v7,
-
-
-                // --------- 大臂
-                // front
-                ...v8, ...v9, ...v10, ...v11,
-                // back
-                ...v12, ... v13, ...v14, ...v15,
-                // left
-                ...v9, ...v14, ...v15, ...v10,
-                // right
-                ...v8, ...v11, ...v12, ...v13,
-                // top
-                ...v8, ...v9, ...v14, ...v13,
-                // bottom
-                ...v10, ...v11, ...v12, ...v15,
             ];
             // 每个面的法向量
             let top = [  0.0, 1.0, 0.0 ], 
@@ -298,32 +256,16 @@ export default {
                 ...right, ...right, ...right, ...right,
                 ...top, ...top, ...top, ...top,
                 ...bottom, ...bottom, ...bottom, ...bottom,
-
-                ...front, ...front, ...front, ...front,
-                ...back, ...back, ...back, ...back,
-                ...left, ...left, ...left, ...left,
-                ...right, ...right, ...right, ...right,
-                ...top, ...top, ...top, ...top,
-                ...bottom, ...bottom, ...bottom, ...bottom,
             ];
 
             // 索引
             let indices = [
-                // --------- 小臂
                 0, 1, 2,  0, 2, 3, // front
                 4, 5, 6,  4, 6, 7, // back
                 8, 9, 10,  8, 10, 11, // left
                 12, 13, 14,  12, 14, 15, // right
                 16, 17, 18,  16, 18, 19, // top
                 20, 21, 22,  20, 22, 23, // bottom
-
-                // --------- 大臂
-                24, 25, 26,  24, 26, 27, 
-                28, 29, 30,  28, 30, 31,
-                32, 33, 34,  32, 34, 35,
-                36, 37, 38,  36, 38, 39,
-                40, 41, 42,  40, 42, 43,
-                44, 45, 46,  44, 46, 47,
             ];
 
             let a_Color = gl.getAttribLocation(gl.program, 'a_Color');
