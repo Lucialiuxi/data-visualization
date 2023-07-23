@@ -21,8 +21,8 @@ export default {
             verticalAngle: 0, // 垂直角度
             horizontalAngle: 0, // 水平角度
             modelMatrix: new Matrix4(),// 模型矩阵
-            mvpMatrix: new Matrix4(),// 法向量变换矩阵,
-            normalMatrix: new Matrix4(),
+            mvpMatrix: new Matrix4(), // 模型视图投影矩阵
+            normalMatrix: new Matrix4(), // 法向量变换矩阵,
         }
     },
     mounted() {
@@ -112,16 +112,20 @@ export default {
             document.onkeydown = ({ keyCode }) => {
                 switch(keyCode){
                     case 37: // 左键
-                    this.move(gl, n, 'left');
+                        this.move(gl, n, 'left');
                     break;
                     case 39:  // 右键
-                    this.move(gl, n, 'right');
+                        this.move(gl, n, 'right');
                     break;
                     case 38: // 上键
-                    this.move(gl, n, 'up');
+                        if (this.verticalAngle <= 45) {
+                            this.move(gl, n, 'up');
+                        }
                     break;
                     case 40:  // 下键
-                    this.move(gl, n, 'down');
+                        if (this.verticalAngle >= -45) {
+                        this.move(gl, n, 'down');
+                        }
                     break;
                 }
             };
@@ -169,21 +173,24 @@ export default {
         },
         move(gl, n, direction) {
             if (direction) {
-                let modelMatrix = new Matrix4().concat(this.modelMatrix);
-                let normalMatrix = new Matrix4().concat(this.normalMatrix);
-                let mvpMatrix = new Matrix4().concat(this.mvpMatrix);
+                let modelMatrix = new Matrix4().set(this.modelMatrix);
+                let normalMatrix = new Matrix4().set(this.normalMatrix);
+                let mvpMatrix = new Matrix4().set(this.mvpMatrix);
+                if (direction === 'up') {
+                    this.verticalAngle += 5;
+                    this.modelMatrix = modelMatrix.setRotate(5, 0, 0, 1);
+                } else if(direction === 'down') {
+                    this.verticalAngle -= 5;
+                    this.modelMatrix = modelMatrix.setRotate(-5, 0, 0, 1);
+                } else if (direction === 'left') {
+                    this.horizontalAngle += 5;
+                    this.modelMatrix = modelMatrix.setRotate(5, 0, 1, 0);
 
-                if (direction === 'up' || direction === 'down') {
-                    if (direction === 'up') this.verticalAngle+=5;
-                    if (direction === 'down') this.verticalAngle-=5;
-                    this.modelMatrix = modelMatrix.rotate(this.verticalAngle, 0, 0, 1);
+                } else if (direction === 'right') {
+                    this.horizontalAngle -= 5;
+                    this.modelMatrix = modelMatrix.setRotate(5, 0, 1, 0);
 
-                } else if (direction === 'left' || direction === 'right') {
-                    if (direction === 'left') this.horizontalAngle+=5;
-                    if (direction === 'right') this.horizontalAngle-=5;
-                    console.log(direction, this.horizontalAngle)
-                    this.modelMatrix = modelMatrix.rotate(this.horizontalAngle, 0, 1, 0);
-                }
+                } 
                 // 求逆转矩阵
                 normalMatrix.setInverseOf(modelMatrix); // 求modelMatrix的逆矩阵
                 normalMatrix.transpose(); // 在对本身进行转置
