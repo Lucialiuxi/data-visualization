@@ -8,10 +8,6 @@
 import { initShaders, getWebGLContext } from '@lib/cuon-utils.js';
 import Matrix4 from '@lib/cuon-matrix.js';
 
-let g_ModelMatrix = new Matrix4();
-let g_MvpMatrix = new Matrix4();
-let g_NormalMatrix = new Matrix4();
-
 /**
  * 运动描述：
  *  大臂arm1：左右方向键控制arm1(同时带动整条手臂)水平转动（绕Y轴）；
@@ -27,6 +23,7 @@ export default {
             modelMatrix: new Matrix4(),// 模型矩阵
             mvpMatrix: new Matrix4(), // 模型视图投影矩阵
             normalMatrix: new Matrix4(), // 法向量变换矩阵,
+            key: '',
         }
     },
     mounted() {
@@ -136,19 +133,29 @@ export default {
             document.onkeydown = ({ keyCode }) => {
                 switch(keyCode){
                     case 37: // 左键
-                        this.draw(gl, n, 'left');
+                        this.key = 'left';
+                        this.horizontalAngle -= 5;
+                        this.draw(gl, n);
                     break;
                     case 39:  // 右键
-                        this.draw(gl, n, 'right');
+                        this.key = 'right';
+                        this.horizontalAngle += 5;
+                        this.draw(gl, n);
                     break;
                     case 38: // 上键
-                        if (this.verticalAngle <= 45) {
-                            this.draw(gl, n, 'up');
+                    if (this.key === 'down') this.verticalAngle = 0;
+                        this.key = 'up';
+                        if (this.verticalAngle <= 40) {
+                            this.verticalAngle += 5;
+                            this.draw(gl, n);
                         }
                     break;
                     case 40:  // 下键
-                        if (this.verticalAngle >= -45) {
-                        this.draw(gl, n, 'down');
+                    if (this.key === 'up') this.verticalAngle = 0;
+                        this.key = 'down';
+                        if (this.verticalAngle >= -40) {
+                            this.verticalAngle -= 5;
+                            this.draw(gl, n);
                         }
                     break;
                 }
@@ -177,8 +184,13 @@ export default {
             }
             gl.uniformMatrix4fv(location, false, matrix.elements);
         },
-        drawBox(gl, n, modelMatrix, mvpMatrix, normalMatrix, { x, y, z}) {
-            modelMatrix.setTranslate(x, y, z);
+        drawBox(
+            gl, 
+            n, 
+            modelMatrix, 
+            mvpMatrix, 
+            normalMatrix, 
+        ) {
 
             // 求逆转矩阵
             normalMatrix.setInverseOf(modelMatrix); // 求modelMatrix的逆矩阵
@@ -190,38 +202,46 @@ export default {
             this.uniformMatrixHandle(gl, 'u_NormalMatrix', normalMatrix);
             gl.drawElements(gl.TRIANGLES, n, gl.UNSIGNED_BYTE, 0);
         },
-        draw(gl, n, direction) {
-            if (direction) {
-                let modelMatrix = new Matrix4().set(this.modelMatrix);
-                if (direction === 'up') {
-                    this.verticalAngle += 5;
-                    this.modelMatrix = modelMatrix.setRotate(5, 0, 0, 1);
-                } else if(direction === 'down') {
-                    this.verticalAngle -= 5;
-                    this.modelMatrix = modelMatrix.setRotate(-5, 0, 0, 1);
-                } else if (direction === 'left') {
-                    this.horizontalAngle += 5;
-                    this.modelMatrix = modelMatrix.setRotate(5, 0, 1, 0);
-
-                } else if (direction === 'right') {
-                    this.horizontalAngle -= 5;
-                    this.modelMatrix = modelMatrix.setRotate(-5, 0, 1, 0);
-                }
-            }
+        draw(gl, n) {
+            this.modelMatrix.setTranslate(0, 0, 0); 
             // --- arm1 ----
-            this.drawBox(gl, n, this.modelMatrix, this.mvpMatrix, this.normalMatrix, { x: 0, y: -1, z: 0});
-            this.drawBox(gl, n, this.modelMatrix, this.mvpMatrix, this.normalMatrix, { x: 0, y: 1, z: 0});
+            // if (['left', 'right'].includes(this.key)) {
+            //     console.log('绕y')
+            //     this.modelMatrix.translate(0, 0, 0);
+            //     this.modelMatrix.rotate(this.horizontalAngle, 0, 1, 0);
+            // }
+            // this.drawBox(
+            //     gl, 
+            //     n, 
+            //     this.modelMatrix, 
+            //     this.mvpMatrix, 
+            //     this.normalMatrix, 
+            // );
+            // --- arm2 ----
+            if(!this.key) {
+                console.log('移动2')
+                this.modelMatrix.translate(0, 1.2, 0);
+            } else if (['up', 'down'].includes(this.key)) {
+                this.modelMatrix.setRotate(this.verticalAngle, 0, 0, 1); // 用rotate不是每次都生效
+            }
+            this.drawBox(
+                gl, 
+                n, 
+                this.modelMatrix, 
+                this.mvpMatrix, 
+                this.normalMatrix, 
+            );
         },
         // 创建缓冲对象
         initVertexBuffers(gl) {
-            let v0 = [ 0.22, 0.0, 0.3 ],
-                v1 = [ -0.22, 0.0, 0.3 ],
-                v2 = [ -0.22, -1.0, 0.3 ],
-                v3 = [ 0.22, -1.0, 0.3 ],
-                v4 = [ 0.22, -1.0, -0.2 ],
-                v5 = [ 0.22, 0.0, -0.2 ],
-                v6 = [ -0.22, 0.0, -0.2 ],
-                v7 = [ -0.22, -1.0, -0.2 ];
+            let v0 = [ 0.21,  0.6, 0.21 ],
+                v1 = [ -0.21,  0.6, 0.21 ],
+                v2 = [ -0.21, -0.6, 0.21 ],
+                v3 = [ 0.21, -0.6, 0.21 ],
+                v4 = [ 0.21, -0.6, -0.21 ],
+                v5 = [ 0.21,  0.6, -0.21 ],
+                v6 = [ -0.21,  0.6, -0.21 ],
+                v7 = [ -0.21, -0.6, -0.21 ];
 
             // 顶点坐标
             let vertexAxis = [
