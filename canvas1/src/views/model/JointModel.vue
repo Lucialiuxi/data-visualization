@@ -20,6 +20,7 @@ export default {
         return {
             verticalAngle: 0, // 垂直角度
             horizontalAngle: 0, // 水平角度
+            viewProjMatrix: new Matrix4(), // 视图投影矩阵
             modelMatrix: new Matrix4(),// 模型矩阵
             mvpMatrix: new Matrix4(), // 模型视图投影矩阵
             normalMatrix: new Matrix4(), // 法向量变换矩阵,
@@ -106,13 +107,13 @@ export default {
             let n = this.initVertexBuffers(gl);
 
             
-            this.mvpMatrix.setPerspective(
+            this.viewProjMatrix.setPerspective(
                 30,
                 canvas.width/canvas.height,
                 1,
                 100,
             );
-            this.mvpMatrix.lookAt(
+            this.viewProjMatrix.lookAt(
                 3, 3, 7,
                 0, 0, 0,
                 0, 1, 0,
@@ -183,11 +184,12 @@ export default {
             mvpMatrix, 
             normalMatrix, 
         ) {
+            this.mvpMatrix.set(this.viewProjMatrix);
+            this.mvpMatrix.multiply(modelMatrix);
 
             // 求逆转矩阵
             normalMatrix.setInverseOf(modelMatrix); // 求modelMatrix的逆矩阵
             this.normalMatrix.transpose(); // 在对本身进行转置
-            this.mvpMatrix.multiply(modelMatrix);
 
             this.uniformMatrixHandle(gl, 'u_ModelMatrix', modelMatrix);
             this.uniformMatrixHandle(gl, 'u_MvpMatrix', mvpMatrix);
@@ -206,8 +208,9 @@ export default {
             // 使用预设值来清空缓冲
             gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
 
+            let armHalfLen = 0.6;
             // --- arm1 ----
-            this.modelMatrix.setTranslate(0, -1.2, 0); 
+            this.modelMatrix.setTranslate(0, -armHalfLen, 0); 
             if (['left', 'right'].includes(this.key)) {
                 this.modelMatrix.rotate(this.horizontalAngle, 0, 1, 0);
             } else {
@@ -223,7 +226,7 @@ export default {
             );
 
             // --- arm2 ----
-            this.modelMatrix.setTranslate(0, 1.2, 0); 
+            this.modelMatrix.setTranslate(0, armHalfLen, 0); 
             if (['up', 'down'].includes(this.key)) {
                 this.modelMatrix.rotate(this.verticalAngle, 0, 0, 1); 
             }
