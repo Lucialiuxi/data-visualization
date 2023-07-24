@@ -120,14 +120,6 @@ export default {
 
             this.lightEffect(gl);
 
-            gl.clearColor(0.86, 0.82, 1, 1);
-            // 隐藏面消除
-            gl.enable(gl.DEPTH_TEST);
-            // 多边形位移
-            gl.enable(gl.POLYGON_OFFSET_FILL);
-
-            gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
-
             this.draw(gl, n);
 
             document.onkeydown = ({ keyCode }) => {
@@ -200,10 +192,20 @@ export default {
             this.uniformMatrixHandle(gl, 'u_ModelMatrix', modelMatrix);
             this.uniformMatrixHandle(gl, 'u_MvpMatrix', mvpMatrix);
             this.uniformMatrixHandle(gl, 'u_NormalMatrix', normalMatrix);
+
             gl.drawElements(gl.TRIANGLES, n, gl.UNSIGNED_BYTE, 0);
         },
         draw(gl, n) {
-            
+
+            // 设置清空颜色缓冲时的颜色值
+            gl.clearColor(0.86, 0.82, 1, 1);
+            // 隐藏面消除
+            gl.enable(gl.DEPTH_TEST);
+            // 多边形位移
+            gl.enable(gl.POLYGON_OFFSET_FILL);
+            // 使用预设值来清空缓冲
+            gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
+
             // --- arm1 ----
             this.modelMatrix.setTranslate(0, -1.2, 0); 
             if (['left', 'right'].includes(this.key)) {
@@ -328,4 +330,9 @@ export default {
         },
     },
 }
+/**
+ * 问题：
+ * 1 重绘的时候 canvas背景色消失： 每次重绘之前，需要重新: a.设置清空颜色缓冲时的颜色值;b.使用预设值来清空缓冲
+ * 2 arm2旋转的时候 arm1理想状态是不能动，但实际是一起旋转了
+ */
 </script>
