@@ -136,7 +136,6 @@ export default {
                         this.draw(gl, n);
                     break;
                     case 38: // 上键
-                    if (this.key === 'down') this.verticalAngle = 0;
                         this.key = 'up';
                         if (this.verticalAngle <= 40) {
                             this.verticalAngle += 5;
@@ -144,7 +143,6 @@ export default {
                         }
                     break;
                     case 40:  // 下键
-                    if (this.key === 'up') this.verticalAngle = 0;
                         this.key = 'down';
                         if (this.verticalAngle >= -40) {
                             this.verticalAngle -= 5;
@@ -184,7 +182,7 @@ export default {
             mvpMatrix, 
             normalMatrix, 
         ) {
-            this.mvpMatrix.set(this.viewProjMatrix);
+            this.mvpMatrix.set(this.viewProjMatrix); // 复制视图投影矩阵
             this.mvpMatrix.multiply(modelMatrix);
 
             // 求逆转矩阵
@@ -198,7 +196,10 @@ export default {
             gl.drawElements(gl.TRIANGLES, n, gl.UNSIGNED_BYTE, 0);
         },
         draw(gl, n) {
-
+            if (this.key) {
+            console.log('水平转动',this.horizontalAngle);
+            console.log('垂直转动',this.verticalAngle);
+            }
             // 设置清空颜色缓冲时的颜色值
             gl.clearColor(0.86, 0.82, 1, 1);
             // 隐藏面消除
@@ -213,8 +214,9 @@ export default {
             this.modelMatrix.setTranslate(0, -armHalfLen, 0); 
             if (['left', 'right'].includes(this.key)) {
                 this.modelMatrix.rotate(this.horizontalAngle, 0, 1, 0);
-            } else {
-                this.modelMatrix.rotate(0, 0, 0, 1);
+            }  else if(['up', 'down'].includes(this.key)){
+                // arm2 垂直运动时 arm1 不能动
+                this.modelMatrix.rotate(0, 0, 0, 1); 
             }
             
             this.drawBox(
@@ -228,6 +230,9 @@ export default {
             // --- arm2 ----
             this.modelMatrix.setTranslate(0, armHalfLen, 0); 
             if (['up', 'down'].includes(this.key)) {
+                this.modelMatrix.rotate(this.verticalAngle, 0, 0, 1); 
+            } else if(['left', 'right'].includes(this.key)) { // arm1水平转动的时候 arm2也要跟着转动
+                this.modelMatrix.rotate(this.horizontalAngle, 0, 1, 0);
                 this.modelMatrix.rotate(this.verticalAngle, 0, 0, 1); 
             }
             this.drawBox(
@@ -336,6 +341,8 @@ export default {
 /**
  * 问题：
  * 1 重绘的时候 canvas背景色消失： 每次重绘之前，需要重新: a.设置清空颜色缓冲时的颜色值;b.使用预设值来清空缓冲
- * 2 arm2旋转的时候 arm1理想状态是不能动，但实际是一起旋转了
+ * 2 arm2旋转的时候 arm1理想状态是不能动，但实际是一起旋转了:
+ *  a.每次绘制都应该以视图投影矩阵为基准
+ *  b.
  */
 </script>
