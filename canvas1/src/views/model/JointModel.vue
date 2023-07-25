@@ -225,6 +225,7 @@ export default {
             // --- arm2 ----arm2绘制之前使用arm1的模型矩阵
             this.modelMatrix.translate(0, armHalfLen, 0);  // 顶面y从-0.6移动到0.6
             this.modelMatrix.rotate(this.verticalAngle, 0, 0, 1);  // 这里已经综合了arm1的模型矩阵已经记录了水平旋转，只需要再操作垂直旋转
+            this.modelMatrix.scale(1.2, 1, 1);
             this.drawBox(
                 gl, 
                 n, 
