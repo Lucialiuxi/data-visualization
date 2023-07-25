@@ -285,6 +285,22 @@ export default {
                 ...top, ...top, ...top, ...top,
                 ...bottom, ...bottom, ...bottom, ...bottom,
             ];
+            let pink = [ 0.98, 0.88, 0.93 ],
+                red = [ 1.0, 0.0, 0.0 ],
+                yellow = [ 1.0, 1.0, 0.0 ],
+                blue = [ 0.0, 0.8, 1.0 ],
+                // 青色
+                cyan = [ 0.4, 0.6, 0.6 ],
+                green = [ 0.13, 0.7, 0.67 ];
+
+            let colors = [
+                ...pink, ...pink, ...pink, ...pink,
+                ...red, ...red, ...red, ...red,
+                ...yellow, ...yellow, ...yellow, ...yellow,
+                ...blue, ...blue, ...blue, ...blue,
+                ...cyan, ...cyan, ...cyan, ...cyan,
+                ...green, ...green, ...green, ...green,
+            ];
 
             // 索引
             let indices = [
@@ -296,14 +312,16 @@ export default {
                 20, 21, 22,  20, 22, 23, // bottom
             ];
 
-            let a_Color = gl.getAttribLocation(gl.program, 'a_Color');
-            if(!a_Color) {
-                console.error('获取a_Color存储下标失败');
-                return;
-            }
-            gl.vertexAttrib3f(a_Color, 0.77, 0.34, 0.1);
+            // let a_Color = gl.getAttribLocation(gl.program, 'a_Color');
+            // if(!a_Color) {
+            //     console.error('获取a_Color存储下标失败');
+            //     return;
+            // }
+            // gl.vertexAttrib3f(a_Color, 0.77, 0.34, 0.1);
+
 
             this.initArrayBuffer(gl, vertexAxis, 'a_Position');
+            this.initArrayBuffer(gl, colors, 'a_Color');
             this.initArrayBuffer(gl, normals, 'a_Normal');
             this.initElementArrayBuffer(gl, indices);
             return indices.length;
