@@ -25,6 +25,7 @@ export default {
             mvpMatrix: new Matrix4(), // 模型视图投影矩阵
             normalMatrix: new Matrix4(), // 法向量变换矩阵,
             key: '',
+            prevKey: '',
         }
     },
     mounted() {
@@ -196,9 +197,9 @@ export default {
             gl.drawElements(gl.TRIANGLES, n, gl.UNSIGNED_BYTE, 0);
         },
         draw(gl, n) {
-            if (this.key) {
-            console.log('水平转动',this.horizontalAngle);
-            console.log('垂直转动',this.verticalAngle);
+            if (this.prevKey && (this.key !== this.prevKey)) {
+                console.log('水平转动',this.horizontalAngle);
+                console.log('垂直转动',this.verticalAngle);
             }
             // 设置清空颜色缓冲时的颜色值
             gl.clearColor(0.86, 0.82, 1, 1);
@@ -209,15 +210,10 @@ export default {
             // 使用预设值来清空缓冲
             gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
 
-            let armHalfLen = 0.6;
+            let armHalfLen = 1.2;
             // --- arm1 ----
-            this.modelMatrix.setTranslate(0, -armHalfLen, 0); 
-            if (['left', 'right'].includes(this.key)) {
-                this.modelMatrix.rotate(this.horizontalAngle, 0, 1, 0);
-            }  else if(['up', 'down'].includes(this.key)){
-                // arm2 垂直运动时 arm1 不能动
-                this.modelMatrix.rotate(0, 0, 0, 1); 
-            }
+            this.modelMatrix.setTranslate(0, -1.2, 0); // 顶面y从0.6移动到-0.6
+            this.modelMatrix.rotate(this.horizontalAngle, 0, 1, 0);
             
             this.drawBox(
                 gl, 
@@ -226,15 +222,9 @@ export default {
                 this.mvpMatrix, 
                 this.normalMatrix, 
             );
-
-            // --- arm2 ----
-            this.modelMatrix.setTranslate(0, armHalfLen, 0); 
-            if (['up', 'down'].includes(this.key)) {
-                this.modelMatrix.rotate(this.verticalAngle, 0, 0, 1); 
-            } else if(['left', 'right'].includes(this.key)) { // arm1水平转动的时候 arm2也要跟着转动
-                this.modelMatrix.rotate(this.horizontalAngle, 0, 1, 0);
-                this.modelMatrix.rotate(this.verticalAngle, 0, 0, 1); 
-            }
+            // --- arm2 ----arm2绘制之前使用arm1的模型矩阵
+            this.modelMatrix.translate(0, armHalfLen, 0);  // 顶面y从-0.6移动到0.6
+            this.modelMatrix.rotate(this.verticalAngle, 0, 0, 1);  // 这里已经综合了arm1的模型矩阵已经记录了水平旋转，只需要再操作垂直旋转
             this.drawBox(
                 gl, 
                 n, 
@@ -242,6 +232,8 @@ export default {
                 this.mvpMatrix, 
                 this.normalMatrix, 
             );
+
+            if(this.key !== this.prevKey)  this.prevKey = this.key;
         },
         // 创建缓冲对象
         initVertexBuffers(gl) {
@@ -361,6 +353,7 @@ export default {
  * 1 重绘的时候 canvas背景色消失： 每次重绘之前，需要重新: a.设置清空颜色缓冲时的颜色值;b.使用预设值来清空缓冲
  * 2 arm2旋转的时候 arm1理想状态是不能动，但实际是一起旋转了:
  *  a.每次绘制都应该以视图投影矩阵为基准
- *  b.
+ *  b.arm2的绘制模型矩阵是以arm1的模型矩阵为基准，所以arm1先绘制，arm2就能保留arm1的旋转值，arm2旋转也不影响arm1
+ * 
  */
 </script>
