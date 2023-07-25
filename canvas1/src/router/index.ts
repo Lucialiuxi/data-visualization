@@ -312,7 +312,12 @@ const models = {
       path: 'joint-model',
       name: '单关节模型',
       component: () => import('../views/model/JointModel.vue'), 
-    }
+    },
+    {
+      path: 'multi-joint-model',
+      name: '多节点模型',
+      component: () => import('../views/model/MultiJointModel.vue'), 
+    },
   ],
 }
 const router = createRouter({
