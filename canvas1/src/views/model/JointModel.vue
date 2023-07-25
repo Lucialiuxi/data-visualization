@@ -24,8 +24,6 @@ export default {
             modelMatrix: new Matrix4(),// 模型矩阵
             mvpMatrix: new Matrix4(), // 模型视图投影矩阵
             normalMatrix: new Matrix4(), // 法向量变换矩阵,
-            key: '',
-            prevKey: '',
         }
     },
     mounted() {
@@ -127,24 +125,20 @@ export default {
             document.onkeydown = ({ keyCode }) => {
                 switch(keyCode){
                     case 37: // 左键
-                        this.key = 'left';
                         this.horizontalAngle -= 5;
                         this.draw(gl, n);
                     break;
                     case 39:  // 右键
-                        this.key = 'right';
                         this.horizontalAngle += 5;
                         this.draw(gl, n);
                     break;
                     case 38: // 上键
-                        this.key = 'up';
                         if (this.verticalAngle <= 40) {
                             this.verticalAngle += 5;
                             this.draw(gl, n);
                         }
                     break;
                     case 40:  // 下键
-                        this.key = 'down';
                         if (this.verticalAngle >= -40) {
                             this.verticalAngle -= 5;
                             this.draw(gl, n);
@@ -197,10 +191,6 @@ export default {
             gl.drawElements(gl.TRIANGLES, n, gl.UNSIGNED_BYTE, 0);
         },
         draw(gl, n) {
-            if (this.prevKey && (this.key !== this.prevKey)) {
-                console.log('水平转动',this.horizontalAngle);
-                console.log('垂直转动',this.verticalAngle);
-            }
             // 设置清空颜色缓冲时的颜色值
             gl.clearColor(0.86, 0.82, 1, 1);
             // 隐藏面消除
@@ -226,6 +216,7 @@ export default {
             this.modelMatrix.translate(0, armHalfLen, 0);  // 顶面y从-0.6移动到0.6
             this.modelMatrix.rotate(this.verticalAngle, 0, 0, 1);  // 这里已经综合了arm1的模型矩阵已经记录了水平旋转，只需要再操作垂直旋转
             this.modelMatrix.scale(1.2, 1, 1);
+            
             this.drawBox(
                 gl, 
                 n, 
@@ -234,7 +225,6 @@ export default {
                 this.normalMatrix, 
             );
 
-            if(this.key !== this.prevKey)  this.prevKey = this.key;
         },
         // 创建缓冲对象
         initVertexBuffers(gl) {
