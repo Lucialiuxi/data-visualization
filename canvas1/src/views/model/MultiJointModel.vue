@@ -201,8 +201,8 @@ export default {
             // 使用预设值来清空缓冲
             gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
 
-            // --- 底座base ---- // 顶面y从1移动到-2
-            this.modelMatrix.setTranslate(0, -2.2, 0); // 顶面在Y轴-2位置
+            // --- 底座base ---- 
+            this.modelMatrix.setTranslate(0, -2.2, 0); // 顶面y从1移动到-2
             this.drawBox(
                 gl, 
                 n, 
@@ -225,8 +225,9 @@ export default {
             
             // --- 小臂arm2 ----arm2绘制之前使用arm1的模型矩阵
             this.modelMatrix.translate(0, 0.2, 0);  // 顶面在Y轴2位置 
-            this.modelMatrix.scale(1.2, 1, 1.2);
+            // this.modelMatrix.scale(1.2, 1, 1.2);
             this.modelMatrix.rotate(this.verticalAngle, 0, 0, 1);  // 这里已经综合了arm1的模型矩阵已经记录了水平旋转，只需要再操作垂直旋转
+            
             this.drawBox(
                 gl, 
                 n, 
@@ -347,6 +348,8 @@ export default {
  * 问题：
  * 1 调用3次只画出2个立方体，第3个未生效:
  *  原因：是translate值过大 显示超出了可视区
+ * 2 arm2垂直旋转的时候，每次旋转都会拉伸
+ *  原因：scale调用放到了rotate之前，正确的应该是先rotate再scale
  * 
  */
 </script>
