@@ -108,13 +108,13 @@ export default {
 
             
             this.viewProjMatrix.setPerspective(
-                40,
+                50,
                 canvas.width/canvas.height,
                 1,
                 100,
             );
             this.viewProjMatrix.lookAt(
-                0, 6, 12,
+                0, 1, 10,
                 0, 0, 0,
                 0, 1, 0,
             );
@@ -202,7 +202,7 @@ export default {
             gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
 
             // --- 底座base ---- 
-            this.modelMatrix.setTranslate(0, -2.2, 0); // 顶面y从1移动到-2
+            this.modelMatrix.setTranslate(0, -2.1, 0); // y中心从0到-2.1,顶面在-2
             this.drawBox(
                 gl, 
                 n, 
@@ -211,10 +211,10 @@ export default {
                 this.normalMatrix, 
             );
 
-            // --- 大臂arm1 ----
-            this.modelMatrix.translate(0, 2, 1); // 顶面在Y轴0位置
-            this.modelMatrix.scale(0.4, 10, 0.4);
+            // --- 大臂arm1 ----arm1绘制使用base的模型矩阵
+            this.modelMatrix.translate(0, 1.1, 0); // y 中心从-2.1 到 -1， 顶面在Y轴-2移动到0
             this.modelMatrix.rotate(this.horizontalAngle, 0, 1, 0);
+            this.modelMatrix.scale(0.4, 10, 0.4);
             this.drawBox(
                 gl, 
                 n, 
@@ -223,11 +223,10 @@ export default {
                 this.normalMatrix, 
             );
             
-            // --- 小臂arm2 ----arm2绘制之前使用arm1的模型矩阵
-            this.modelMatrix.translate(0, 0.2, 0);  // 顶面在Y轴2位置 
-            // this.modelMatrix.scale(1.2, 1, 1.2);
-            this.modelMatrix.rotate(this.verticalAngle, 0, 0, 1);  // 这里已经综合了arm1的模型矩阵已经记录了水平旋转，只需要再操作垂直旋转
-            
+            // --- 小臂arm2  ----arm2绘制使用arm1的模型矩阵
+            this.modelMatrix.translate(0, 0.2, 0);  // y中心从 -1 到 1 ,顶面在y轴 0 移动到 2, y移动到2，Ty = 2/scaleY
+            this.modelMatrix.rotate(this.verticalAngle, 0, 0, 1);  
+            this.modelMatrix.scale(1.2, 1, 1);
             this.drawBox(
                 gl, 
                 n, 
@@ -236,16 +235,16 @@ export default {
                 this.normalMatrix, 
             );
 
-            // // 手掌palm
-            // this.modelMatrix.translate(0, 0.2, 0);  // 顶面在Y轴2位置
-            // this.modelMatrix.scale(1, 0.5, 1);
-            // this.drawBox(
-            //     gl, 
-            //     n, 
-            //     this.modelMatrix, 
-            //     this.mvpMatrix, 
-            //     this.normalMatrix, 
-            // );
+            // --- palm----重建矩阵
+            this.modelMatrix.translate(0, 0.13, 0);  // y中心从 1 到 2.3， 顶面从2移动到2.3 ,Ty = 1.3/scaleY
+            this.modelMatrix.scale(1, 0.3, 0.5);
+            this.drawBox(
+                gl, 
+                n, 
+                this.modelMatrix, 
+                this.mvpMatrix, 
+                this.normalMatrix, 
+            );
 
         },
         // 创建缓冲对象
@@ -350,6 +349,10 @@ export default {
  *  原因：是translate值过大 显示超出了可视区
  * 2 arm2垂直旋转的时候，每次旋转都会拉伸
  *  原因：scale调用放到了rotate之前，正确的应该是先rotate再scale
+ * 
+ * 3 setTranslate和setScale也是基于原本的矩阵，并没有新建
+ * 
+ * 4 setTranslate、 setScale、translate、scale 都是基于物体中心的, translate的值会跟矩阵前一次设置的scale相乘
  * 
  */
 </script>
