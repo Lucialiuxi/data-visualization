@@ -25,6 +25,7 @@ export default {
             mvpMatrix: new Matrix4(), // 模型视图投影矩阵
             normalMatrix: new Matrix4(), // 法向量变换矩阵,
             key: '',
+            g_matrixStack: [], // 存储矩阵的栈
         }
     },
     mounted() {
@@ -171,13 +172,23 @@ export default {
             }
             gl.uniformMatrix4fv(location, false, matrix.elements);
         },
+        pushMatrix(m) { // 将矩阵压入栈
+            let m2 = new Matrix4(m);
+            this.g_matrixStack.push(m2);
+
+        },
+        popMatrix() { // 从栈中弹出矩阵
+            return this.g_matrixStack.pop();
+        },
         drawBox(
             gl, 
             n, 
             modelMatrix, 
             mvpMatrix, 
             normalMatrix, 
+            scaleObj,
         ) {
+             if (scaleObj) modelMatrix.scale(scaleObj.x, scaleObj.y, scaleObj.z);
             this.mvpMatrix.set(this.viewProjMatrix); // 复制视图投影矩阵
             this.mvpMatrix.multiply(modelMatrix);
 
@@ -214,39 +225,41 @@ export default {
             // --- 大臂arm1 ----arm1绘制使用base的模型矩阵
             this.modelMatrix.translate(0, 1.1, 0); // y 中心从-2.1 到 -1， 顶面在Y轴-2移动到0
             this.modelMatrix.rotate(this.horizontalAngle, 0, 1, 0);
-            this.modelMatrix.scale(0.4, 10, 0.4);
+            this.pushMatrix(this.modelMatrix);
+
             this.drawBox(
                 gl, 
                 n, 
                 this.modelMatrix, 
                 this.mvpMatrix, 
                 this.normalMatrix, 
+                { x: 0.4,  y: 10, z:  0.4}
             );
             
+            this.modelMatrix = this.popMatrix();
             // --- 小臂arm2  ----arm2绘制使用arm1的模型矩阵
-            this.modelMatrix.setTranslate(0, 1, 0);  // y中心从 0 到 1 ,顶面在y轴 0 移动到 2, y移动到2
-            this.modelMatrix.rotate(this.horizontalAngle, 0, 1, 0);
-            this.modelMatrix.rotate(this.verticalAngle, 0, 0, 1);  
-            this.modelMatrix.scale(0.6, 10, 0.6);
+            this.modelMatrix.translate(0, 2, 0);  // y中心从 -1 到 1 ,顶面在y轴 0 移动到 2, y移动到2
+            this.modelMatrix.rotate(this.verticalAngle, 0, 0, 1);
+            this.pushMatrix(this.modelMatrix);  
             this.drawBox(
                 gl, 
                 n, 
                 this.modelMatrix, 
                 this.mvpMatrix, 
                 this.normalMatrix, 
+                { x: 0.6, y: 10, z:  0.6},
             );
 
+            this.modelMatrix = this.popMatrix();
             // --- palm----重建矩阵
-            this.modelMatrix.setTranslate(0, 2.3, 0);  // y中心从 0 到 2.3， 顶面从2移动到2.3 ,Ty = 1.3/scaleY
-            this.modelMatrix.rotate(this.horizontalAngle, 0, 1, 0);
-            this.modelMatrix.rotate(this.verticalAngle, 0, 0, 1);  
-            this.modelMatrix.scale(0.8, 3, 0.2);
+            this.modelMatrix.translate(0, 1.3, 0);  // y中心从 1 到 2.3， 顶面从2移动到2.3 ,Ty = 1.3/scaleY
             this.drawBox(
                 gl, 
                 n, 
                 this.modelMatrix, 
                 this.mvpMatrix, 
                 this.normalMatrix, 
+                { x: 0.8, y: 3, z:  0.2}
             );
 
         },
