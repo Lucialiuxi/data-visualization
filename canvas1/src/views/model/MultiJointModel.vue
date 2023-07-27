@@ -114,7 +114,7 @@ export default {
                 100,
             );
             this.viewProjMatrix.lookAt(
-                6, 3, 10,
+                6, 2, 10,
                 0, 0, 0,
                 0, 1, 0,
             );
@@ -224,9 +224,10 @@ export default {
             );
             
             // --- 小臂arm2  ----arm2绘制使用arm1的模型矩阵
-            this.modelMatrix.translate(0, 0.2, 0);  // y中心从 -1 到 1 ,顶面在y轴 0 移动到 2, y移动到2，Ty = 2/scaleY
+            this.modelMatrix.setTranslate(0, 1, 0);  // y中心从 0 到 1 ,顶面在y轴 0 移动到 2, y移动到2
+            this.modelMatrix.rotate(this.horizontalAngle, 0, 1, 0);
             this.modelMatrix.rotate(this.verticalAngle, 0, 0, 1);  
-            this.modelMatrix.scale(1.2, 1, 1);
+            this.modelMatrix.scale(0.6, 10, 0.6);
             this.drawBox(
                 gl, 
                 n, 
@@ -236,8 +237,10 @@ export default {
             );
 
             // --- palm----重建矩阵
-            this.modelMatrix.translate(0, 0.13, 0);  // y中心从 1 到 2.3， 顶面从2移动到2.3 ,Ty = 1.3/scaleY
-            this.modelMatrix.scale(1, 0.3, 0.5);
+            this.modelMatrix.setTranslate(0, 2.3, 0);  // y中心从 0 到 2.3， 顶面从2移动到2.3 ,Ty = 1.3/scaleY
+            this.modelMatrix.rotate(this.horizontalAngle, 0, 1, 0);
+            this.modelMatrix.rotate(this.verticalAngle, 0, 0, 1);  
+            this.modelMatrix.scale(0.8, 3, 0.2);
             this.drawBox(
                 gl, 
                 n, 
