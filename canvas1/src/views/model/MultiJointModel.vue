@@ -12,19 +12,24 @@ import Matrix4 from '@lib/cuon-matrix.js';
  * 运动描述：
  *  大臂arm1：左右方向键控制arm1(同时带动整条手臂)水平转动（绕Y轴）；
  *  小臂arm2：上下方向键控制arm2绕joint1关节垂直转动（绕Z轴）。
+ *  手掌palm: 使用xz键控制palm绕x轴旋转
+ *  手指finger1: as键控制finger1绕x轴旋转
+ *  手指finger1: qw键控制finger1绕x轴旋转
  * 
  *  ❓ 如何做到arm2变化，arm1不变
  */
 export default {
     data() {
         return {
-            verticalAngle: 0, // 垂直角度
-            horizontalAngle: 0, // 水平角度
+            verticalAngle: 0, // arm2旋转的垂直角度
+            horizontalAngle: 0, // 整条手臂旋转的水平角度
+            palmAngle: 0, // 手腕绕x轴旋转的角度
+            finger1Angle: 0,  // finger1绕x轴旋转的角度
+            finger2Angle: 0,  // finger2绕x轴旋转的角度
             viewProjMatrix: new Matrix4(), // 视图投影矩阵
             modelMatrix: new Matrix4(),// 模型矩阵
             mvpMatrix: new Matrix4(), // 模型视图投影矩阵
             normalMatrix: new Matrix4(), // 法向量变换矩阵,
-            key: '',
             g_matrixStack: [], // 存储矩阵的栈
         }
     },
@@ -125,6 +130,7 @@ export default {
             this.draw(gl, n);
 
             document.onkeydown = ({ keyCode }) => {
+                console.log(keyCode)
                 switch(keyCode){
                     case 37: // 左键
                         this.horizontalAngle -= 5;
@@ -135,14 +141,52 @@ export default {
                         this.draw(gl, n);
                     break;
                     case 38: // 上键
-                        if (this.verticalAngle <= 40) {
+                        if (this.verticalAngle <= 15) {
                             this.verticalAngle += 5;
                             this.draw(gl, n);
                         }
                     break;
                     case 40:  // 下键
-                        if (this.verticalAngle >= -40) {
+                        if (this.verticalAngle >= -15) {
                             this.verticalAngle -= 5;
+                            this.draw(gl, n);
+                        }
+                    case 88: // x
+                    if (this.palmAngle >= -15) {
+                            this.palmAngle -= 5;
+                            this.draw(gl, n);
+                        }
+                    break;
+
+                    case 90: // z
+                        if (this.palmAngle <= 15) {
+                            this.palmAngle += 5;
+                            this.draw(gl, n);
+                        }
+                    break;
+
+                    case 65: // a
+                        if (this.finger1Angle <= 40) {
+                            this.finger1Angle += 5;
+                            this.draw(gl, n);
+                        }
+                    break;
+                    case 83: // s
+                        if (this.finger1Angle >= -5) {
+                            this.finger1Angle -= 5;
+                            this.draw(gl, n);
+                        }
+                    break;
+
+                    case 81: // q
+                        if (this.finger2Angle <= 40) {
+                            this.finger2Angle += 5;
+                            this.draw(gl, n);
+                        }
+                    break;
+                    case 87: // w
+                        if (this.finger2Angle >= -5) {
+                            this.finger2Angle -= 5;
                             this.draw(gl, n);
                         }
                     break;
@@ -212,7 +256,7 @@ export default {
             // 使用预设值来清空缓冲
             gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
 
-            // --- 底座base ---- 
+            // --- 底座base
             this.modelMatrix.setTranslate(0, -2.1, 0); // y中心从0到-2.1,顶面在-2
             this.drawBox(
                 gl, 
@@ -222,7 +266,7 @@ export default {
                 this.normalMatrix, 
             );
 
-            // --- 大臂arm1 ----arm1绘制使用base的模型矩阵
+            // --- 大臂arm1
             this.modelMatrix.translate(0, 1.1, 0); // y 中心从-2.1 到 -1， 顶面在Y轴-2移动到0
             this.modelMatrix.rotate(this.horizontalAngle, 0, 1, 0);
             this.pushMatrix(this.modelMatrix);
@@ -237,7 +281,7 @@ export default {
             );
             
             this.modelMatrix = this.popMatrix();
-            // --- 小臂arm2  ----arm2绘制使用arm1的模型矩阵
+            // --- 小臂arm2
             this.modelMatrix.translate(0, 2, 0);  // y中心从 -1 到 1 ,顶面在y轴 0 移动到 2, y移动到2
             this.modelMatrix.rotate(this.verticalAngle, 0, 0, 1);
             this.pushMatrix(this.modelMatrix);  
@@ -251,17 +295,46 @@ export default {
             );
 
             this.modelMatrix = this.popMatrix();
-            // --- palm----重建矩阵
-            this.modelMatrix.translate(0, 1.3, 0);  // y中心从 1 到 2.3， 顶面从2移动到2.3 ,Ty = 1.3/scaleY
+            // --- palm
+            this.modelMatrix.translate(0, 1.3, 0);  // y中心从 1 到 2.3， 顶面从2移动到2.6
+            this.modelMatrix.rotate(this.palmAngle, 1, 0, 0);
+            this.pushMatrix(this.modelMatrix);  
             this.drawBox(
                 gl, 
                 n, 
                 this.modelMatrix, 
                 this.mvpMatrix, 
                 this.normalMatrix, 
-                { x: 0.8, y: 3, z:  0.2}
+                { x: 0.8, y: 3, z:  0.2 }
             );
 
+            this.modelMatrix = this.popMatrix();
+            // --- finger1
+            this.modelMatrix.translate(-0.5, 0.6, 0);  // y中心从 2.3 到 2.9， 顶面从2.6移动到3.2 
+            this.pushMatrix(this.modelMatrix);  
+            this.modelMatrix.rotate(this.finger1Angle, 1, 0, 0);
+            this.drawBox(
+                gl, 
+                n, 
+                this.modelMatrix, 
+                this.mvpMatrix, 
+                this.normalMatrix, 
+                { x: 0.1, y: 3, z:  0.1 }
+            );
+
+            this.modelMatrix = this.popMatrix();
+            // --- finger2
+            this.modelMatrix.translate(1, 0, 0);  // y中心从 2.3 到 2.9， 顶面从2.6移动到3.2 
+            this.modelMatrix.rotate(this.finger2Angle, 1, 0, 0);
+            this.pushMatrix(this.modelMatrix);  
+            this.drawBox(
+                gl, 
+                n, 
+                this.modelMatrix, 
+                this.mvpMatrix, 
+                this.normalMatrix, 
+                { x: 0.1, y: 3, z:  0.1 }
+            );
         },
         // 创建缓冲对象
         initVertexBuffers(gl) {
@@ -364,11 +437,11 @@ export default {
  * 1 调用3次只画出2个立方体，第3个未生效:
  *  原因：是translate值过大 显示超出了可视区
  * 2 arm2垂直旋转的时候，每次旋转都会拉伸
- *  原因：scale调用放到了rotate之前，正确的应该是先rotate再scale
+ *  原因：setTranslate、 setScale、translate、scale 都是基于物体中心的, translate的值会跟矩阵前一次设置的scale相乘
+ *  解决：绘制下一个矩阵之前，把前一个矩阵（不包含scale的矩阵）存入栈中，下一个矩阵使用前一次存入栈中不包含scale的矩阵
  * 
  * 3 setTranslate和setScale也是基于原本的矩阵，并没有新建
  * 
- * 4 setTranslate、 setScale、translate、scale 都是基于物体中心的, translate的值会跟矩阵前一次设置的scale相乘
  * 
  */
 </script>
