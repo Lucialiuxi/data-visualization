@@ -34,26 +34,27 @@ function createProgram(gl, vshader, fshader) {
     return null;
   }
 
-  // Create a program object
+  // 创建程序对象
   var program = gl.createProgram();
   if (!program) {
     return null;
   }
 
-  // Attach the shader objects
+  // 为程序对象分配着色器
   gl.attachShader(program, vertexShader);
   gl.attachShader(program, fragmentShader);
 
-  // Link the program object
+  // 连接程序对象
   gl.linkProgram(program);
 
   // Check the result of linking
   var linked = gl.getProgramParameter(program, gl.LINK_STATUS);
   if (!linked) {
+    // 返回参数中指定的webProgram object的信息，包括在linking过程中的错误以及webProgram objects合法检查的错误
     var error = gl.getProgramInfoLog(program);
     console.log('Failed to link program: ' + error);
     gl.deleteProgram(program);
-    gl.deleteShader(fragmentShader);
+    gl.deleteShader(fragmentShader); // deleteShader并不会立即删除着色器，而是要等到程序对象不再使用该着色器后，才将其删除
     gl.deleteShader(vertexShader);
     return null;
   }
@@ -63,8 +64,8 @@ function createProgram(gl, vshader, fshader) {
 /**
  * Create a shader object
  * @param gl GL 指定渲染上下文
- * @param type  指定顶点着色器程序代码string
- * @param source shader program (string)
+ * @param type  指定顶点着色器程序代码string gl.VERTEX_SHADER || gl.FRAGMENT_SHADER
+ * @param source shader program (string) 着色器程序的源代码
  * @return created shader object, or null if the creation has failed.
  */
 function loadShader(gl, type, source) {
@@ -81,10 +82,10 @@ function loadShader(gl, type, source) {
   // 用于编译一个GLSL着色器，使其成为二进制数据
   gl.compileShader(shader);
 
-  // 返回给定的着色器信息
+  // 返回给定的着色器信息【编译状态】
   var compiled = gl.getShaderParameter(shader, gl.COMPILE_STATUS);
   if (!compiled) {
-    var error = gl.getShaderInfoLog(shader);
+    var error = gl.getShaderInfoLog(shader); // 获取shader指定的着色器的信息日志
     console.log('Failed to compile shader: ' + error);
     gl.deleteShader(shader);
     return null;
