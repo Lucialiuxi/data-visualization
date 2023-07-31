@@ -81,6 +81,7 @@ export const singleRoutes = {
     },
   ]
 };
+
 export const advanceRoutes = {
   path: '/advance/:id?',
   component: () => import('../views/HomeView.vue'),
@@ -320,6 +321,23 @@ const models = {
     },
   ],
 }
+
+// 高级技术
+const seniorTech = {
+  path: '/seniorTech/:id?',
+  component: () => import('../views/HomeView.vue'),
+  name: 'seniorTech',
+  props: {
+    params: '高级技术',
+  },
+  children: [
+    {
+      path: 'rotate-object',
+      name: '鼠标控制物体旋转',
+      component: () => import('../views/seniorTech/RotateObject.vue'), 
+    }
+  ],
+}
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -329,6 +347,7 @@ const router = createRouter({
     threeDimensionalSpace,
     light,
     models,
+    seniorTech,
   ],
 })
 
