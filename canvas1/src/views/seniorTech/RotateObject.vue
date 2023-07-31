@@ -36,16 +36,21 @@ export default {
                 varying float v_DotLN; // cosø
 
                 uniform mat4 a_MvpMatrix; // 模型视图透视投影矩阵
+                uniform mat4 a_NormalMatrix; // 记录法向量变化的矩阵
 
                 uniform vec3 a_LightPosition; // 入射光位置（世界坐标）
                 
                 void main() {
                     gl_Position = a_MvpMatrix * a_Position;
 
+                    // 变换后的法向量
+                    vec4 normal = normalize(a_NormalMatrix * a_Normal);
+
                     // 光线方向 
                     vec3 lightDirection = normalize(a_LightPosition - a_Position.rgb);
+
                     // cosø
-                    v_DotLN = max(dot(lightDirection, vec3(a_Normal)), 0.0);
+                    v_DotLN = max(dot(lightDirection, normal.xyz), 0.0);
 
                     v_Color = a_Color;
                 }
@@ -86,6 +91,8 @@ export default {
             }
 
             let n = this.initVertexBuffers(gl);
+            this.matrixHandle(gl, canvas);
+            this.lightEffect(gl);
 
             gl.clearColor(0.9, 0.97, 0.95, 1);
 
@@ -97,8 +104,57 @@ export default {
 
             gl.drawElements(gl.TRIANGLE_STRIP, n, gl.UNSIGNED_BYTE, 0); // mode, count, type, offset
         },
+        // 矩阵相关
+        matrixHandle(gl, canvas) {
+            // 视图矩阵
+            let viewMatrix = new Matrix4();
+            // 模型矩阵
+            let ModelMatrix = new Matrix4();
+            // 法向量矩阵
+            let NormalMatrix = new Matrix4();
+            // 模型视图投影矩阵
+            let mvpMatrix = new Matrix4();
+
+            // 透视投影
+            viewMatrix.setPerspective(
+                30,
+                canvas.width/canvas.height,
+                1,
+                100,
+            );
+
+            // 观察信息
+            viewMatrix.lookAt(
+                3, 3, 7, // 视点
+                0, 0, 1, // 目标点
+                0, 1, 0, // 上方向
+            );
+
+            ModelMatrix.setRotate(10, 1, 0, 0); // 绕X轴旋转10度
+
+
+            mvpMatrix.multiply(viewMatrix);
+
+            let u_MvpMatrix = gl.getUniformLocation(gl.program, 'u_MvpMatrix');
+            gl.uniformMatrix4fv(u_MvpMatrix, false, mvpMatrix.elements);
+
+            let u_NormalMatrix = gl.getUniformLocation(gl.program, 'u_NormalMatrix');
+            gl.uniformMatrix4fv(u_NormalMatrix, false, NormalMatrix.elements);
+
+        },
         // 光照相关
         lightEffect(gl) {
+            // 入射光颜色
+            let u_LightColor = gl.getUniformLocation(gl.program, 'u_LightColor');
+            gl.uniform3f(u_LightColor, 1, 1, 1);
+
+            // 环境光颜色
+            let a_AmbientColor = gl.getUniformLocation(gl.program, 'a_AmbientColor');
+            gl.uniform3f(a_AmbientColor, 1, 1, 0.88);
+
+            // 点光源位置【世界坐标】
+            let a_LightPosition = gl.getUniformLocation(gl.program, 'a_LightPosition');
+            gl.uniform3f(a_LightPosition, 3, 4, 5);
 
         },
         // 创建顶点缓冲对象
