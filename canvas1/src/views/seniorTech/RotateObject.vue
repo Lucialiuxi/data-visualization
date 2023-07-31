@@ -117,7 +117,7 @@ export default {
 
             // 透视投影
             viewMatrix.setPerspective(
-                30,
+                50,
                 canvas.width/canvas.height,
                 1,
                 100,
@@ -126,7 +126,7 @@ export default {
             // 观察信息
             viewMatrix.lookAt(
                 3, 3, 7, // 视点
-                0, 0, 1, // 目标点
+                0, 0, 0, // 目标点
                 0, 1, 0, // 上方向
             );
 
@@ -238,7 +238,8 @@ export default {
             return indices.length;
         },
         // 创建顶点数组缓冲对象
-        initArrayBuffer(gl, data, attr) {
+        initArrayBuffer(gl, array, attr) {
+            let data = new Float32Array(array, 0, array.length);
             let arrayBuffer = gl.createBuffer();
             if (!arrayBuffer) {
                 console.error('数组缓冲对象:'+ attr + '创建失败');
@@ -257,7 +258,8 @@ export default {
             gl.bindBuffer(gl.ARRAY_BUFFER, null);
         },
         // 创建索引缓冲对象
-        initElementArrayBuffer(gl, data) {
+        initElementArrayBuffer(gl, array) {
+            let data = new Uint8Array(array, 0, array.length);
             let elementArrayBuffer = gl.createBuffer();
             if (!elementArrayBuffer) {
                 console.error('索引缓冲对象创建失败');
