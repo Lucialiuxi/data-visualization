@@ -109,9 +109,9 @@ export default {
             // 视图矩阵
             let viewMatrix = new Matrix4();
             // 模型矩阵
-            let ModelMatrix = new Matrix4();
+            let modelMatrix = new Matrix4();
             // 法向量矩阵
-            let NormalMatrix = new Matrix4();
+            let normalMatrix = new Matrix4();
             // 模型视图投影矩阵
             let mvpMatrix = new Matrix4();
 
@@ -130,16 +130,21 @@ export default {
                 0, 1, 0, // 上方向
             );
 
-            ModelMatrix.setRotate(10, 1, 0, 0); // 绕X轴旋转10度
+            modelMatrix.setRotate(10, 1, 0, 0); // 绕X轴旋转10度
 
+            // 求逆转置矩阵【用法向量乘以模型矩阵的逆转置矩阵，就可以求得变换后的法向量】
+            // 自身成为 模型句还早呢的逆矩阵
+            normalMatrix.setInverseOf(modelMatrix);
+            // 对自身进行转置操作，并将自身设置为转置后的结果
+            normalMatrix.transpose();
 
-            mvpMatrix.multiply(viewMatrix);
+            mvpMatrix.multiply(viewMatrix).multiply(modelMatrix);
 
             let u_MvpMatrix = gl.getUniformLocation(gl.program, 'u_MvpMatrix');
             gl.uniformMatrix4fv(u_MvpMatrix, false, mvpMatrix.elements);
 
             let u_NormalMatrix = gl.getUniformLocation(gl.program, 'u_NormalMatrix');
-            gl.uniformMatrix4fv(u_NormalMatrix, false, NormalMatrix.elements);
+            gl.uniformMatrix4fv(u_NormalMatrix, false, normalMatrix.elements);
 
         },
         // 光照相关
