@@ -38,7 +38,7 @@ export default {
                 uniform mat4 a_MvpMatrix; // 模型视图透视投影矩阵
                 uniform mat4 a_NormalMatrix; // 记录法向量变化的矩阵
 
-                uniform vec3 a_LightPosition; // 入射光位置（世界坐标）
+                uniform vec3 u_LightPosition; // 入射光位置（世界坐标）
                 
                 void main() {
                     gl_Position = a_MvpMatrix * a_Position;
@@ -47,7 +47,7 @@ export default {
                     vec4 normal = normalize(a_NormalMatrix * a_Normal);
 
                     // 光线方向 
-                    vec3 lightDirection = normalize(a_LightPosition - a_Position.rgb);
+                    vec3 lightDirection = normalize(u_LightPosition - a_Position.rgb);
 
                     // cosø
                     v_DotLN = max(dot(lightDirection, normal.xyz), 0.0);
@@ -117,7 +117,7 @@ export default {
 
             // 透视投影
             viewMatrix.setPerspective(
-                50,
+                90,
                 canvas.width/canvas.height,
                 1,
                 100,
@@ -125,7 +125,7 @@ export default {
 
             // 观察信息
             viewMatrix.lookAt(
-                3, 3, 7, // 视点
+                -5, 2, 7, // 视点
                 0, 0, 0, // 目标点
                 0, 1, 0, // 上方向
             );
@@ -158,8 +158,8 @@ export default {
             gl.uniform3f(a_AmbientColor, 1, 1, 0.88);
 
             // 点光源位置【世界坐标】
-            let a_LightPosition = gl.getUniformLocation(gl.program, 'a_LightPosition');
-            gl.uniform3f(a_LightPosition, 3, 4, 5);
+            let u_LightPosition = gl.getUniformLocation(gl.program, 'u_LightPosition');
+            gl.uniform3f(u_LightPosition, 4.0, -3.0, 4.0);
 
         },
         // 创建顶点缓冲对象
