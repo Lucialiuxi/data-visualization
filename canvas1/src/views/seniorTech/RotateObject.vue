@@ -35,16 +35,16 @@ export default {
                 varying vec4 v_Color;
                 varying float v_DotLN; // cosø
 
-                uniform mat4 a_MvpMatrix; // 模型视图透视投影矩阵
-                uniform mat4 a_NormalMatrix; // 记录法向量变化的矩阵
+                uniform mat4 u_MvpMatrix; // 模型视图透视投影矩阵
+                uniform mat4 u_NormalMatrix; // 记录法向量变化的矩阵
 
                 uniform vec3 u_LightPosition; // 入射光位置（世界坐标）
                 
                 void main() {
-                    gl_Position = a_MvpMatrix * a_Position;
+                    gl_Position = u_MvpMatrix * a_Position;
 
                     // 变换后的法向量
-                    vec4 normal = normalize(a_NormalMatrix * a_Normal);
+                    vec4 normal = normalize(u_NormalMatrix * a_Normal);
 
                     // 光线方向 
                     vec3 lightDirection = normalize(u_LightPosition - a_Position.rgb);
