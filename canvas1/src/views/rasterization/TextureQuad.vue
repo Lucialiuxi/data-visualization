@@ -111,11 +111,11 @@ export default {
             return true;
         },
         loadTexture(gl, n, texture, u_Sampler, image) {
-            // 对纹理图像进行y轴反转
+            // 对纹理图像进行y轴翻转
             gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
             // 激活0号纹理单元
             gl.activeTexture(gl.TEXTURE0);
-            // 想target绑定纹理对象
+            // 向target绑定纹理对象
             gl.bindTexture(gl.TEXTURE_2D, texture);
             // 配置纹理参数(非二次幂图片)
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
