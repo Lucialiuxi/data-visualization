@@ -18,7 +18,10 @@ import Matrix4 from '@lib/cuon-matrix.js';
  */
 export default {
     data() {
-        return {};
+        return {
+            currentAngle: [ 0.0, 0.0 ], // [绕X轴旋转角度, 绕Y轴旋转角度]
+            lastAngle: [ 0.0, 0.0 ], // 记录前一次拖拽旋转的情况，用于比较确认是否重绘
+        };
     },
     mounted(){
         this.paintHandle();
@@ -70,6 +73,7 @@ export default {
             }
 
             let n = this.initVertexBuffers(gl);
+            this.initEventHandle(gl, canvas, n);
             this.matrixHandle(gl, canvas);
             this.initTexture(gl, n);
         },
@@ -110,7 +114,8 @@ export default {
                 0, 1, 0, // 上方向
             );
 
-            modelMatrix.setRotate(10, 1, 0, 0); // 绕X轴旋转10度
+            modelMatrix.setRotate(this.currentAngle[0], 1, 0, 0); // 绕X轴旋转
+            modelMatrix.rotate(this.currentAngle[1], 0, 1, 0); // 绕Y轴旋转
 
             // 求逆转置矩阵【用法向量乘以模型矩阵的逆转置矩阵，就可以求得变换后的法向量】
             // 自身成为 模型句还早呢的逆矩阵
@@ -249,6 +254,54 @@ export default {
             gl.uniform1i(u_Sampler, 0);
             this.draw(gl, n)
         },
+        initEventHandle(gl, canvas, n) {
+            let dragging = false; // 是否在拖动
+            let lastX = -1, lastY = -1; // 鼠标的最后位置
+
+            canvas.onmousedown = (ev) => {
+                let { clientX: x, clientY: y } = ev;
+                // 如果鼠标在canvas内就开始拖动
+
+                let rect = ev.target.getBoundingClientRect();
+                if(rect.left <= x && x <= rect.right && rect.top <= y &&  y <= rect.bottom) { 
+                    lastX = x;
+                    lastY = y;
+                    dragging = true;
+                }
+            };
+
+            canvas.onmouseup = (ev) => {
+                if (this.lastAngle[0] !== this.currentAngle[0] || 
+                this.lastAngle[1] !== this.currentAngle[1]
+                ) {
+                    this.lastAngle = [].concat(this.currentAngle);
+                }
+                dragging = false;
+            };
+
+            canvas.onmousemove = (ev) => {
+                let { clientX: x, clientY: y } = ev;
+                if (dragging) {
+                    let factor = 100/canvas.height; // 旋转因子
+                    let dx = factor * (x - lastX);
+                    let dy = factor * (y - lastY);
+                    // 将沿Y轴旋转的角度控制在90°到-90°之间
+                    this.currentAngle[0] = Math.max(Math.min(this.currentAngle[0] + dy, 90), -90);
+                    this.currentAngle[1] = this.currentAngle[1] + dx;
+
+                    if (this.lastAngle[0] !== this.currentAngle[0] || 
+                    this.lastAngle[1] !== this.currentAngle[1]
+                    ) {
+                        this.matrixHandle(gl, canvas);
+                        this.initTexture(gl, n);
+                        this.draw(gl, n);
+                    }
+                }
+                lastX = x;
+                lastY = y;
+            };
+            
+        }
     },
 }
 </script>
