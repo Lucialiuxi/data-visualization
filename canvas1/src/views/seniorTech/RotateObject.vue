@@ -28,12 +28,9 @@ export default {
             let VSHADER_SOURCE = `
                 precision mediump float;
 
-                attribute vec4 a_Color;
                 attribute vec4 a_Position;
-                attribute vec4 a_Normal; // 法线方向（法向量）
-
-                varying vec4 v_Color;
-                varying float v_DotLN; // cosø
+                attribute vec2 a_TexCoord; // 纹理坐标
+                varying vec2 v_TexCoord;
 
                 uniform mat4 u_MvpMatrix; // 模型视图透视投影矩阵
                 uniform mat4 u_NormalMatrix; // 记录法向量变化的矩阵
@@ -42,35 +39,17 @@ export default {
                 
                 void main() {
                     gl_Position = u_MvpMatrix * a_Position;
-
-                    // 变换后的法向量
-                    vec4 normal = normalize(u_NormalMatrix * a_Normal);
-
-                    // 光线方向 
-                    vec3 lightDirection = normalize(u_LightPosition - a_Position.rgb);
-
-                    // cosø
-                    v_DotLN = max(dot(lightDirection, normal.xyz), 0.0);
-
-                    v_Color = a_Color;
+                    v_TexCoord = a_TexCoord;
                 }
             `;
             let FASHDER_SOURCE = `
                 precision mediump float;
 
-                uniform vec3 a_LightColor; // 入射光颜色
-                uniform vec3 a_AmbientColor; // 环境光颜色
-                
-                varying vec4 v_Color;
-                varying float v_DotLN;
+                uniform sampler2D u_Sampler;
+                varying vec2 v_TexCoord;
 
                 void main() {
-                    // 漫反射光颜色
-                    vec3 diffuseColor = a_LightColor * v_Color.rgb * v_DotLN;
-                    // 环境反射光颜色
-                    vec3 ambientEffectColor = a_AmbientColor * v_Color.rgb;
-
-                    gl_FragColor = vec4(diffuseColor + ambientEffectColor, v_Color.a);
+                    gl_FragColor = texture2D(u_Sampler, v_TexCoord);
                 }
             `;
 
@@ -92,7 +71,7 @@ export default {
 
             let n = this.initVertexBuffers(gl);
             this.matrixHandle(gl, canvas);
-            this.lightEffect(gl);
+            this.initTexture(gl);
 
             gl.clearColor(0.9, 0.97, 0.95, 1);
 
@@ -147,21 +126,6 @@ export default {
             gl.uniformMatrix4fv(u_NormalMatrix, false, normalMatrix.elements);
 
         },
-        // 光照相关
-        lightEffect(gl) {
-            // 入射光颜色
-            let u_LightColor = gl.getUniformLocation(gl.program, 'u_LightColor');
-            gl.uniform3f(u_LightColor, 1, 1, 1);
-
-            // 环境光颜色
-            let a_AmbientColor = gl.getUniformLocation(gl.program, 'a_AmbientColor');
-            gl.uniform3f(a_AmbientColor, 1, 1, 0.88);
-
-            // 点光源位置【世界坐标】
-            let u_LightPosition = gl.getUniformLocation(gl.program, 'u_LightPosition');
-            gl.uniform3f(u_LightPosition, 4.0, -3.0, 4.0);
-
-        },
         // 创建顶点缓冲对象
         initVertexBuffers(gl) {
             // 顶点坐标
@@ -188,38 +152,19 @@ export default {
                 // 底面 2734
                 ...v2, ...v7,...v3, ...v4, 
             ];
-            // 每个面的法向量
-            let top = [  0.0, 1.0, 0.0 ], 
-                bottom = [ 0.0, -1.0, 0.0 ],
-                left = [ -1.0, 0.0, 0.0 ],
-                right = [ 1.0, 0.0, 0.0 ],
-                front = [ 0.0, 0.0, 1.0 ],
-                back = [ 0.0, 0.0, -1.0];
-
-            let normals = [
-                ...front, ...front, ...front, ...front,
-                ...back, ...back, ...back, ...back,
-                ...left, ...left, ...left, ...left,
-                ...right, ...right, ...right, ...right,
-                ...top, ...top, ...top, ...top,
-                ...bottom, ...bottom, ...bottom, ...bottom,
-            ];
-            // 颜色
-            let pink = [ 0.98, 0.88, 0.93 ],
-                red = [ 1.0, 0.0, 0.0 ],
-                yellow = [ 1.0, 1.0, 0.0 ],
-                blue = [ 0.0, 0.8, 1.0 ],
-                // 青色
-                cyan = [ 0.4, 0.6, 0.6 ],
-                green = [ 0.13, 0.7, 0.67 ];
-
-            let colors = [
-                ...pink,  ...pink,  ...pink,  ...pink,
-                ...red,  ...red,  ...red,  ...red,
-                ...yellow,  ...yellow,  ...yellow,  ...yellow,
-                ...blue,  ...blue,  ...blue,  ...blue,
-                ...cyan,  ...cyan,  ...cyan,  ...cyan,
-                ...green,  ...green,  ...green,  ...green,
+            // 每个面的纹理坐标
+            let topL = [ 0.0, 1.0 ], 
+                topR = [ 1.0, 1.0 ],
+                bottomL = [ 0.0, 0.0 ],
+                bottomR = [ 1.0, 0.0 ];
+            
+            let texCoords = [
+                ...topL, ...bottomL, ...topR, ...bottomR,
+                ...topL, ...bottomL, ...topR, ...bottomR,
+                ...topL, ...bottomL, ...topR, ...bottomR,
+                ...topL, ...bottomL, ...topR, ...bottomR,
+                ...topL, ...bottomL, ...topR, ...bottomR,
+                ...topL, ...bottomL, ...topR, ...bottomR,
             ];
 
             let indices = [
@@ -231,14 +176,13 @@ export default {
                 20, 21, 22, 23,
             ];
             
-            this.initArrayBuffer(gl, vertexAxis, 'a_Position');
-            this.initArrayBuffer(gl, colors, 'a_Color');
-            this.initArrayBuffer(gl, normals, 'a_Normal');
+            this.initArrayBuffer(gl, vertexAxis, 'a_Position', 3);
+            this.initArrayBuffer(gl, texCoords, 'a_TexCoord', 2);
             this.initElementArrayBuffer(gl, indices);
             return indices.length;
         },
         // 创建顶点数组缓冲对象
-        initArrayBuffer(gl, array, attr) {
+        initArrayBuffer(gl, array, attr, size) {
             let data = new Float32Array(array, 0, array.length);
             let arrayBuffer = gl.createBuffer();
             if (!arrayBuffer) {
@@ -253,7 +197,7 @@ export default {
                 console.error(attr + '的存储位置获取失败');
                 return;
             }
-            gl.vertexAttribPointer(location, 3, gl.FLOAT, false, 0, 0);
+            gl.vertexAttribPointer(location, size, gl.FLOAT, false, 0, 0);
             gl.enableVertexAttribArray(location);
             gl.bindBuffer(gl.ARRAY_BUFFER, null);
         },
@@ -267,6 +211,42 @@ export default {
             }
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, elementArrayBuffer);
             gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, data, gl.STATIC_DRAW);
+        },
+        //初始化纹理
+        initTexture(gl) {
+            let texture = gl.createTexture();
+            let image = new Image();
+
+            let u_Sampler = gl.getUniformLocation(gl.program, 'u_Sampler');
+            if (u_Sampler < 0) {
+                console.error('获取u_Sampler储存位置失败');
+                return;
+            }
+
+            image.onload = (ev) => {
+                console.log(ev)
+                this.loadTexture(gl, texture, u_Sampler, image);
+            };
+            image.src = '/img/water.webp';
+        },
+        // 加载纹理
+        loadTexture(gl, texture, u_Sampler, image) {
+            // 图像预处理【对纹理图像进行Y轴翻转】
+            gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+            let textureOrder = gl.TEXTURE0;
+            // 激活制定的纹理单元
+            gl.activeTexture(textureOrder);
+            // 开启纹理对象，以及将纹理对象绑定到纹理单元上
+            gl.bindTexture(gl.TEXTURE_2D, texture);
+            // 配置纹理参数
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+            // 指定二维纹理图像
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image);
+            // 将纹理单元传递给片元着色器
+            gl.uniform1i(u_Sampler, 0);
         },
     },
 }
