@@ -71,8 +71,9 @@ export default {
 
             let n = this.initVertexBuffers(gl);
             this.matrixHandle(gl, canvas);
-            this.initTexture(gl);
-
+            this.initTexture(gl, n);
+        },
+        draw(gl, n) {
             gl.clearColor(0.9, 0.97, 0.95, 1);
 
             // 开启隐藏面消除
@@ -96,7 +97,7 @@ export default {
 
             // 透视投影
             viewMatrix.setPerspective(
-                90,
+                30,
                 canvas.width/canvas.height,
                 1,
                 100,
@@ -213,7 +214,7 @@ export default {
             gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, data, gl.STATIC_DRAW);
         },
         //初始化纹理
-        initTexture(gl) {
+        initTexture(gl, n) {
             let texture = gl.createTexture();
             let image = new Image();
 
@@ -224,13 +225,12 @@ export default {
             }
 
             image.onload = (ev) => {
-                console.log(ev)
-                this.loadTexture(gl, texture, u_Sampler, image);
+                this.loadTexture(gl, n, texture, u_Sampler, image);
             };
             image.src = '/img/water.webp';
         },
         // 加载纹理
-        loadTexture(gl, texture, u_Sampler, image) {
+        loadTexture(gl, n, texture, u_Sampler, image) {
             // 图像预处理【对纹理图像进行Y轴翻转】
             gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
             let textureOrder = gl.TEXTURE0;
@@ -247,6 +247,7 @@ export default {
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image);
             // 将纹理单元传递给片元着色器
             gl.uniform1i(u_Sampler, 0);
+            this.draw(gl, n)
         },
     },
 }
