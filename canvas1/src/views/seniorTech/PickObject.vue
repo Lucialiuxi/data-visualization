@@ -1,5 +1,6 @@
 <template>
   <div>
+    <p>鼠标选中立方体 变成红色 放开恢复颜色</p>
     <canvas id="pick-object" height="600" width="600"></canvas>
   </div>
 </template>
@@ -23,6 +24,7 @@ export default {
                 uniform mat4 u_MvpMatrix; // 模型视图投影矩阵
                 uniform mat4 u_NormalMatrix; // 法向量变换矩阵
                 uniform mat4 u_ModelMatrix; // 模型矩阵
+                uniform bool u_Clicked; // 监听鼠标点击
 
                 varying vec4 v_Color;
                 varying vec3 v_Normal; // 计算变换后的法向量
@@ -37,7 +39,11 @@ export default {
                     // 顶点的世界坐标
                     v_VertexPosition = vec3(u_ModelMatrix * a_Position);
 
-                    v_Color = a_Color;
+                    if (u_Clicked) { // 鼠标点击选中的时候 整个立方体都为红色
+                        v_Color = vec4(1.0, 0.0, 0.0, 1.0);
+                    } else {
+                        v_Color = a_Color;
+                    }
                 }
             `;
             let FSHADER_SOURCE = `
@@ -80,12 +86,68 @@ export default {
                 console.error('着色器初始化失败');
                 return;
             }
-            let n = this.initVertexBuffers(gl);
+            
+            let u_Clicked = gl.getUniformLocation(gl.program, 'u_Clicked');
+            gl.uniform1i(u_Clicked, 0); // 初始化设置为false
 
+            let n = this.initVertexBuffers(gl);
+            this.initEventHandle(gl, n, canvas, u_Clicked);
+            this.draw(gl, n, canvas);
+        },
+        // 事件监听
+        initEventHandle(gl, n, canvas, u_Clicked) {
+            let picked = false;
+            let rect = canvas.getBoundingClientRect();
+            canvas.onmousedown = (ev) => {
+                let { clientX, clientY } = ev;
+                if (
+                    rect.left <= clientX && clientX <= rect.right 
+                    && rect.top <= clientY && clientY <= rect.bottom
+                ) { // 鼠标在canvas上
+                    let x_in_canvas = clientX - rect.left,
+                    y_in_canvas = rect.bottom - clientY;
+                    picked = this.check(gl, n, x_in_canvas, y_in_canvas, u_Clicked, canvas);
+                    if (picked) {
+                        console.log('立方体被选中');
+                    }
+                }
+
+            };
+            canvas.onmouseup = (ev) => {
+                if (picked) {
+                    gl.uniform1i(u_Clicked, 0);
+                    this.draw(gl, n, canvas);
+                    picked = false;
+                }
+            };
+        },
+        check(gl, n, x, y, u_Clicked, canvas) {
+            let picked = false;
+            gl.uniform1i(u_Clicked, 1); // 将立方体绘制为红色
+            this.draw(gl, n, canvas);
+            // 读取点击位置的颜色颜色值
+            var pixels = new Uint8Array(4); // 存储像素的数组
+            // 从当前的颜色帧缓冲中读取指定矩形的像素矩形并转换为类型数组
+            gl.readPixels(x, y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+
+            // 点击的像素点如果颜色不是canvas的背景色，就说明选中了立方体
+            let backColor = [0, 186, 250, 255]; 
+            picked = !(pixels[0] === backColor[0] && pixels[1] === backColor[1] && pixels[2] === backColor[2]);
+            if (!picked) {
+                gl.uniform1i(u_Clicked, 0);
+                this.draw(gl, n, canvas);
+            } else {
+                gl.uniform1i(u_Clicked, 1); 
+                this.draw(gl, n, canvas);
+            }
+            return picked;
+           
+        },
+        draw(gl, n, canvas) {
             this.matrixHandle(gl, canvas);
             this.lightEffect(gl);
 
-            gl.clearColor(0.4, 0.6, 0.9, 1.0);
+            gl.clearColor(0, 0.73, 0.98, 1.0);
             // 消除隐藏面
             gl.enable(gl.DEPTH_TEST);
 
@@ -261,19 +323,6 @@ export default {
         }
     }
 }
-/**
- * 出现的错误：
- *  1. 问题立方体是纯黑色
- *  原因：光线方向公式用错
- *  光线方向 = normalize(光源位置 - 顶点的世界坐标)
- *  ⭐️顶点的世界坐标 = 模型矩阵 * 顶点坐标
- * 
- *  2.问题：立方体的每一个面都是背光的效果
- *  原因：
- *      没有在缓冲对象中定义和存储法向量
- *  
- * 
- */
 </script>
 
 <style>
