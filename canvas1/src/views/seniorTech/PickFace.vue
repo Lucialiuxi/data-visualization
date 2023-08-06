@@ -23,6 +23,8 @@ export default {
         };
     },
     mounted(){
+        let newColors = this.cubeColors.map(item => this.transferToRGB(item));
+        console.log(newColors)
         this.paint();
     },
     methods: {
@@ -32,28 +34,18 @@ export default {
                 
                 attribute vec4 a_Position;
                 attribute vec4 a_Color;
-                attribute vec4 a_Normal; // 法向量-即法线方向
                 attribute float a_Face; // 立方体表面编号⭐️【赋值的时候不能用int类型】
 
                 uniform mat4 u_MvpMatrix; // 模型视图投影矩阵
-                uniform mat4 u_NormalMatrix; // 法向量变换矩阵
                 uniform mat4 u_ModelMatrix; // 模型矩阵
                 uniform int u_PickedFace; // 被选中表面的编号⭐️
                
 
                 varying vec4 v_Color;
-                varying vec3 v_Normal; // 计算变换后的法向量
-                varying vec3 v_VertexPosition; // 顶点的世界坐标
 
                 void main () {
                     gl_Position = u_MvpMatrix * a_Position;
                     
-                    // 计算变换后的法向量并归一化 矩阵右乘矢量： 矩阵*矢量=矢量
-                    v_Normal = vec3(u_NormalMatrix * a_Normal);
-
-                    // 顶点的世界坐标
-                    v_VertexPosition = vec3(u_ModelMatrix * a_Position);
-
                     int face = int(a_Face);
                     if (u_PickedFace != -1 && face == u_PickedFace) {
                         v_Color = vec4(1.0, 1.0, 1.0, 1.0);
@@ -66,29 +58,9 @@ export default {
                 precision highp float;
 
                 varying vec4 v_Color;
-                varying vec3 v_Normal; // 计算变换后的法向量
-                varying vec3 v_VertexPosition; // 顶点的世界坐标
-
-                uniform vec3 u_LightColor; // 入射光颜色 
-                uniform vec3 u_LightPosition; // 点光源位置
-                uniform vec3 u_AmbientColor; // 环境光颜色
 
                 void main() {
-                    // 计算光线方向
-                    vec3 lightDirection = normalize(u_LightPosition - v_VertexPosition);
-
-                    // 归一化法向量
-                    vec3 normal = normalize(v_Normal);
-
-                    // cosø = 光线方向*法线方向
-                    float dotLN = max(dot(lightDirection, normal), 0.0);
-
-                    // 漫反射颜色 = 入射光颜色 * 表面基地色 * cosø
-                    vec3 diffuseColor = u_LightColor * v_Color.rgb * dotLN;
-
-                    // 环境反射光颜色 = 环境光颜色 * 表面基底色
-                    vec3 ambientReflectColor = u_AmbientColor * v_Color.rgb;
-                    gl_FragColor = vec4(diffuseColor + ambientReflectColor, v_Color.a);
+                    gl_FragColor = v_Color;
                 }
             `;
             
@@ -161,7 +133,6 @@ export default {
         },
         draw(gl, n, canvas) {
             this.matrixHandle(gl, canvas);
-            this.lightEffect(gl);
 
             gl.clearColor(...background, 1.0);
             // 消除隐藏面
@@ -185,20 +156,6 @@ export default {
             }
             return location;
         },
-        // 光照相关
-        lightEffect(gl) {
-            // 光线颜色
-            let u_LightColor = this.getUniformLocation(gl, 'u_LightColor');
-            gl.uniform3f(u_LightColor, 1.0, 1.0, 1.0);
-
-            // 环境光颜色
-            let u_AmbientColor = this.getUniformLocation(gl, 'u_AmbientColor');
-            gl.uniform3f(u_AmbientColor, 0.2, 0.2, 0.2);
-
-            // 点光源位置
-            let u_LightPosition = this.getUniformLocation(gl, 'u_LightPosition');
-            gl.uniform3f(u_LightPosition, 4.0, -3.0, 4.0);
-        },
         // 矩阵相关
         matrixHandle(gl, canvas) {
             // 模型矩阵
@@ -219,7 +176,7 @@ export default {
             );
             // 设置观察信息
             mvpMatrix.lookAt(
-                -5, 2, 7, // 观察视点
+                5, -2, 7, // 观察视点
                 0, 0, 0, // 观察目标点
                 0, 1, 0, // 上方向
             );
@@ -228,11 +185,9 @@ export default {
 
             let u_ModelMatrix = this.getUniformLocation(gl, 'u_ModelMatrix');
             let u_MvpMatrix = this.getUniformLocation(gl, 'u_MvpMatrix');
-            let u_NormalMatrix = this.getUniformLocation(gl, 'u_NormalMatrix');
 
             gl.uniformMatrix4fv(u_ModelMatrix, false,  modelMatrix.elements);
             gl.uniformMatrix4fv(u_MvpMatrix, false,  mvpMatrix.elements);
-            gl.uniformMatrix4fv(u_NormalMatrix, false,  normalMatrix.elements);
         },
         // 创建顶点缓冲对象
         initVertexBuffers(gl) {
@@ -268,22 +223,6 @@ export default {
                 ...cyan, ...cyan, ...cyan, ...cyan,
                 ...green, ...green, ...green, ...green,
             ];
-            // 每个面的法向量
-            let top = [  0.0, 1.0, 0.0 ], 
-                bottom = [ 0.0, -1.0, 0.0 ],
-                left = [ -1.0, 0.0, 0.0 ],
-                right = [ 1.0, 0.0, 0.0 ],
-                front = [ 0.0, 0.0, 1.0 ],
-                back = [ 0.0, 0.0, -1.0];
-            // 法向量
-            let normals = [
-               ...front, ...front, ...front, ...front,
-               ...back, ...back, ...back, ...back,
-               ...left, ...left, ...left, ...left,
-               ...right, ...right, ...right, ...right,
-               ...top, ...top, ...top, ...top,
-               ...bottom, ...bottom, ...bottom, ...bottom,
-            ];
             // 每个面的编号
             let faceOrders = [
                 1, 1, 1, 1,
@@ -305,7 +244,6 @@ export default {
 
             this.initArrayBuffer(gl, vertexAxis, 'a_Position');
             this.initArrayBuffer(gl, colors, 'a_Color');
-            this.initArrayBuffer(gl, normals, 'a_Normal');
             this.initArrayBuffer(gl, faceOrders, 'a_Face', 1, gl.UNSIGNED_BYTE);
             this.initElementArrayBuffer(gl, indices);
             return indices.length;
