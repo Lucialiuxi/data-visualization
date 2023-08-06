@@ -19,12 +19,12 @@ let pink = [ 0.98, 0.88, 0.93 ],
 export default {
     data() {
         return {
-            cubeColors: [ pink, red, yellow, blue, cyan, green ],
+            cubeColors: [],
         };
     },
     mounted(){
-        let newColors = this.cubeColors.map(item => this.transferToRGB(item));
-        console.log(newColors)
+        let colors = [ pink, red, yellow, blue, cyan, green ];
+        this.cubeColors = colors.map(item => this.transferToRGB(item));
         this.paint();
     },
     methods: {
@@ -110,30 +110,31 @@ export default {
             };
         },
         check(gl, n, x, y, u_PickedFace, canvas) {
-            let picked = false;
-            gl.uniform1i(u_PickedFace, -1);
+            let picked = false, pickOrder = -1;
+            gl.uniform1i(u_PickedFace, pickOrder);
             this.draw(gl, n, canvas);
             // 读取点击位置的颜色颜色值
             var pixels = new Uint8Array(4); // 存储像素的数组
             // 从当前的颜色帧缓冲中读取指定矩形的像素矩形并转换为类型数组
             gl.readPixels(x, y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
-            console.log(pixels)
-            // 点击的像素点如果颜色不是canvas的背景色，就说明选中了立方体
-            let backColor = this.transferToRGB(background); 
-            picked = !(pixels[0] === backColor[0] && pixels[1] === backColor[1] && pixels[2] === backColor[2]);
-            if (!picked) {
-                gl.uniform1i(u_PickedFace, -1);
-                this.draw(gl, n, canvas);
-            } else {
-                gl.uniform1i(u_PickedFace, -1);
+            this.cubeColors.forEach((c, i) => {
+                if (
+                    (pixels[0] === c[0] || pixels[0] === c[0] + 1 || pixels[0] === c[0] - 1) && 
+                    (pixels[1] === c[1] || pixels[1] === c[1] + 1 || pixels[1] === c[1] - 1) && 
+                    (pixels[2] === c[2] || pixels[2] === c[2] + 1 || pixels[2] === c[2] - 1)
+                ) { // webGL内部的取色规则既不是向上取整 又不是向下取整  也不是四舍五入，所以只能加判断条件
+                    pickOrder = i;
+                }
+            });
+            if (pickOrder !== -1) {
+                picked = true;
+                gl.uniform1i(u_PickedFace, pickOrder);
                 this.draw(gl, n, canvas);
             }
             return picked;
-           
         },
         draw(gl, n, canvas) {
             this.matrixHandle(gl, canvas);
-
             gl.clearColor(...background, 1.0);
             // 消除隐藏面
             gl.enable(gl.DEPTH_TEST);
@@ -162,8 +163,6 @@ export default {
             let modelMatrix = new Matrix4();
             // 模型视图投影矩阵
             let mvpMatrix = new Matrix4();
-            // 计算法向量变换的矩阵
-            let normalMatrix = new Matrix4();
         
             modelMatrix.setRotate(30, 0, 0, 1); // 绕Z轴旋转30°
 
@@ -225,12 +224,12 @@ export default {
             ];
             // 每个面的编号
             let faceOrders = [
+                0, 0, 0, 0,
                 1, 1, 1, 1,
                 2, 2, 2, 2,
                 3, 3, 3, 3,
                 4, 4, 4, 4,
                 5, 5, 5, 5,
-                6, 6, 6, 6,
             ];
             // 索引
             let indices = [
@@ -282,7 +281,7 @@ export default {
         },
         transferToRGB(percentColor) {
             return percentColor.map(item => {
-                let c = Math.floor(item * 255);
+                let c = Math.round(item * 255);
                 return c;
             });
         },
