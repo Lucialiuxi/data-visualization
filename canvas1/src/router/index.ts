@@ -341,6 +341,11 @@ const seniorTech = {
       name: '选中物体',
       component: () => import('../views/seniorTech/PickObject.vue'), 
     },
+    {
+      path: 'pick-face',
+      name: '选中单面',
+      component: () => import('../views/seniorTech/PickFace.vue'), 
+    },
   ],
 }
 const router = createRouter({
