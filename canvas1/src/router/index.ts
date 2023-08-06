@@ -335,7 +335,12 @@ const seniorTech = {
       path: 'rotate-object',
       name: '鼠标控制物体旋转',
       component: () => import('../views/seniorTech/RotateObject.vue'), 
-    }
+    },
+    {
+      path: 'pick-object',
+      name: '选中物体',
+      component: () => import('../views/seniorTech/PickObject.vue'), 
+    },
   ],
 }
 const router = createRouter({
