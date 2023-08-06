@@ -15,7 +15,13 @@ let pink = [ 0.98, 0.88, 0.93 ],
     cyan = [ 0.4, 0.6, 0.6 ],
     green = [ 0.13, 0.7, 0.67 ],
     background = [ 0.9, 0.97, 0.95 ]; // canvas背景色
+
 export default {
+    data() {
+        return {
+            cubeColors: [ pink, red, yellow, blue, cyan, green ],
+        };
+    },
     mounted(){
         this.paint();
     },
@@ -49,7 +55,7 @@ export default {
                     v_VertexPosition = vec3(u_ModelMatrix * a_Position);
 
                     int face = int(a_Face);
-                    if (u_PickedFace != 0 && face == u_PickedFace) {
+                    if (u_PickedFace != -1 && face == u_PickedFace) {
                         v_Color = vec4(1.0, 1.0, 1.0, 1.0);
                     } else {
                         v_Color = a_Color;
@@ -98,7 +104,7 @@ export default {
             }
             
             let u_PickedFace = gl.getUniformLocation(gl.program, 'u_PickedFace');
-            gl.uniform1i(u_PickedFace, 0); // 初始化设置为false
+            gl.uniform1i(u_PickedFace, -1); // 初始化设置为未选中状态
 
             let n = this.initVertexBuffers(gl);
             this.initEventHandle(gl, n, canvas, u_PickedFace);
@@ -116,7 +122,7 @@ export default {
                 ) { // 鼠标在canvas上
                     let x_in_canvas = clientX - rect.left,
                     y_in_canvas = rect.bottom - clientY;
-                    // picked = this.check(gl, n, x_in_canvas, y_in_canvas, u_PickedFace, canvas);
+                    picked = this.check(gl, n, x_in_canvas, y_in_canvas, u_PickedFace, canvas);
                     if (picked) {
                         console.log('立方体被选中');
                     }
@@ -125,7 +131,7 @@ export default {
             };
             canvas.onmouseup = (ev) => {
                 if (picked) {
-                    gl.uniform1i(u_Clicked, 0);
+                    gl.uniform1i(u_PickedFace, -1);
                     this.draw(gl, n, canvas);
                     picked = false;
                 }
@@ -133,20 +139,21 @@ export default {
         },
         check(gl, n, x, y, u_PickedFace, canvas) {
             let picked = false;
-            gl.uniform1i(u_PickedFace, 1); // 将立方体绘制为红色
+            gl.uniform1i(u_PickedFace, -1);
             this.draw(gl, n, canvas);
             // 读取点击位置的颜色颜色值
             var pixels = new Uint8Array(4); // 存储像素的数组
             // 从当前的颜色帧缓冲中读取指定矩形的像素矩形并转换为类型数组
             gl.readPixels(x, y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+            console.log(pixels)
             // 点击的像素点如果颜色不是canvas的背景色，就说明选中了立方体
             let backColor = this.transferToRGB(background); 
             picked = !(pixels[0] === backColor[0] && pixels[1] === backColor[1] && pixels[2] === backColor[2]);
             if (!picked) {
-                gl.uniform1i(u_Clicked, 0);
+                gl.uniform1i(u_PickedFace, -1);
                 this.draw(gl, n, canvas);
             } else {
-                gl.uniform1i(u_Clicked, 1); 
+                gl.uniform1i(u_PickedFace, -1);
                 this.draw(gl, n, canvas);
             }
             return picked;
