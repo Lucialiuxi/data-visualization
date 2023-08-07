@@ -346,6 +346,11 @@ const seniorTech = {
       name: '选中单面',
       component: () => import('../views/seniorTech/PickFace.vue'), 
     },
+    {
+      path: 'hud',
+      name: '平视显示器',
+      component: () => import('../views/seniorTech/HUD.vue'), 
+    },
   ],
 }
 const router = createRouter({
