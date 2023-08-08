@@ -1,10 +1,19 @@
 <template>
-  <div>
+  <div class="hub-wrap">
     <p>平视显示器（head up display）HUD</p>
+    <canvas id="cube" height="600" width="600"></canvas>
     <canvas id="HUD" height="600" width="600"></canvas>
   </div>
 </template>
 <script>
+/**
+ * 如何实现HUD：
+ *  1.为webGL的三维图形准备一个canvas，同时为二维HUD信息再准备一个canvas。
+ *    令这两个canvas重叠放置，并让HUD的canvas叠在上面。
+ *  2.在前一个canvas上使用webGL API绘制三维场景
+ *  3.在后一个canvas上使用canvas 2D API绘制HUD信息
+ * 
+ */
 import { initShaders, getWebGLContext } from '@lib/cuon-utils.js';
 import Matrix4 from '@lib/cuon-matrix.js';
 
@@ -16,7 +25,7 @@ export default {
         }
     },
     mounted(){
-        this.paint();
+        this.paintCube();
     },
     unmounted() {
         if(this.timer) {
@@ -25,7 +34,7 @@ export default {
         }
     },
     methods: {
-        paint() {
+        paintCube() {
             let VSHADER_SOURCE = `
                 precision mediump float;
                 
@@ -88,7 +97,7 @@ export default {
                 }
             `;
             
-            let canvas = document.getElementById('HUD');
+            let canvas = document.getElementById('cube');
             let gl = getWebGLContext(canvas);
             if (!gl) {
                 console.error('webGL上下文获取失败');
@@ -340,6 +349,26 @@ export default {
 }
 </script>
 
-<style>
-
+<style scoped>
+    .hub-wrap {
+        top: 0;
+        left: 0;
+        height: 100%;
+        
+    }
+    p {
+        position: relative;
+    }
+    canvas {
+       position: absolute;
+       top: 50;
+       left: 0;
+    }
+    canvas[id='cube'] {
+        z-index: 0;
+    }
+    canvas[id='HUD'] {
+        z-index: 1;
+        pointer-events: auto; 
+    }
 </style>
