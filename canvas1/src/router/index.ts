@@ -23,6 +23,11 @@ const canvasBasic = {
       name: '图形(by贝尔塞)',
       component: () => import('../views/canvasBasic/BezierCurveGraphic.vue'),
     },
+    {
+      path: 'path-2d',
+      name: 'Path2D',
+      component: () => import('../views/canvasBasic/Path2DTest.vue'),
+    },
   ],
 };
 const singleRoutes = {

@@ -22,10 +22,10 @@ export default {
                 this.drawHeart(ctx);
             }
         },
-
         // 绘制一个空心的心
         drawHeart(ctx) {
             /**
+             * 三次贝尔塞曲线
              * bezierCurveTo(cpx1, cpy1, cpx2, cpy2, x, y)
              * cpx1, cpy1控制点一
              * cpx1, cpy1控制点二
