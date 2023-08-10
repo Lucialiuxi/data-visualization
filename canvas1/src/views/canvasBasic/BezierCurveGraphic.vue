@@ -13,6 +13,11 @@ export default {
             let canvas = document.getElementById('simple-graphic');
             if (canvas.getContext) {
                 let ctx = canvas.getContext('2d');
+
+                // 给canvas设置背景色
+                ctx.fillStyle = '#e6f8f3';
+                ctx.fillRect(0, 0, 600, 600);
+
                 this.drawDialogBox(ctx);
             }
         },
@@ -24,10 +29,50 @@ export default {
              * x, y 结束点
              */
             ctx.beginPath();
-            ctx.moveTo(0, 0);
-            ctx.quadraticCurveTo(200, 200, 400, 0);
-            ctx.strokeStyle = 'red';
+            ctx.moveTo(75, 25);
+            ctx.quadraticCurveTo(25, 25, 25, 62.5);
+            // ctx.strokeStyle = 'red';
             ctx.stroke();
+            // this.drawSmallCircle(ctx, 75, 25, 2, 'green');
+            // this.drawSmallCircle(ctx, 25, 25, 2, 'pink');
+            // this.drawSmallCircle(ctx, 25, 62.5, 2, 'blue');
+
+
+            ctx.beginPath();
+            ctx.moveTo(75, 25);
+            ctx.quadraticCurveTo(125, 25, 125, 62.5);
+            // ctx.strokeStyle = 'green';
+            ctx.stroke();
+            // this.drawSmallCircle(ctx, 125, 25, 2, 'green');
+
+            ctx.beginPath();
+            ctx.moveTo(25, 62.5);
+            ctx.quadraticCurveTo(25, 100, 50, 100);
+            // ctx.strokeStyle = 'darkblue';
+            ctx.stroke();
+            // this.drawSmallCircle(ctx, 25, 100, 2, 'darkblue');
+
+            ctx.beginPath();
+            ctx.moveTo(50, 100);
+            ctx.quadraticCurveTo(50, 120, 30, 120);
+            // ctx.strokeStyle = 'lightgreen';
+            ctx.stroke();
+            // this.drawSmallCircle(ctx, 50, 120, 2, 'lightgreen');
+
+
+            ctx.beginPath();
+            ctx.moveTo(70, 100);
+            ctx.quadraticCurveTo(60, 120, 30, 120);
+            // ctx.strokeStyle = 'darkred';
+            ctx.stroke();
+            // this.drawSmallCircle(ctx, 60, 120, 2, 'darkred');
+
+            ctx.beginPath();
+            ctx.moveTo(70, 100);
+            ctx.quadraticCurveTo(125, 100, 125, 62.5);
+            // ctx.strokeStyle = 'purple';
+            ctx.stroke();
+            // this.drawSmallCircle(ctx, 60, 130, 2, 'purple');
             
         },
         drawSmallCircle(ctx, x, y, radius, color) {
