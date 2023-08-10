@@ -11,8 +11,13 @@ const canvasBasic = {
     {
       path: 'simple-graphic',
       name: '简单的图形',
-      component: () => import('../views/canvasBasic/simpleGraphic.vue'),
-    }
+      component: () => import('../views/canvasBasic/SimpleGraphic.vue'),
+    },
+    {
+      path: 'bezier-curve',
+      name: '贝尔塞曲线',
+      component: () => import('../views/canvasBasic/BezierCurve.vue'),
+    },
   ],
 };
 const singleRoutes = {
