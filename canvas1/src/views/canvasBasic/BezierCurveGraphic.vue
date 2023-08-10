@@ -19,7 +19,29 @@ export default {
                 ctx.fillRect(0, 0, 600, 600);
 
                 this.drawDialogBox(ctx);
+                this.drawHeart(ctx);
             }
+        },
+
+        // 绘制一个空心的心
+        drawHeart(ctx) {
+            /**
+             * bezierCurveTo(cpx1, cpy1, cpx2, cpy2, x, y)
+             * cpx1, cpy1控制点一
+             * cpx1, cpy1控制点二
+             * x, y 结束点
+             */
+            ctx.beginPath();
+            ctx.moveTo(200, 120);
+            ctx.strokeStyle = 'pink';
+            ctx.bezierCurveTo(70, 50, 200, 200, 200, 200);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(200, 120);
+            ctx.bezierCurveTo(320, 50, 200, 200, 200, 200);
+            ctx.stroke();
+
         },
         // 绘制一个对话框气泡
         drawDialogBox(ctx) {
