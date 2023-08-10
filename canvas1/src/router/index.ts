@@ -1,7 +1,21 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
-
-export const singleRoutes = {
+const canvasBasic = {
+  path: '/canvasBasic/:id?',
+  name: 'canvasBasic',
+  component: () => import('../views/HomeView.vue'),
+  props: {
+    params: 'canvas基础',
+  },
+  children: [
+    {
+      path: 'simple-graphic',
+      name: '简单的图形',
+      component: () => import('../views/canvasBasic/simpleGraphic.vue'),
+    }
+  ],
+};
+const singleRoutes = {
   path: '/simple/:id?',
   component: () => import('../views/HomeView.vue'),
   name: 'simple',
@@ -82,7 +96,7 @@ export const singleRoutes = {
   ]
 };
 
-export const advanceRoutes = {
+const advanceRoutes = {
   path: '/advance/:id?',
   component: () => import('../views/HomeView.vue'),
   name: 'advance',
@@ -110,7 +124,7 @@ export const advanceRoutes = {
 };
 
 // 颜色和纹理(光栅shan化)
-export const rasterizeRoutes  = {
+const rasterizeRoutes  = {
   path: '/rasterize/:id?',
   name: 'rasterize',
   component: () => import('../views/HomeView.vue'),
@@ -152,7 +166,7 @@ export const rasterizeRoutes  = {
 };
 
 // 三维空间
-export const threeDimensionalSpace = {
+ const threeDimensionalSpace = {
   path: '/threeDimensional/:id?',
   component: () => import('../views/HomeView.vue'),
   name: 'threeDimensional',
@@ -356,6 +370,7 @@ const seniorTech = {
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
+    canvasBasic,
     singleRoutes,
     advanceRoutes,
     rasterizeRoutes,

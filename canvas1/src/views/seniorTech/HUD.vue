@@ -26,7 +26,7 @@ export default {
     },
     mounted(){
         this.paintHud();
-        // this.paintCube();
+        this.paintCube();
     },
     unmounted() {
         if(this.timer) {
@@ -66,13 +66,23 @@ export default {
 
                 ctx.strokeStyle = 'rgb(255, 0, 0 )'; // ？ ctx.fillStyle生效了 此处未生效
 
-                // --绘制一个三角形---------------- start
+                // --绘制一个填充三角形---------------- start
                 ctx.beginPath(); // 新建一条路径
                 ctx.moveTo(400, 400); // 将新的一个子路径的起始点移动到(x,y)
                 ctx.lineTo(450, 450); // 使用直线连接子路径的重点到(x,y)【并不会真正的绘制】
                 ctx.lineTo(400, 450);
                 ctx.fill(); // 通过填充途径的内容区域形成实心的图形
-                // --绘制一个三角形---------------- end
+                // --绘制一个填充三角形---------------- end
+
+                // --绘制一个描边三角形---------------- start
+                ctx.beginPath(); // 新建一条路径
+                ctx.moveTo(400, 100); // 将新的一个子路径的起始点移动到(x,y)
+                ctx.lineTo(450, 100); // 使用直线连接子路径的重点到(x,y)【并不会真正的绘制】
+                ctx.lineTo(450, 150);
+                ctx.lineTo(400, 100);
+                ctx.stroke(); // 通过线条来绘制图形轮廓
+                ctx.closePath();
+                // --绘制一个描边三角形---------------- end
 
                 // --绘制一个笑脸----------------start
                 let centerX = 300, centerY = 200;
@@ -440,6 +450,6 @@ export default {
     }
     canvas[id='HUD'] {
         z-index: 1;
-        pointer-events: auto; 
+        pointer-events: none; 
     }
 </style>
