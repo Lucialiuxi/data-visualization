@@ -18,6 +18,11 @@ const canvasBasic = {
       name: '贝尔塞曲线',
       component: () => import('../views/canvasBasic/BezierCurve.vue'),
     },
+    {
+      path: 'bezier-curve-graphic',
+      name: '图形(by贝尔塞)',
+      component: () => import('../views/canvasBasic/BezierCurveGraphic.vue'),
+    },
   ],
 };
 const singleRoutes = {
