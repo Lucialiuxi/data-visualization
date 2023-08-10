@@ -15,17 +15,24 @@ export default {
                 let ctx = canvas.getContext('2d');
                 
                 ctx.beginPath();
+                ctx.moveTo(10, 10);
                 /**
                  * 二次贝塞尔曲线:
                  * quadraticCurveTo(cp1x, cp1y, x, y)
                  * cp1x, cp1y为一个控制点
                  * x, y 为结束点
                  */
-                ctx.quadraticCurveTo(100, 100, 300, 300);
+                ctx.quadraticCurveTo(50, 400, 300, 300);
                 ctx.strokeStyle = '#af9f1c';
                 ctx.stroke();
+                this.drawSmallCircle(ctx, 10, 10, 3, 'yellowgreen');
+                this.drawSmallCircle(ctx, 50, 400, 3, 'red');
+                this.drawSmallCircle(ctx, 300, 300, 3, 'green');
+                this.drawDashLine(ctx, 10, 10, 50, 400);
+                this.drawDashLine(ctx, 50, 400, 300, 300);
 
                 ctx.beginPath();
+                ctx.moveTo(0, 0);
                 /**
                  * 三次贝尔塞曲线
                  * bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x, y);

@@ -13,37 +13,22 @@ export default {
             let canvas = document.getElementById('simple-graphic');
             if (canvas.getContext) {
                 let ctx = canvas.getContext('2d');
-                
-                ctx.beginPath();
-                /**
-                 * 二次贝塞尔曲线:
-                 * quadraticCurveTo(cp1x, cp1y, x, y)
-                 * cp1x, cp1y为一个控制点
-                 * x, y 为结束点
-                 */
-                ctx.quadraticCurveTo(100, 100, 300, 300);
-                ctx.strokeStyle = '#af9f1c';
-                ctx.stroke();
-
-                ctx.beginPath();
-                /**
-                 * 三次贝尔塞曲线
-                 * bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x, y);
-                 * cp1x, cp1y为控制点一
-                 * cp2x, cp2y为控制点二
-                 * x, y 为结束点
-                 */
-                ctx.bezierCurveTo(150, 100, 500, 150, 400, 400);
-                ctx.strokeStyle = "lightBlue";
-                ctx.stroke();
-
-                this.drawSmallCircle(ctx, 150, 100, 3, 'red');
-                this.drawSmallCircle(ctx, 500, 150, 3, 'purple');
-                this.drawSmallCircle(ctx, 400, 400, 3, 'green');
-
-                this.drawDashLine(ctx, 150, 100, 500, 150);
-                this.drawDashLine(ctx, 500, 150, 400, 400);
+                this.drawDialogBox(ctx);
             }
+        },
+        // 绘制一个对话框气泡
+        drawDialogBox(ctx) {
+            /**
+             * quadraticCurveTo(cpx1, cpy1, x, y);
+             * cpx1, cpy1控制点
+             * x, y 结束点
+             */
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.quadraticCurveTo(200, 200, 400, 0);
+            ctx.strokeStyle = 'red';
+            ctx.stroke();
+            
         },
         drawSmallCircle(ctx, x, y, radius, color) {
             ctx.beginPath();
