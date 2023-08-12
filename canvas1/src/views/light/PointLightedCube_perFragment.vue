@@ -1,7 +1,22 @@
 <template>
-  <div>
-    <p>漫反射-点光源光-逐片元</p>
+  <div class="point-lighted-cube-per-fragment-wrap">
+    <p class="sub-title">漫反射-点光源光-逐片元</p>
     <canvas id="point-lighted-cube-per-fragment" height="600" width="600"></canvas>
+    <p class="back-text">
+        在前一个章节中看过 应用样式和颜色 之后，我们现在来看一下如何在 canvas 中绘制文本
+
+        绘制文本
+        canvas 提供了两种方法来渲染文本：
+
+        fillText(text, x, y [, maxWidth])
+        在指定的 (x,y) 位置填充指定的文本，绘制的最大宽度是可选的。
+
+        strokeText(text, x, y [, maxWidth])
+        在指定的 (x,y) 位置绘制文本边框，绘制的最大宽度是可选的。
+
+        一个填充文本的示例
+
+    </p>
   </div>
 </template>
 <script>
@@ -86,7 +101,7 @@ export default {
             this.matrixHandle(gl, canvas);
             this.lightEffect(gl);
 
-            gl.clearColor(0.4, 0.6, 0.9, 1.0);
+            gl.clearColor(0.4, 0.6, 0.9, 0.5);
             // 消除隐藏面
             gl.enable(gl.DEPTH_TEST);
 
@@ -277,6 +292,18 @@ export default {
  */
 </script>
 
-<style>
-
+<style scope>
+    .point-lighted-cube-per-fragment-wrap {
+        position: relative;
+    }
+    .sub-title, canvas {
+        position: relative;
+        z-index: 1;
+    }
+    .back-text {
+        position: absolute;
+        top: 100px;
+        left: 0;
+        z-index: 0;
+    }
 </style>
