@@ -40,9 +40,9 @@ export default {
             if (hud.getContext) {
                 let ctx = hud.getContext('2d');
 
+                ctx.clearRect(0, 0, hud.width, hud.height); // 重绘之前清空之前的绘制图文
                 ctx.font = 'bold 48px fantasy';
                 ctx.strokeStyle = 'rgb(255, 255, 255)'; 
-
                 // ctx.strokeText(text, x, y[, maxWidth])
                 ctx.strokeText(
                     'HUD:Head Up Display Triangle is drawn by Canvas 2D API.' +
@@ -53,6 +53,14 @@ export default {
                     300,
                     600,
                 );
+
+                // 绘制一个三角形
+                let triangle = new Path2D();
+                triangle.moveTo(150, 10);
+                triangle.lineTo(250, 150);
+                triangle.lineTo(50, 150);
+                triangle.lineTo(150, 10);
+                ctx.stroke(triangle);
 
             }
         },
@@ -206,6 +214,7 @@ export default {
             gl.drawElements(gl.TRIANGLE_STRIP, 8, gl.UNSIGNED_BYTE, 0);
             gl.drawElements(gl.TRIANGLE_STRIP, 8, gl.UNSIGNED_BYTE,  n/6 * 2);
             gl.drawElements(gl.TRIANGLE_STRIP, 8, gl.UNSIGNED_BYTE, n/6 * 4);
+            this.paintHud();
         },
         getUniformLocation(gl, attr) {
             let location = gl.getUniformLocation(gl.program, attr);
