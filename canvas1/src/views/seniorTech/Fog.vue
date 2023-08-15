@@ -9,12 +9,26 @@
  * 雾化因子 = (终点 - 当前点与视点间的距离) / (终点 - 起点)
  * 起点 <= 当前点与视点间的距离 <=终点
  * 
- * 片元颜色 = 物体表面颜色 * 雾化因子 + 雾的颜色 * （1 - 雾化因子）
+ * 
+ * 当前点与视点间的距离 用内置函数distance计算
+ * dist = distance(当前点, 视点)
+ * 
+ * 雾化因子 用内置函数clamp计算
+ * factor = clamp((终点 - dist) / (终点 - 起点), 0.0, 1.0)
+ * 
+ * 片元颜色用 内置函数mix计算
+ * 片元颜色 = mix(物体表面颜色,雾的颜色,雾化因子*雾化因子)
  */
 import { getWebGLContext, initShaders } from '@lib/cuon-utils.js';
 import Matrix4 from '@lib/cuon-matrix.js';
 
 export default {
+    data() {
+        return {
+            fogColor: [ 0.99, 0.94, 0.69, 1.0 ],
+            eyePosition: [ -25, -65, 35 ],
+        }
+    },
     mounted() {
         this.paintHandle();
     },
@@ -27,7 +41,7 @@ export default {
                 attribute vec4 a_Color;
 
                 uniform vec2 u_FogDistance; // 视点分别跟 雾化起点、雾化终点 之间的距离
-                uniform vec4 u_ViewerPosition; // 世界坐标下的视点位置
+                uniform vec3 u_ViewerPosition; // 世界坐标下的视点位置
 
                 uniform mat4 u_MvpMatrix;
 
@@ -38,9 +52,9 @@ export default {
                     gl_Position = u_MvpMatrix * a_Position;
 
                     // 雾化因子 = (终点 - 当前点与视点间的距离) / (终点 - 起点)
-                    float dist = distance(u_MvpMatrix * a_Position, u_ViewerPosition);
+                    float dist = distance((u_MvpMatrix * a_Position).xyz, u_ViewerPosition);
                     // clamp(x, minVal, maxVal) 将x限制在minVal和maxVal之间，即返回min(max(x, minVal), maxVal)
-                    v_FogFactor = clamp((u_FogDistance.y, dist)/(u_FogDistance.y - u_FogDistance.x), 0.0, 1.0);
+                    v_FogFactor = clamp((u_FogDistance.y - dist)/(u_FogDistance.y - u_FogDistance.x), 0.0, 1.0);
                     
                     v_Color = a_Color;
                 }
@@ -54,7 +68,7 @@ export default {
                 uniform vec4 u_FogColor; // 雾的颜色
 
                 void main() {
-                    gl_FragColor = v_Color * v_FogFactor + u_FogColor * (1.0 - v_FogFactor);
+                    gl_FragColor = mix(u_FogColor, v_Color, v_FogFactor);
                 }
             `;
 
@@ -78,7 +92,7 @@ export default {
             this.draw(gl, n);
         },
         draw(gl, n) {
-            gl.clearColor(0.90, 0.97, 0.95, 1);
+            gl.clearColor(...this.fogColor);
             
             // 隐藏面消除【解决顶点渲染顺序问题】
             gl.enable(gl.DEPTH_TEST);
@@ -95,11 +109,11 @@ export default {
         },
         fogHandle(gl) {
             let u_FogColor = gl.getUniformLocation(gl.program, 'u_FogColor');
-            gl.uniform4f(u_FogColor, 0.99, 0.91, 0.51, 1.0);
+            gl.uniform4f(u_FogColor, ...this.fogColor);
             let u_ViewerPosition = gl.getUniformLocation(gl.program, 'u_ViewerPosition');
-            gl.uniform4f(u_ViewerPosition, 25, 65, 35, 1.0); // 世界坐标下
+            gl.uniform3f(u_ViewerPosition, ...this.eyePosition); // 世界坐标下
             let u_FogDistance = gl.getUniformLocation(gl.program, 'u_FogDistance');
-            gl.uniform2f(u_FogDistance, 30, 40);
+            gl.uniform2f(u_FogDistance, 55, 100);
         },
         matrixHandle(gl, canvas) {
             // 模型矩阵
@@ -107,17 +121,17 @@ export default {
             // 模型视图透视投影矩阵
             let mvpMatrix = new Matrix4();
             mvpMatrix.setPerspective(
-                50,
+                10,
                 canvas.width/canvas.height,
                 1,
                 100,
             );
             mvpMatrix.lookAt(
-                3, 4, -5, // 视点
+                ...this.eyePosition, // 视点
                 0, 0, 0, // 观察点
                 0, 1, 0, // 上方向
             );
-            modelMatrix.setRotate(30, 0, 1, 0);
+            modelMatrix.setRotate(10, 1, 1, 0);
 
             mvpMatrix.multiply(modelMatrix);
 
@@ -151,7 +165,7 @@ export default {
 
             // 颜色
             let pink = [ 0.98, 0.88, 0.93 ],
-                red = [ 1.0, 0.0, 0.0 ],
+                red = [ 0.85, 0.0, 0.3 ],
                 yellow = [ 1.0, 1.0, 0.0 ],
                 blue = [ 0.0, 0.8, 1.0 ],
                 // 青色
