@@ -385,6 +385,11 @@ const seniorTech = {
       name: '雾化',
       component: () => import('../views/seniorTech/Fog.vue')
     },
+    {
+      path: 'fog-w',
+      name: '雾化(使用w分量)',
+      component: () => import('../views/seniorTech/FogW.vue')
+    },
   ],
 }
 const router = createRouter({
