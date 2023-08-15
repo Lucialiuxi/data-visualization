@@ -27,7 +27,7 @@ const canvasBasic = {
       path: 'path-2d',
       name: 'Path2D',
       component: () => import('../views/canvasBasic/Path2DTest.vue'),
-    },
+    }
   ],
 };
 const singleRoutes = {
@@ -379,6 +379,11 @@ const seniorTech = {
       path: 'hud',
       name: '平视显示器',
       component: () => import('../views/seniorTech/HUD.vue'), 
+    },
+    {
+      path: 'fog',
+      name: '雾化',
+      component: () => import('../views/seniorTech/Fog.vue')
     },
   ],
 }
