@@ -387,7 +387,7 @@ const seniorTech = {
     },
     {
       path: 'fog-w',
-      name: '雾化(使用w分量)',
+      name: '雾化(使用w分量--wrong)',
       component: () => import('../views/seniorTech/FogW.vue')
     },
   ],

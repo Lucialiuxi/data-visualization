@@ -6,18 +6,7 @@
 
 <script scope>
 /**
- * 雾化因子 = (终点 - 当前点与视点间的距离) / (终点 - 起点)
- * 起点 <= 当前点与视点间的距离 <=终点
- * 
- * 
- * 当前点与视点间的距离 用内置函数distance计算
- * dist = distance(当前点, 视点)
- * 
- * 雾化因子 用内置函数clamp计算
- * factor = clamp((终点 - dist) / (终点 - 起点), 0.0, 1.0)
- * 
- * 片元颜色用 内置函数mix计算
- * 片元颜色 = mix(物体表面颜色,雾的颜色,雾化因子*雾化因子)
+ *使用gl_Position的w分量计算雾化并没有用
  */
 import { getWebGLContext, initShaders } from '@lib/cuon-utils.js';
 import Matrix4 from '@lib/cuon-matrix.js';
