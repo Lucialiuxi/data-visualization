@@ -128,9 +128,9 @@ export default {
 
             gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
             
-            gl.drawElements(gl.TRIANGLE_STRIP, 8, gl.UNSIGNED_BYTE, 0);
-            gl.drawElements(gl.TRIANGLE_STRIP, 8, gl.UNSIGNED_BYTE,  n/6 * 2);
-            gl.drawElements(gl.TRIANGLE_STRIP, 8, gl.UNSIGNED_BYTE, n/6 * 4);
+            gl.drawElements(gl.TRIANGLES, 12, gl.UNSIGNED_BYTE, 0);
+            gl.drawElements(gl.TRIANGLES, 12, gl.UNSIGNED_BYTE,  n/8 * 2);
+            gl.drawElements(gl.TRIANGLES, 12, gl.UNSIGNED_BYTE, n/8 * 4);
         },
         getUniformLocation(gl, attr) {
             let location = gl.getUniformLocation(gl.program, attr);
@@ -201,18 +201,18 @@ export default {
                 v7 = [ -1.0, -1.0, -1.0 ];
             // 每个面的顶点排序
             let vertexAxis = [
-                // 正面 1203
-                ...v1, ...v2, ...v0, ...v3,
-                // 背面 6754
-                ...v6, ...v7,...v5, ...v4, 
-                // 左面 2716
-                ...v2, ...v7,...v1, ...v6, 
-                // 右面 3405
-                ...v3, ...v4,...v0, ...v5, 
-                // 顶面 1605
-                ...v1, ...v6,...v0, ...v5,
-                // 底面 2734
-                ...v2, ...v7,...v3, ...v4, 
+                // 正面
+                ...v0, ...v1, ...v2, ...v3,
+                // 背面
+                ...v4, ...v5, ...v6, ...v7,
+                // 左面
+                ...v1,...v2, ...v6, ...v7,
+                // 右面 
+                ...v0, ...v3, ...v4, ...v5, 
+                // 顶面
+                ...v0, ...v1, ...v6, ...v5,
+                // 底面 
+                ...v2, ...v3, ...v4, ...v7,
             ];
             let pink = [ 0.98, 0.88, 0.93 ],
                 red = [ 1.0, 0.0, 0.0 ],
@@ -247,12 +247,12 @@ export default {
             ];
             // 索引
             let indices = [
-                0, 1, 2, 3,
-                4, 5, 6, 7,
-                8, 9, 10, 11,
-                12, 13, 14, 15,
-                16, 17, 18, 19, 
-                20, 21, 22, 23,
+                0, 1, 2,  0, 2, 3,
+                4, 5, 6,  4, 6, 7,
+                8, 9, 10, 8, 10, 11,
+                12, 13, 14,  12, 14,15,
+                16, 17, 18, 16, 18, 19, 
+                20, 21, 22, 20, 22, 23,
             ];
 
             this.initArrayBuffer(gl, vertexAxis, 'a_Position');
@@ -293,19 +293,6 @@ export default {
         }
     }
 }
-/**
- * 出现的错误：
- *  1. 问题立方体是纯黑色
- *  原因：光线方向公式用错
- *  光线方向 = normalize(光源位置 - 顶点的世界坐标)
- *  ⭐️顶点的世界坐标 = 模型矩阵 * 顶点坐标
- * 
- *  2.问题：立方体的每一个面都是背光的效果
- *  原因：
- *      没有在缓冲对象中定义和存储法向量
- *  
- * 
- */
 </script>
 
 <style scope>
