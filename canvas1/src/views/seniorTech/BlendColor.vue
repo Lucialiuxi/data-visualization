@@ -125,9 +125,13 @@ export default {
             gl.enable(gl.BLEND);
             // 指定混合指数
             // gl.blendFunc(gl.SRC_COLOR, gl.DST_COLOR);
-            // gl.blendFunc(gl.SRC_COLOR, gl.SRC_COLOR);
+            gl.blendFunc(gl.SRC_COLOR, gl.SRC_COLOR);
+            // gl.blendFunc(gl.DST_COLOR, gl.DST_COLOR);
             // gl.blendFunc(gl.ONE_MINUS_SRC_ALPHA, gl.ONE_MINUS_DST_ALPHA);
-            gl.blendFunc(gl.ONE_MINUS_CONSTANT_COLOR, gl.ONE_MINUS_CONSTANT_COLOR);
+            // gl.blendFunc(gl.ONE_MINUS_CONSTANT_COLOR, gl.ONE_MINUS_CONSTANT_COLOR);
+            // gl.blendFunc(gl.ONE_MINUS_CONSTANT_COLOR, gl.ONE_MINUS_SRC_ALPHA);
+            // gl.blendFunc(gl.ONE_MINUS_CONSTANT_ALPHA, gl.ONE_MINUS_CONSTANT_ALPHA);
+            // gl.blendFunc(gl.SRC_ALPHA_SATURATE, gl.ONE_MINUS_CONSTANT_ALPHA);
 
             gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
 
