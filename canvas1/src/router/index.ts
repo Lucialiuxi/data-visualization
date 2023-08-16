@@ -390,6 +390,11 @@ const seniorTech = {
       name: '雾化(使用w分量--wrong)',
       component: () => import('../views/seniorTech/FogW.vue')
     },
+    {
+      path: 'rounded-point',
+      name: '圆点',
+      component: () => import('../views/seniorTech/RoundedPoint.vue')
+    },
   ],
 }
 const router = createRouter({
