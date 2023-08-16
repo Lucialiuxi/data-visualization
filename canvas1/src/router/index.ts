@@ -395,6 +395,11 @@ const seniorTech = {
       name: '圆点',
       component: () => import('../views/seniorTech/RoundedPoint.vue')
     },
+    {
+      path: 'blend-a',
+      name: '混合a',
+      component: () => import('../views/seniorTech/BlendColor.vue')
+    },
   ],
 }
 const router = createRouter({
