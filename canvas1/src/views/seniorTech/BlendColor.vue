@@ -106,10 +106,10 @@ export default {
             this.animate(gl, n, canvas);
         },
         animate(gl, n, canvas) {
-            // this.timer = setInterval(() => {
+            this.timer = setInterval(() => {
                 this.angle += 1;
                 this.draw(gl, n, canvas);
-            // }, 100)
+            }, 50);
         },
         draw(gl, n, canvas) {
             this.matrixHandle(gl, canvas);
@@ -121,10 +121,13 @@ export default {
             gl.enable(gl.POLYGON_OFFSET_FILL);
             gl.polygonOffset(0.1, 0.1);
 
-            // // 开启a混合
-            // gl.enable(gl.BLEND);
-            // // 指定混合指数
+            // 开启a混合
+            gl.enable(gl.BLEND);
+            // 指定混合指数
             // gl.blendFunc(gl.SRC_COLOR, gl.DST_COLOR);
+            // gl.blendFunc(gl.SRC_COLOR, gl.SRC_COLOR);
+            // gl.blendFunc(gl.ONE_MINUS_SRC_ALPHA, gl.ONE_MINUS_DST_ALPHA);
+            gl.blendFunc(gl.ONE_MINUS_CONSTANT_COLOR, gl.ONE_MINUS_CONSTANT_COLOR);
 
             gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
 
@@ -275,7 +278,6 @@ export default {
                 24, 25, 26, 27, 28, 29, 
                 30, 31, 32, 33, 34, 35,
             ];
-            console.log(indices)
 
             this.initArrayBuffer(gl, vertexAxis, 'a_Position');
             this.initArrayBuffer(gl, colors, 'a_Color');
