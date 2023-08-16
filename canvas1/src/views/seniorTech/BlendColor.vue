@@ -106,10 +106,10 @@ export default {
             this.animate(gl, n, canvas);
         },
         animate(gl, n, canvas) {
-            this.timer = setInterval(() => {
+            // this.timer = setInterval(() => {
                 this.angle += 1;
                 this.draw(gl, n, canvas);
-            }, 100)
+            // }, 100)
         },
         draw(gl, n, canvas) {
             this.matrixHandle(gl, canvas);
@@ -119,18 +119,16 @@ export default {
 
             // 启动多边形位移
             gl.enable(gl.POLYGON_OFFSET_FILL);
-            gl.polygonOffset(0.01, 0.01);
+            gl.polygonOffset(0.1, 0.1);
 
-            // 开启a混合
-            gl.enable(gl.BLEND);
-            // 指定混合指数
-            gl.blendFunc(gl.SRC_COLOR, gl.SRC_COLOR);
+            // // 开启a混合
+            // gl.enable(gl.BLEND);
+            // // 指定混合指数
+            // gl.blendFunc(gl.SRC_COLOR, gl.DST_COLOR);
 
             gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
-            
-            gl.drawElements(gl.TRIANGLES, 12, gl.UNSIGNED_BYTE, 0);
-            gl.drawElements(gl.TRIANGLES, 12, gl.UNSIGNED_BYTE,  n/8 * 2);
-            gl.drawElements(gl.TRIANGLES, 12, gl.UNSIGNED_BYTE, n/8 * 4);
+
+            gl.drawElements(gl.TRIANGLES, n, gl.UNSIGNED_BYTE, 0);
         },
         getUniformLocation(gl, attr) {
             let location = gl.getUniformLocation(gl.program, attr);
@@ -163,7 +161,7 @@ export default {
             // 计算法向量变换的矩阵
             let normalMatrix = new Matrix4();
         
-            modelMatrix.setRotate(this.angle, 1, 1, 1); // 绕Z轴旋转30°
+            modelMatrix.setRotate(this.angle, 1, 0, 0); // 绕Z轴旋转30°
 
             // 创建矩阵 & 设置透视投影可视空间
             mvpMatrix.setPerspective(
@@ -199,20 +197,26 @@ export default {
                 v5 = [ 1.0, 1.0, -1.0 ],
                 v6 = [ -1.0, 1.0, -1.0 ],
                 v7 = [ -1.0, -1.0, -1.0 ];
-            // 每个面的顶点排序
-            let vertexAxis = [
-                // 正面
-                ...v0, ...v1, ...v2, ...v3,
-                // 背面
-                ...v4, ...v5, ...v6, ...v7,
+             // 顶点坐标
+             let vertexAxis = [
+                // 上面
+                ...v0, ...v5, ...v6, 
+                ...v0, ...v6, ...v1,
+                // 下面
+                ...v7, ...v2, ...v3, 
+                ...v7, ...v3, ...v4,
                 // 左面
-                ...v1,...v2, ...v6, ...v7,
-                // 右面 
-                ...v0, ...v3, ...v4, ...v5, 
-                // 顶面
-                ...v0, ...v1, ...v6, ...v5,
-                // 底面 
-                ...v2, ...v3, ...v4, ...v7,
+                ...v6, ...v7, ...v2,
+                ...v6, ...v2,...v1, 
+                // 右面
+                ...v5, ...v0, ...v3, 
+                ...v5, ...v3, ...v4,
+                // 正面
+                ...v0, ...v1, ...v2, 
+                ...v0, ...v2, ...v3,
+                // 背面
+                ...v7, ...v4, ...v5, 
+                ...v7, ...v5, ...v6,
             ];
             let pink = [ 0.98, 0.88, 0.93 ],
                 red = [ 1.0, 0.0, 0.0 ],
@@ -222,12 +226,18 @@ export default {
                 cyan = [ 0.4, 0.6, 0.6 ],
                 green = [ 0.13, 0.7, 0.67 ];
             let colors = [
-                ...pink, ...pink, ...pink, ...pink,
-                ...red, ...red, ...red, ...red,
-                ...yellow, ...yellow, ...yellow, ...yellow,
-                ...blue, ...blue, ...blue, ...blue,
-                ...cyan, ...cyan, ...cyan, ...cyan,
-                ...green, ...green, ...green, ...green,
+                ...pink, ...pink, ...pink, 
+                ...pink, ...pink, ...pink, 
+                ...red, ...red, ...red, 
+                ...red, ...red, ...red, 
+                ...yellow, ...yellow, ...yellow,
+                ...yellow, ...yellow, ...yellow,
+                ...blue, ...blue, ...blue,
+                ...blue, ...blue, ...blue,
+                ...cyan, ...cyan, ...cyan,
+                ...cyan, ...cyan, ...cyan,
+                ...green, ...green, ...green,
+                ...green, ...green, ...green,
             ];
             // 每个面的法向量
             let top = [  0.0, 1.0, 0.0 ], 
@@ -238,22 +248,34 @@ export default {
                 back = [ 0.0, 0.0, -1.0];
             // 法向量
             let normals = [
-               ...front, ...front, ...front, ...front,
-               ...back, ...back, ...back, ...back,
-               ...left, ...left, ...left, ...left,
-               ...right, ...right, ...right, ...right,
-               ...top, ...top, ...top, ...top,
-               ...bottom, ...bottom, ...bottom, ...bottom,
+               ...front, ...front, ...front, 
+               ...front, ...front, ...front, 
+
+               ...back, ...back, ...back, 
+               ...back, ...back, ...back, 
+
+               ...left, ...left, ...left, 
+               ...left, ...left, ...left, 
+
+               ...right, ...right, ...right, 
+               ...right, ...right, ...right, 
+
+               ...top, ...top, ...top,
+               ...top, ...top, ...top,
+
+               ...bottom, ...bottom, ...bottom,
+               ...bottom, ...bottom, ...bottom,
             ];
             // 索引
             let indices = [
-                0, 1, 2,  0, 2, 3,
-                4, 5, 6,  4, 6, 7,
-                8, 9, 10, 8, 10, 11,
-                12, 13, 14,  12, 14,15,
-                16, 17, 18, 16, 18, 19, 
-                20, 21, 22, 20, 22, 23,
+                0, 1, 2, 3, 4, 5, 
+                6, 7, 8, 9, 10, 11,
+                12, 13, 14, 15, 16, 17, 
+                18, 19, 20, 21, 22, 23, 
+                24, 25, 26, 27, 28, 29, 
+                30, 31, 32, 33, 34, 35,
             ];
+            console.log(indices)
 
             this.initArrayBuffer(gl, vertexAxis, 'a_Position');
             this.initArrayBuffer(gl, colors, 'a_Color');
