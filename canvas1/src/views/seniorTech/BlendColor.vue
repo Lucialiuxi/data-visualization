@@ -17,8 +17,20 @@ import { initShaders, getWebGLContext } from '@lib/cuon-utils.js';
 import Matrix4 from '@lib/cuon-matrix.js';
 
 export default {
+    data() {
+        return {
+            angle: 30,
+            timer: null,
+        }
+    },
     mounted(){
         this.paint();
+    },
+    unmounted() {
+        if(this.timer) {
+            clearInterval(this.timer);
+            this.timer = null;
+        }
     },
     methods: {
         paint() {
@@ -90,12 +102,17 @@ export default {
                 return;
             }
             let n = this.initVertexBuffers(gl);
-
-            this.matrixHandle(gl, canvas);
             this.lightEffect(gl);
-            this.draw(gl, n);
+            this.animate(gl, n, canvas);
         },
-        draw(gl, n) {
+        animate(gl, n, canvas) {
+            this.timer = setInterval(() => {
+                this.angle += 1;
+                this.draw(gl, n, canvas);
+            }, 100)
+        },
+        draw(gl, n, canvas) {
+            this.matrixHandle(gl, canvas);
             gl.clearColor(0.4, 0.6, 0.9, 0.5);
             // 消除隐藏面
             gl.enable(gl.DEPTH_TEST);
@@ -146,7 +163,7 @@ export default {
             // 计算法向量变换的矩阵
             let normalMatrix = new Matrix4();
         
-            modelMatrix.setRotate(30, 0, 0, 1); // 绕Z轴旋转30°
+            modelMatrix.setRotate(this.angle, 1, 1, 1); // 绕Z轴旋转30°
 
             // 创建矩阵 & 设置透视投影可视空间
             mvpMatrix.setPerspective(
