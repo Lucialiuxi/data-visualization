@@ -6,7 +6,11 @@
 <script>
 import { initShaders, getWebGLContext } from '@lib/cuon-utils.js';
 import Matrix4 from '@lib/cuon-matrix.js';
-
+/**
+ * gl_PointCoord 变量表示 当前片元在所属的点内的坐标，坐标值是从 0.0到1.0
+ *  为了将矩形削成圆形，需要将点的中心(0.5, 0.5)距离超过0.5，也就是将与安全外的片元剔除掉。
+ *  在片元着色器中，可以使用discard语句来放弃当前片元
+ */
 export default {
     mounted() {
         this.paintHandle();
@@ -38,7 +42,13 @@ export default {
                 varying vec4 v_Color;
 
                 void main() {
-                    gl_FragColor = v_Color;
+                    // gl_PointCoord表示片元在所属点内的坐标（值在0.0~1.0之间），点中心的坐标是(0.5, 0.5)
+                    float dist = distance(gl_PointCoord, vec2(0.5, 0.5)); // 计算片元所在位置和点中心的距离
+                    if (dist < 0.5) { // 在要切割的圆内
+                        gl_FragColor = v_Color;
+                    } else {
+                        discard; // 不在圆范围内的片元做放弃操作
+                    }
                 }
             `;
 
