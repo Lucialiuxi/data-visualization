@@ -396,9 +396,14 @@ const seniorTech = {
       component: () => import('../views/seniorTech/RoundedPoint.vue')
     },
     {
-      path: 'blend-a',
-      name: '混合a',
+      path: 'blend-a-cube',
+      name: '混合a[cube]',
       component: () => import('../views/seniorTech/BlendColor.vue')
+    },
+    {
+      path: 'blend-a-triangles',
+      name: '混合a[triangles]',
+      component: () => import('../views/seniorTech/LookAtBlendedTiangles.vue')
     },
   ],
 }
