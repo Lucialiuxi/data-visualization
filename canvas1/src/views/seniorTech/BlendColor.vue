@@ -24,7 +24,7 @@ export default {
         }
     },
     mounted(){
-        this.paint();
+        this.paintHandle();
     },
     unmounted() {
         if(this.timer) {
@@ -33,32 +33,43 @@ export default {
         }
     },
     methods: {
-        paint() {
+        paintHandle() {
             let VSHADER_SOURCE = `
                 precision mediump float;
                 
                 attribute vec4 a_Position;
+                attribute vec4 a_TrianglePosition;
                 attribute vec4 a_Color;
                 attribute vec4 a_Normal; // 法向量-即法线方向
+                attribute vec2 a_TexCoord; // 纹理坐标
 
                 uniform mat4 u_MvpMatrix; // 模型视图投影矩阵
                 uniform mat4 u_NormalMatrix; // 法向量变换矩阵
                 uniform mat4 u_ModelMatrix; // 模型矩阵
 
+                uniform bool u_IsTriangle;
+
                 varying vec4 v_Color;
                 varying vec3 v_Normal; // 计算变换后的法向量
                 varying vec3 v_VertexPosition; // 顶点的世界坐标
 
+                varying vec2 v_TexCoord; // 纹理坐标
+
                 void main () {
-                    gl_Position = u_MvpMatrix * a_Position;
-                    
-                    // 计算变换后的法向量并归一化 矩阵右乘矢量： 矩阵*矢量=矢量
-                    v_Normal = vec3(u_NormalMatrix * a_Normal);
+                    if (!u_IsTriangle) {
+                        gl_Position = u_MvpMatrix * a_Position;
+                        // 计算变换后的法向量并归一化 矩阵右乘矢量： 矩阵*矢量=矢量
+                        v_Normal = vec3(u_NormalMatrix * a_Normal);
 
-                    // 顶点的世界坐标
-                    v_VertexPosition = vec3(u_ModelMatrix * a_Position);
+                        // 顶点的世界坐标
+                        v_VertexPosition = vec3(u_ModelMatrix * a_Position);
 
-                    v_Color = a_Color;
+                        v_Color = a_Color;
+
+                    } else {
+                        gl_Position = u_MvpMatrix * a_TrianglePosition;
+                        v_TexCoord = a_TexCoord;
+                    }
                 }
             `;
             let FSHADER_SOURCE = `
@@ -67,27 +78,35 @@ export default {
                 varying vec4 v_Color;
                 varying vec3 v_Normal; // 计算变换后的法向量
                 varying vec3 v_VertexPosition; // 顶点的世界坐标
+                varying vec2 v_TexCoord; // 纹理坐标
 
                 uniform vec3 u_LightColor; // 入射光颜色 
                 uniform vec3 u_LightPosition; // 点光源位置
                 uniform vec3 u_AmbientColor; // 环境光颜色
+                uniform bool u_IsTriangle;
+
+                uniform sampler2D u_Sampler; // 纹理单元编号
 
                 void main() {
-                    // 计算光线方向
-                    vec3 lightDirection = normalize(u_LightPosition - v_VertexPosition);
+                    if (!u_IsTriangle) {
+                        // 计算光线方向
+                        vec3 lightDirection = normalize(u_LightPosition - v_VertexPosition);
 
-                    // 归一化法向量
-                    vec3 normal = normalize(v_Normal);
+                        // 归一化法向量
+                        vec3 normal = normalize(v_Normal);
 
-                    // cosø = 光线方向*法线方向
-                    float dotLN = max(dot(lightDirection, normal), 0.0);
+                        // cosø = 光线方向*法线方向
+                        float dotLN = max(dot(lightDirection, normal), 0.0);
 
-                    // 漫反射颜色 = 入射光颜色 * 表面基地色 * cosø
-                    vec3 diffuseColor = u_LightColor * v_Color.rgb * dotLN;
+                        // 漫反射颜色 = 入射光颜色 * 表面基地色 * cosø
+                        vec3 diffuseColor = u_LightColor * v_Color.rgb * dotLN;
 
-                    // 环境反射光颜色 = 环境光颜色 * 表面基底色
-                    vec3 ambientReflectColor = u_AmbientColor * v_Color.rgb;
-                    gl_FragColor = vec4(diffuseColor + ambientReflectColor, v_Color.a);
+                        // 环境反射光颜色 = 环境光颜色 * 表面基底色
+                        vec3 ambientReflectColor = u_AmbientColor * v_Color.rgb;
+                        gl_FragColor = vec4(diffuseColor + ambientReflectColor, v_Color.a);
+                    } else {
+                        gl_FragColor = texture2D(u_Sampler, v_TexCoord);
+                    }
                 }
             `;
             
@@ -101,21 +120,33 @@ export default {
                 console.error('着色器初始化失败');
                 return;
             }
-            let n = this.initVertexBuffers(gl);
+            let u_IsTriangle = gl.getUniformLocation(gl.program, 'u_IsTriangle');
+            gl.uniform1i(u_IsTriangle, 0);
+            let cubeN = this.initCubeVertexBuffers(gl);
+            let triangleN = this.initTriangleVertexBuffers(gl);
             this.lightEffect(gl);
-            this.animate(gl, n, canvas);
+
+            this.matrixHandle(gl, canvas);
+
+            this.initTexture(gl, triangleN);
+
+            gl.clearColor(0.4, 0.6, 0.9, 1.0);
+            gl.clear(gl.COLOR_BUFFER_BIT);
         },
         animate(gl, n, canvas) {
             this.timer = setInterval(() => {
                 this.angle += 1;
-                this.draw(gl, n, canvas);
+                this.drawCube(gl, n, canvas);
             }, 50);
         },
-        draw(gl, n, canvas) {
+        drawCube(gl, n, canvas) {
             this.matrixHandle(gl, canvas);
-            gl.clearColor(0.4, 0.6, 0.9, 1);
             // 消除隐藏面
-            // gl.enable(gl.DEPTH_TEST); //【开启混合的时候 就不再使用隐藏面消除】
+            gl.enable(gl.DEPTH_TEST); //【开启混合的时候 就不再使用隐藏面消除】
+            gl.clearColor(0.4, 0.6, 0.9, 1);
+
+            // 锁定用于进行隐藏面消除的深度缓冲区的写入操作，使之只读
+            gl.depthMask(false);
 
             // 启动多边形位移
             gl.enable(gl.POLYGON_OFFSET_FILL);
@@ -130,6 +161,9 @@ export default {
             gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
 
             gl.drawElements(gl.TRIANGLES, n, gl.UNSIGNED_BYTE, 0);
+
+            // 释放深度缓冲区，使之可写可读
+            gl.depthMask(true);
         },
         getUniformLocation(gl, attr) {
             let location = gl.getUniformLocation(gl.program, attr);
@@ -187,8 +221,59 @@ export default {
             gl.uniformMatrix4fv(u_MvpMatrix, false,  mvpMatrix.elements);
             gl.uniformMatrix4fv(u_NormalMatrix, false,  normalMatrix.elements);
         },
-        // 创建顶点缓冲对象
-        initVertexBuffers(gl) {
+        // 创建三角形的顶点缓冲对象
+        initTriangleVertexBuffers(gl) {
+            // let verticesTexCoords = [
+            //     0.0, 0.5, 0.0,   0.0, 1.0, // xyz st
+            //     -0.5, 0.0, 0.0,  0.0, 0.0,
+            //     0.5, 0.0, 0.0,   1.0, 0.0,
+            // ];
+            let verticesTexCoords = new Float32Array([
+                -0.5, 0.5, 0.0, 1.0,
+                -0.5, -0.5, 0.0, 0.0,
+                0.5, 0.5, 1.0, 1.0,
+                0.5, -0.5, 1.0, 0.0,
+            ]);
+
+            this.initArrayBuffer(gl, verticesTexCoords, 'a_TrianglePosition', 3, 5, 0);
+            this.initArrayBuffer(gl, verticesTexCoords, 'a_TexCoord', 2, 5, 3);
+            return 3;
+        },
+        initTexture(gl, n) {
+            let texture = gl.createTexture();
+            let image = new Image();
+            let u_Sampler = gl.getUniformLocation(gl.program, 'u_Sampler');
+            image.onload = () => {
+                this.LoadTexture(gl, n, texture, image, u_Sampler);
+            };
+            image.src = '/img/girl.webp';
+        },
+        LoadTexture(gl, n, texture, image, u_Sampler) {
+            let target = gl.TEXTURE_2D;
+            // webGL纹理坐标系统重的t轴的方向和图片的坐标系统的Y轴方向是相反的，需要做翻转操作
+            gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
+
+            // 激活指定的纹理单元
+            gl.activeTexture(gl.TEXTURE0);
+
+            // 开启纹理对象，以及将纹理对象绑定到纹理单元上
+            gl.bindTexture(target, texture);
+
+            // 配置纹理参数
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+
+            // 指定二维纹理图像
+            gl.texImage2D(target, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+
+            // 将纹理单元传递给片元着色器
+            gl.uniform1i(u_Sampler, 0); // 对应activeTexture的第0个纹理单元
+
+            gl.drawElements(gl.TRIANGLES, n, gl.UNSIGNED_BYTE, 0);
+        },
+        // 创建立方体的顶点缓冲对象
+        initCubeVertexBuffers(gl) {
             // 顶点坐标
             let v0 = [ 1.0, 1.0, 1.0 ],
                 v1 = [ -1.0, 1.0, 1.0 ],
@@ -284,8 +369,11 @@ export default {
             return indices.length;
         },
         // 创建顶点属性的缓冲对象
-        initArrayBuffer(gl, array, attr, size = 3) {
+        initArrayBuffer(gl, array, attr, size = 3, strideFactor = 0, offsetFactor = 0) {
             let typeArray = new Float32Array(array, 0, array.length);
+             // 强类型数组中每个元素所占用的字节数
+            const FSIZE = typeArray.BYTES_PER_ELEMENT;
+
             let buffer = gl.createBuffer();
             if (!buffer) {
                 console.error('顶点属性缓冲对象创建失败');
@@ -298,7 +386,12 @@ export default {
                 console.error('获取属性 '+ attr +' 的下标失败');
                 return;
             }
-            gl.vertexAttribPointer(vertexAttrib, size, gl.FLOAT, false, 0, 0);
+            /**
+             * 
+             * stride 指定相邻两个顶点间的字节数 默认为0，也就是两个顶点间的距离，即步进参数
+             * offset 指定缓冲区对象中的偏移量（以字节为单位），即attribute变量从缓冲区中的何处开始储存。如果是从起始位置开始，该参数应设为0
+            //  */
+            gl.vertexAttribPointer(vertexAttrib, size, gl.FLOAT, false, FSIZE * strideFactor, FSIZE * offsetFactor);
             gl.enableVertexAttribArray(vertexAttrib);
             gl.bindBuffer(gl.ARRAY_BUFFER, null);
         },
