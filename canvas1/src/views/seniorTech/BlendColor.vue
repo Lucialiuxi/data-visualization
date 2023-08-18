@@ -67,7 +67,7 @@ export default {
                         v_Color = a_Color;
 
                     } else {
-                        gl_Position = u_MvpMatrix * a_TrianglePosition;
+                        gl_Position = a_TrianglePosition;
                         v_TexCoord = a_TexCoord;
                     }
                 }
@@ -121,7 +121,7 @@ export default {
                 return;
             }
             let u_IsTriangle = gl.getUniformLocation(gl.program, 'u_IsTriangle');
-            gl.uniform1i(u_IsTriangle, 0);
+            gl.uniform1i(u_IsTriangle, 1);
             let triangleN = this.initTriangleVertexBuffers(gl);
             this.lightEffect(gl);
 
