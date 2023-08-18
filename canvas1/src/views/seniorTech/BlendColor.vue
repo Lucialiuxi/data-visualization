@@ -113,9 +113,9 @@ export default {
         },
         draw(gl, n, canvas) {
             this.matrixHandle(gl, canvas);
-            gl.clearColor(0.4, 0.6, 0.9, 0.5);
+            gl.clearColor(0.4, 0.6, 0.9, 1);
             // 消除隐藏面
-            gl.enable(gl.DEPTH_TEST);
+            // gl.enable(gl.DEPTH_TEST); //【开启混合的时候 就不再使用隐藏面消除】
 
             // 启动多边形位移
             gl.enable(gl.POLYGON_OFFSET_FILL);
@@ -124,14 +124,8 @@ export default {
             // 开启a混合
             gl.enable(gl.BLEND);
             // 指定混合指数
-            // gl.blendFunc(gl.SRC_COLOR, gl.DST_COLOR);
-            gl.blendFunc(gl.SRC_COLOR, gl.SRC_COLOR);
-            // gl.blendFunc(gl.DST_COLOR, gl.DST_COLOR);
-            // gl.blendFunc(gl.ONE_MINUS_SRC_ALPHA, gl.ONE_MINUS_DST_ALPHA);
-            // gl.blendFunc(gl.ONE_MINUS_CONSTANT_COLOR, gl.ONE_MINUS_CONSTANT_COLOR);
-            // gl.blendFunc(gl.ONE_MINUS_CONSTANT_COLOR, gl.ONE_MINUS_SRC_ALPHA);
-            // gl.blendFunc(gl.ONE_MINUS_CONSTANT_ALPHA, gl.ONE_MINUS_CONSTANT_ALPHA);
-            // gl.blendFunc(gl.SRC_ALPHA_SATURATE, gl.ONE_MINUS_CONSTANT_ALPHA);
+            // gl.blendFunc(gl.SRC_COLOR, gl.SRC_COLOR);
+            gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
             gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
 
@@ -225,13 +219,13 @@ export default {
                 ...v7, ...v4, ...v5, 
                 ...v7, ...v5, ...v6,
             ];
-            let pink = [ 0.98, 0.88, 0.93 ],
-                red = [ 1.0, 0.0, 0.0 ],
-                yellow = [ 1.0, 1.0, 0.0 ],
-                blue = [ 0.0, 0.8, 1.0 ],
+            let pink = [ 0.98, 0.88, 0.93, 0.63 ],
+                red = [ 1.0, 0.0, 0.0, 0.83 ],
+                yellow = [ 1.0, 1.0, 0.0, 0.88 ],
+                blue = [ 0.0, 0.8, 1.0, 0.55 ],
                 // 青色
-                cyan = [ 0.4, 0.6, 0.6 ],
-                green = [ 0.13, 0.7, 0.67 ];
+                cyan = [ 0.4, 0.6, 0.6, 0.5 ],
+                green = [ 0.13, 0.7, 0.67, 0.42 ];
             let colors = [
                 ...pink, ...pink, ...pink, 
                 ...pink, ...pink, ...pink, 
@@ -284,13 +278,13 @@ export default {
             ];
 
             this.initArrayBuffer(gl, vertexAxis, 'a_Position');
-            this.initArrayBuffer(gl, colors, 'a_Color');
+            this.initArrayBuffer(gl, colors, 'a_Color', 4);
             this.initArrayBuffer(gl, normals, 'a_Normal');
             this.initElementArrayBuffer(gl, indices);
             return indices.length;
         },
         // 创建顶点属性的缓冲对象
-        initArrayBuffer(gl, array, attr) {
+        initArrayBuffer(gl, array, attr, size = 3) {
             let typeArray = new Float32Array(array, 0, array.length);
             let buffer = gl.createBuffer();
             if (!buffer) {
@@ -304,7 +298,7 @@ export default {
                 console.error('获取属性 '+ attr +' 的下标失败');
                 return;
             }
-            gl.vertexAttribPointer(vertexAttrib, 3, gl.FLOAT, false, 0, 0);
+            gl.vertexAttribPointer(vertexAttrib, size, gl.FLOAT, false, 0, 0);
             gl.enableVertexAttribArray(vertexAttrib);
             gl.bindBuffer(gl.ARRAY_BUFFER, null);
         },
