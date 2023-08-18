@@ -122,16 +122,12 @@ export default {
             }
             let u_IsTriangle = gl.getUniformLocation(gl.program, 'u_IsTriangle');
             gl.uniform1i(u_IsTriangle, 0);
-            let cubeN = this.initCubeVertexBuffers(gl);
             let triangleN = this.initTriangleVertexBuffers(gl);
             this.lightEffect(gl);
 
             this.matrixHandle(gl, canvas);
 
             this.initTexture(gl, triangleN);
-
-            gl.clearColor(0.4, 0.6, 0.9, 1.0);
-            gl.clear(gl.COLOR_BUFFER_BIT);
         },
         animate(gl, n, canvas) {
             this.timer = setInterval(() => {
@@ -223,21 +219,15 @@ export default {
         },
         // 创建三角形的顶点缓冲对象
         initTriangleVertexBuffers(gl) {
-            // let verticesTexCoords = [
-            //     0.0, 0.5, 0.0,   0.0, 1.0, // xyz st
-            //     -0.5, 0.0, 0.0,  0.0, 0.0,
-            //     0.5, 0.0, 0.0,   1.0, 0.0,
-            // ];
             let verticesTexCoords = new Float32Array([
-                -0.5, 0.5, 0.0, 1.0,
-                -0.5, -0.5, 0.0, 0.0,
-                0.5, 0.5, 1.0, 1.0,
-                0.5, -0.5, 1.0, 0.0,
+                -0.5, 0.5, 0.0, 0.0, 1.0,
+                -0.5, -0.5, 0.0, 0.0, 0.0,
+                0.5, 0.5, 0.0, 1.0, 1.0,
             ]);
 
             this.initArrayBuffer(gl, verticesTexCoords, 'a_TrianglePosition', 3, 5, 0);
             this.initArrayBuffer(gl, verticesTexCoords, 'a_TexCoord', 2, 5, 3);
-            return 3;
+            return verticesTexCoords.length / 5;
         },
         initTexture(gl, n) {
             let texture = gl.createTexture();
@@ -270,7 +260,11 @@ export default {
             // 将纹理单元传递给片元着色器
             gl.uniform1i(u_Sampler, 0); // 对应activeTexture的第0个纹理单元
 
-            gl.drawElements(gl.TRIANGLES, n, gl.UNSIGNED_BYTE, 0);
+
+            gl.clearColor(0.4, 0.6, 0.9, 1.0);
+            gl.clear(gl.COLOR_BUFFER_BIT);
+
+            gl.drawArrays(gl.TRIANGLES, 0, n);
         },
         // 创建立方体的顶点缓冲对象
         initCubeVertexBuffers(gl) {
