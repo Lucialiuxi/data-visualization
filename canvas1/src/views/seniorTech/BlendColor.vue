@@ -67,7 +67,7 @@ export default {
                         v_Color = a_Color;
 
                     } else {
-                        gl_Position = a_TrianglePosition;
+                        gl_Position = u_MvpMatrix * a_TrianglePosition;
                         v_TexCoord = a_TexCoord;
                     }
                 }
@@ -121,19 +121,16 @@ export default {
                 return;
             }
             let u_IsTriangle = gl.getUniformLocation(gl.program, 'u_IsTriangle');
-            gl.uniform1i(u_IsTriangle, 1);
-            let triangleN = this.initTriangleVertexBuffers(gl);
-            this.lightEffect(gl);
+            gl.uniform1i(u_IsTriangle, 0);
 
+            let triangleVertexCount = this.initTriangleVertexBuffers(gl);
+            let cubeVertexCount = this.initCubeVertexBuffers(gl);
+
+            this.lightEffect(gl);
             this.matrixHandle(gl, canvas);
 
-            this.initTexture(gl, triangleN);
-        },
-        animate(gl, n, canvas) {
-            this.timer = setInterval(() => {
-                this.angle += 1;
-                this.drawCube(gl, n, canvas);
-            }, 50);
+            this.initTexture(gl, triangleVertexCount, u_IsTriangle);
+            this.drawCube(gl, cubeVertexCount, canvas);
         },
         drawCube(gl, n, canvas) {
             this.matrixHandle(gl, canvas);
@@ -151,11 +148,11 @@ export default {
             // 开启a混合
             gl.enable(gl.BLEND);
             // 指定混合指数
-            // gl.blendFunc(gl.SRC_COLOR, gl.SRC_COLOR);
+            gl.blendFunc(gl.SRC_COLOR, gl.SRC_COLOR);
             gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
             gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
-
+            console.log('立方体')
             gl.drawElements(gl.TRIANGLES, n, gl.UNSIGNED_BYTE, 0);
 
             // 释放深度缓冲区，使之可写可读
@@ -220,25 +217,25 @@ export default {
         // 创建三角形的顶点缓冲对象
         initTriangleVertexBuffers(gl) {
             let verticesTexCoords = new Float32Array([
-                -0.5, 0.5, 0.0, 0.0, 1.0,
-                -0.5, -0.5, 0.0, 0.0, 0.0,
-                0.5, 0.5, 0.0, 1.0, 1.0,
+                -1.4, 2.3, 0.0, 0.0, 1.0,
+                -1.4, -1.4, 0.0, 0.0, 0.0,
+                2.3, 2.3, 0.0, 1.0, 1.0,
             ]);
 
             this.initArrayBuffer(gl, verticesTexCoords, 'a_TrianglePosition', 3, 5, 0);
             this.initArrayBuffer(gl, verticesTexCoords, 'a_TexCoord', 2, 5, 3);
             return verticesTexCoords.length / 5;
         },
-        initTexture(gl, n) {
+        initTexture(gl, n, u_IsTriangle) {
             let texture = gl.createTexture();
             let image = new Image();
             let u_Sampler = gl.getUniformLocation(gl.program, 'u_Sampler');
             image.onload = () => {
-                this.LoadTexture(gl, n, texture, image, u_Sampler);
+                this.LoadTexture(gl, n, texture, image, u_Sampler, u_IsTriangle);
             };
             image.src = '/img/girl.webp';
         },
-        LoadTexture(gl, n, texture, image, u_Sampler) {
+        LoadTexture(gl, n, texture, image, u_Sampler, u_IsTriangle) {
             let target = gl.TEXTURE_2D;
             // webGL纹理坐标系统重的t轴的方向和图片的坐标系统的Y轴方向是相反的，需要做翻转操作
             gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
@@ -264,6 +261,8 @@ export default {
             gl.clearColor(0.4, 0.6, 0.9, 1.0);
             gl.clear(gl.COLOR_BUFFER_BIT);
 
+            gl.uniform1i(u_IsTriangle, 1);
+console.log('三角形')
             gl.drawArrays(gl.TRIANGLES, 0, n);
         },
         // 创建立方体的顶点缓冲对象
@@ -301,9 +300,9 @@ export default {
             let pink = [ 0.98, 0.88, 0.93, 0.63 ],
                 red = [ 1.0, 0.0, 0.0, 0.83 ],
                 yellow = [ 1.0, 1.0, 0.0, 0.88 ],
-                blue = [ 0.0, 0.8, 1.0, 0.55 ],
+                blue = [ 0.0, 0.8, 1.0, 2.35 ],
                 // 青色
-                cyan = [ 0.4, 0.6, 0.6, 0.5 ],
+                cyan = [ 0.4, 0.6, 0.6, 2.3 ],
                 green = [ 0.13, 0.7, 0.67, 0.42 ];
             let colors = [
                 ...pink, ...pink, ...pink, 
@@ -374,7 +373,7 @@ export default {
                 return;
             }
             gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-            gl.bufferData(gl.ARRAY_BUFFER, typeArray, gl.STATIC_DRAW);
+            gl.bufferData(gl.ARRAY_BUFFER, typeArray, gl.STREAM_DRAW);
             let vertexAttrib = gl.getAttribLocation(gl.program, attr);
             if (vertexAttrib < 0) {
                 console.error('获取属性 '+ attr +' 的下标失败');
@@ -387,7 +386,6 @@ export default {
             //  */
             gl.vertexAttribPointer(vertexAttrib, size, gl.FLOAT, false, FSIZE * strideFactor, FSIZE * offsetFactor);
             gl.enableVertexAttribArray(vertexAttrib);
-            gl.bindBuffer(gl.ARRAY_BUFFER, null);
         },
         // 创建元素索引的缓冲对象
         initElementArrayBuffer(gl, array) {
