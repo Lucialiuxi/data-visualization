@@ -121,7 +121,6 @@ export default {
                 return;
             }
             let u_IsTriangle = gl.getUniformLocation(gl.program, 'u_IsTriangle');
-            gl.uniform1i(u_IsTriangle, 0);
 
             let triangleVertexCount = this.initTriangleVertexBuffers(gl);
             let cubeVertexCount = this.initCubeVertexBuffers(gl);
@@ -130,10 +129,9 @@ export default {
             this.matrixHandle(gl, canvas);
 
             this.initTexture(gl, triangleVertexCount, u_IsTriangle);
-            this.drawCube(gl, cubeVertexCount, canvas);
+            this.drawCube(gl, cubeVertexCount, u_IsTriangle);
         },
-        drawCube(gl, n, canvas) {
-            this.matrixHandle(gl, canvas);
+        drawCube(gl, n, u_IsTriangle) {
             // 消除隐藏面
             gl.enable(gl.DEPTH_TEST); //【开启混合的时候 就不再使用隐藏面消除】
             gl.clearColor(0.4, 0.6, 0.9, 1);
@@ -152,7 +150,7 @@ export default {
             gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
             gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
-            console.log('立方体')
+            gl.uniform1i(u_IsTriangle, 0);
             gl.drawElements(gl.TRIANGLES, n, gl.UNSIGNED_BYTE, 0);
 
             // 释放深度缓冲区，使之可写可读
@@ -216,15 +214,21 @@ export default {
         },
         // 创建三角形的顶点缓冲对象
         initTriangleVertexBuffers(gl) {
-            let verticesTexCoords = new Float32Array([
-                -1.4, 2.3, 0.0, 0.0, 1.0,
-                -1.4, -1.4, 0.0, 0.0, 0.0,
-                2.3, 2.3, 0.0, 1.0, 1.0,
-            ]);
-
-            this.initArrayBuffer(gl, verticesTexCoords, 'a_TrianglePosition', 3, 5, 0);
-            this.initArrayBuffer(gl, verticesTexCoords, 'a_TexCoord', 2, 5, 3);
-            return verticesTexCoords.length / 5;
+            let vertices = [
+                -1.4, 2.3, 0.0,
+                -1.4, -1.4, 0.0, 
+                2.3, 2.3, 0.0,
+            ];
+            let TexCoords = [
+                0.0, 1.0,
+                0.0, 0.0,
+                1.0, 1.0,
+            ];
+            let index = [ 0, 1, 2 ];
+            this.initArrayBuffer(gl, vertices, 'a_TrianglePosition', 3);
+            this.initArrayBuffer(gl, TexCoords, 'a_TexCoord', 2,);
+            this.initElementArrayBuffer(gl, index);
+            return index.length;
         },
         initTexture(gl, n, u_IsTriangle) {
             let texture = gl.createTexture();
@@ -233,7 +237,7 @@ export default {
             image.onload = () => {
                 this.LoadTexture(gl, n, texture, image, u_Sampler, u_IsTriangle);
             };
-            image.src = '/img/girl.webp';
+            image.src = '/img/sunrise.jpg';
         },
         LoadTexture(gl, n, texture, image, u_Sampler, u_IsTriangle) {
             let target = gl.TEXTURE_2D;
@@ -257,13 +261,11 @@ export default {
             // 将纹理单元传递给片元着色器
             gl.uniform1i(u_Sampler, 0); // 对应activeTexture的第0个纹理单元
 
-
             gl.clearColor(0.4, 0.6, 0.9, 1.0);
             gl.clear(gl.COLOR_BUFFER_BIT);
 
             gl.uniform1i(u_IsTriangle, 1);
-console.log('三角形')
-            gl.drawArrays(gl.TRIANGLES, 0, n);
+            gl.drawElements(gl.TRIANGLES, n, gl.UNSIGNED_BYTE, 0);
         },
         // 创建立方体的顶点缓冲对象
         initCubeVertexBuffers(gl) {
@@ -400,6 +402,9 @@ console.log('三角形')
         }
     }
 }
+/**
+ * 在一个canvas上绘制2种图形，会报错
+ */
 </script>
 
 <style scope>
