@@ -16,6 +16,14 @@
 import { initShaders, getWebGLContext } from '@lib/cuon-utils.js';
 import Matrix4 from '@lib/cuon-matrix.js';
 
+let pink = [ 0.98, 0.88, 0.93, 0.63 ],
+    red = [ 1.0, 0.0, 0.0, 0.83 ],
+    yellow = [ 1.0, 1.0, 0.0, 0.88 ],
+    blue = [ 0.0, 0.8, 1.0, 2.35 ],
+    // 青色
+    cyan = [ 0.4, 0.6, 0.6, 2.3 ],
+    green = [ 0.13, 0.7, 0.67, 0.42 ],
+    pixiePowder = [ 0.22, 0.7, 0.52, 1 ];
 export default {
     data() {
         return {
@@ -38,38 +46,29 @@ export default {
                 precision mediump float;
                 
                 attribute vec4 a_Position;
-                attribute vec4 a_TrianglePosition;
                 attribute vec4 a_Color;
+                attribute vec2 a_TexCoord;
                 attribute vec4 a_Normal; // 法向量-即法线方向
-                attribute vec2 a_TexCoord; // 纹理坐标
 
                 uniform mat4 u_MvpMatrix; // 模型视图投影矩阵
                 uniform mat4 u_NormalMatrix; // 法向量变换矩阵
                 uniform mat4 u_ModelMatrix; // 模型矩阵
 
-                uniform bool u_IsTriangle;
 
                 varying vec4 v_Color;
                 varying vec3 v_Normal; // 计算变换后的法向量
                 varying vec3 v_VertexPosition; // 顶点的世界坐标
-
                 varying vec2 v_TexCoord; // 纹理坐标
 
                 void main () {
-                    if (!u_IsTriangle) {
-                        gl_Position = u_MvpMatrix * a_Position;
-                        // 计算变换后的法向量并归一化 矩阵右乘矢量： 矩阵*矢量=矢量
-                        v_Normal = vec3(u_NormalMatrix * a_Normal);
+                    gl_Position = u_MvpMatrix * a_Position;
+                    // 计算变换后的法向量并归一化 矩阵右乘矢量： 矩阵*矢量=矢量
+                    v_Normal = vec3(u_NormalMatrix * a_Normal);
 
-                        // 顶点的世界坐标
-                        v_VertexPosition = vec3(u_ModelMatrix * a_Position);
-
-                        v_Color = a_Color;
-
-                    } else {
-                        gl_Position = u_MvpMatrix * a_TrianglePosition;
-                        v_TexCoord = a_TexCoord;
-                    }
+                    // 顶点的世界坐标
+                    v_VertexPosition = vec3(u_ModelMatrix * a_Position);
+                    v_Color = a_Color;
+                    v_TexCoord = a_TexCoord;
                 }
             `;
             let FSHADER_SOURCE = `
@@ -83,12 +82,12 @@ export default {
                 uniform vec3 u_LightColor; // 入射光颜色 
                 uniform vec3 u_LightPosition; // 点光源位置
                 uniform vec3 u_AmbientColor; // 环境光颜色
+
                 uniform bool u_IsTriangle;
 
                 uniform sampler2D u_Sampler; // 纹理单元编号
 
                 void main() {
-                    if (!u_IsTriangle) {
                         // 计算光线方向
                         vec3 lightDirection = normalize(u_LightPosition - v_VertexPosition);
 
@@ -103,10 +102,11 @@ export default {
 
                         // 环境反射光颜色 = 环境光颜色 * 表面基底色
                         vec3 ambientReflectColor = u_AmbientColor * v_Color.rgb;
-                        gl_FragColor = vec4(diffuseColor + ambientReflectColor, v_Color.a);
-                    } else {
-                        gl_FragColor = texture2D(u_Sampler, v_TexCoord);
-                    }
+                        if (u_IsTriangle) {
+                            gl_FragColor = texture2D(u_Sampler, v_TexCoord);
+                        } else {
+                            gl_FragColor = vec4(diffuseColor + ambientReflectColor, v_Color.a);
+                        }
                 }
             `;
             
@@ -122,19 +122,16 @@ export default {
             }
             let u_IsTriangle = gl.getUniformLocation(gl.program, 'u_IsTriangle');
 
-            let triangleVertexCount = this.initTriangleVertexBuffers(gl);
-            let cubeVertexCount = this.initCubeVertexBuffers(gl);
-
+            let n = this.initVertexBuffers(gl);
+   
             this.lightEffect(gl);
             this.matrixHandle(gl, canvas);
 
-            this.initTexture(gl, triangleVertexCount, u_IsTriangle);
-            this.drawCube(gl, cubeVertexCount, u_IsTriangle);
+            this.initTexture(gl, u_IsTriangle);
         },
-        drawCube(gl, n, u_IsTriangle) {
+        draw(gl, u_IsTriangle) {
             // 消除隐藏面
             gl.enable(gl.DEPTH_TEST); //【开启混合的时候 就不再使用隐藏面消除】
-            gl.clearColor(0.4, 0.6, 0.9, 1);
 
             // 锁定用于进行隐藏面消除的深度缓冲区的写入操作，使之只读
             gl.depthMask(false);
@@ -146,12 +143,16 @@ export default {
             // 开启a混合
             gl.enable(gl.BLEND);
             // 指定混合指数
-            gl.blendFunc(gl.SRC_COLOR, gl.SRC_COLOR);
-            gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+            gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_COLOR);
 
             gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
+
+            // 绘制纹理三角形
+            gl.uniform1i(u_IsTriangle, 1);
+            gl.drawElements(gl.TRIANGLES, 3, gl.UNSIGNED_BYTE, 36);
+            // 立方体
             gl.uniform1i(u_IsTriangle, 0);
-            gl.drawElements(gl.TRIANGLES, n, gl.UNSIGNED_BYTE, 0);
+            gl.drawElements(gl.TRIANGLES, 36, gl.UNSIGNED_BYTE, 0);
 
             // 释放深度缓冲区，使之可写可读
             gl.depthMask(true);
@@ -198,7 +199,7 @@ export default {
             );
             // 设置观察信息
             mvpMatrix.lookAt(
-                5, 8, 7, // 观察视点
+                3, 4, 7, // 观察视点
                 0, 0, 0, // 观察目标点
                 0, 1, 0, // 上方向
             );
@@ -212,34 +213,16 @@ export default {
             gl.uniformMatrix4fv(u_MvpMatrix, false,  mvpMatrix.elements);
             gl.uniformMatrix4fv(u_NormalMatrix, false,  normalMatrix.elements);
         },
-        // 创建三角形的顶点缓冲对象
-        initTriangleVertexBuffers(gl) {
-            let vertices = [
-                -1.4, 2.3, 0.0,
-                -1.4, -1.4, 0.0, 
-                2.3, 2.3, 0.0,
-            ];
-            let TexCoords = [
-                0.0, 1.0,
-                0.0, 0.0,
-                1.0, 1.0,
-            ];
-            let index = [ 0, 1, 2 ];
-            this.initArrayBuffer(gl, vertices, 'a_TrianglePosition', 3);
-            this.initArrayBuffer(gl, TexCoords, 'a_TexCoord', 2,);
-            this.initElementArrayBuffer(gl, index);
-            return index.length;
-        },
-        initTexture(gl, n, u_IsTriangle) {
+        initTexture(gl, u_IsTriangle) {
             let texture = gl.createTexture();
             let image = new Image();
             let u_Sampler = gl.getUniformLocation(gl.program, 'u_Sampler');
             image.onload = () => {
-                this.LoadTexture(gl, n, texture, image, u_Sampler, u_IsTriangle);
+                this.LoadTexture(gl, texture, image, u_Sampler, u_IsTriangle);
             };
             image.src = '/img/sunrise.jpg';
         },
-        LoadTexture(gl, n, texture, image, u_Sampler, u_IsTriangle) {
+        LoadTexture(gl, texture, image, u_Sampler, u_IsTriangle) {
             let target = gl.TEXTURE_2D;
             // webGL纹理坐标系统重的t轴的方向和图片的坐标系统的Y轴方向是相反的，需要做翻转操作
             gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
@@ -264,11 +247,10 @@ export default {
             gl.clearColor(0.4, 0.6, 0.9, 1.0);
             gl.clear(gl.COLOR_BUFFER_BIT);
 
-            gl.uniform1i(u_IsTriangle, 1);
-            gl.drawElements(gl.TRIANGLES, n, gl.UNSIGNED_BYTE, 0);
+            this.draw(gl, u_IsTriangle)
         },
         // 创建立方体的顶点缓冲对象
-        initCubeVertexBuffers(gl) {
+        initVertexBuffers(gl) {
             // 顶点坐标
             let v0 = [ 1.0, 1.0, 1.0 ],
                 v1 = [ -1.0, 1.0, 1.0 ],
@@ -278,6 +260,7 @@ export default {
                 v5 = [ 1.0, 1.0, -1.0 ],
                 v6 = [ -1.0, 1.0, -1.0 ],
                 v7 = [ -1.0, -1.0, -1.0 ];
+            
              // 顶点坐标
              let vertexAxis = [
                 // 上面
@@ -298,14 +281,13 @@ export default {
                 // 背面
                 ...v7, ...v4, ...v5, 
                 ...v7, ...v5, ...v6,
+
+                // 纹理三角形的顶点
+                -1.8, 2, 0,
+                -0.5, -1, 0, 
+                0.5, 1, 0,
             ];
-            let pink = [ 0.98, 0.88, 0.93, 0.63 ],
-                red = [ 1.0, 0.0, 0.0, 0.83 ],
-                yellow = [ 1.0, 1.0, 0.0, 0.88 ],
-                blue = [ 0.0, 0.8, 1.0, 2.35 ],
-                // 青色
-                cyan = [ 0.4, 0.6, 0.6, 2.3 ],
-                green = [ 0.13, 0.7, 0.67, 0.42 ];
+
             let colors = [
                 ...pink, ...pink, ...pink, 
                 ...pink, ...pink, ...pink, 
@@ -319,6 +301,8 @@ export default {
                 ...cyan, ...cyan, ...cyan,
                 ...green, ...green, ...green,
                 ...green, ...green, ...green,
+
+                ...pixiePowder, ...pixiePowder, ...pixiePowder,
             ];
             // 每个面的法向量
             let top = [  0.0, 1.0, 0.0 ], 
@@ -346,7 +330,36 @@ export default {
 
                ...bottom, ...bottom, ...bottom,
                ...bottom, ...bottom, ...bottom,
+
+
+               ...front, ...front, ...front, 
             ];
+            let noTexCoord = [
+                -1, -1,
+            ];
+            let texCoords = [
+                ...noTexCoord, ...noTexCoord, ...noTexCoord,
+                ...noTexCoord, ...noTexCoord, ...noTexCoord,
+
+                ...noTexCoord, ...noTexCoord, ...noTexCoord,
+                ...noTexCoord, ...noTexCoord, ...noTexCoord,
+
+                ...noTexCoord, ...noTexCoord, ...noTexCoord,
+                ...noTexCoord, ...noTexCoord, ...noTexCoord,
+                ...noTexCoord, ...noTexCoord, ...noTexCoord,
+                ...noTexCoord, ...noTexCoord, ...noTexCoord,
+
+                ...noTexCoord, ...noTexCoord, ...noTexCoord,
+                ...noTexCoord, ...noTexCoord, ...noTexCoord,
+
+                ...noTexCoord, ...noTexCoord, ...noTexCoord,
+                ...noTexCoord, ...noTexCoord, ...noTexCoord,
+
+                0.0, 1.0,
+                0.0, 0.0,
+                1.0, 1.0,
+            ];
+
             // 索引
             let indices = [
                 0, 1, 2, 3, 4, 5, 
@@ -355,10 +368,12 @@ export default {
                 18, 19, 20, 21, 22, 23, 
                 24, 25, 26, 27, 28, 29, 
                 30, 31, 32, 33, 34, 35,
-            ];
 
+                36, 37, 38,
+            ];
             this.initArrayBuffer(gl, vertexAxis, 'a_Position');
             this.initArrayBuffer(gl, colors, 'a_Color', 4);
+            this.initArrayBuffer(gl, texCoords, 'a_TexCoord', 2)
             this.initArrayBuffer(gl, normals, 'a_Normal');
             this.initElementArrayBuffer(gl, indices);
             return indices.length;
