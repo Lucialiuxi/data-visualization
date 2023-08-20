@@ -405,6 +405,11 @@ const seniorTech = {
       name: '混合a[triangles]',
       component: () => import('../views/seniorTech/LookAtBlendedTiangles.vue')
     },
+    {
+      path: 'init-shader',
+      name: 'initShaders',
+      component: () => import('../views/seniorTech/InitShaders.vue'),
+    },
   ],
 }
 const router = createRouter({
