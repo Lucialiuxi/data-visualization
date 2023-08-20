@@ -11,7 +11,8 @@ export default {
     },
     methods: {
         paintHandle() {
-            let { vertex, fragment } = this.roundShaderSource();
+            let { vertex: roundV, fragment: roundF } = this.roundShaderSource();
+            let { vertex: triangleV, fragment: triangleF } = this.triangleShaderSource();
             let canvas = document.getElementById('init-shaders');
             if (!canvas) {
                 console.error('获取canvas节点失败')
@@ -22,23 +23,81 @@ export default {
                 console.error('获取webGL上下文失败');
                 return;
             }
-            if (!this.initShaders(gl, vertex, fragment, 'roundProgram')) {
-                console.error('着色器初始化失败');
+            if (!this.initShaders(gl, triangleV, triangleF, 'triangleProgram')) {
+                console.error('三角形的着色器初始化失败');
+                return;
+            }
+            if (!this.initShaders(gl, roundV, roundF, 'roundProgram')) {
+                console.error('圆的着色器初始化失败');
                 return;
             }
 
-            this.initVertexBuffers(gl);
-
+            this.initRoundVertexBuffers(gl, 'roundProgram');
+            this.initTriangleVertexBuffers(gl, 'triangleProgram');
+            
             gl.clearColor(0.93, 0.86, 0.69, 1.0);
             gl.clear(gl.COLOR_BUFFER_BIT);
+
             gl.drawArrays(gl.POINTS, 0, 1);
+
+            this.initTexture(gl, () => {
+                gl.drawElements(gl.TRIANGLES, 3, gl.UNSIGNED_BYTE, 0);
+            });
         },
-        initVertexBuffers(gl) {
+        initTriangleVertexBuffers(gl, programName) {
+            let vertexAxis = [
+                -0.5, 0.5, 0,
+                -0.5, -0.5, 0, 
+                0.5, 0.5, 0,
+            ];
+            let texCoords = [
+                0.0, 1.0,
+                0.0, 0.0,
+                1.0, 1.0,
+            ];
+            let indices = [ 0, 1, 2 ];
+            this.initArrayBuffer(gl, programName, vertexAxis, 'a_Position');
+            this.initArrayBuffer(gl, programName, texCoords, 'a_TexCoord', 2)
+            this.initElementArrayBuffer(gl, indices);
+        },
+        initRoundVertexBuffers(gl, programName) {
             let vertices = [ 0.5, 0.5, 0.0 ];
             let colors = [ 0.55, 0.39, 0.58 ];
 
-            this.initArrayBuffer(gl, 'roundProgram' ,vertices, 'a_Position');
-            this.initArrayBuffer(gl, 'roundProgram', colors, 'a_Color');
+            this.initArrayBuffer(gl, programName, vertices, 'a_Position');
+            this.initArrayBuffer(gl, programName, colors, 'a_Color');
+        },
+        initTexture(gl, callBack) {
+            let texture = gl.createTexture();
+            let image = new Image();
+            image.onload = () => {
+                this.LoadTexture(gl, texture, image, callBack);
+            };
+            image.src = '/img/sunrise.jpg';
+        },
+        LoadTexture(gl, texture, image, callBack) {
+            let target = gl.TEXTURE_2D;
+            // webGL纹理坐标系统重的t轴的方向和图片的坐标系统的Y轴方向是相反的，需要做翻转操作
+            gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
+
+            // 激活指定的纹理单元
+            gl.activeTexture(gl.TEXTURE0);
+
+            // 开启纹理对象，以及将纹理对象绑定到纹理单元上
+            gl.bindTexture(target, texture);
+
+            // 配置纹理参数
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+
+            // 指定二维纹理图像
+            gl.texImage2D(target, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+
+            gl.clearColor(0.93, 0.86, 0.69, 1.0);
+            gl.clear(gl.COLOR_BUFFER_BIT);
+
+            callBack();
         },
         initArrayBuffer(gl, programName, data, attr, size = 3) {
             let typeArray = new Float32Array(data, 0, data.length);
@@ -49,12 +108,24 @@ export default {
             gl.bufferData(gl.ARRAY_BUFFER, typeArray, gl.STATIC_DRAW);
 
             let location = gl.getAttribLocation(gl[programName], attr);
+
             if (location < 0) {
                 console.error('获取顶点属性'+ attr +'的储存下标失败');
                 return;
             }
             gl.vertexAttribPointer(location, size, gl.FLOAT, false, 0, 0);
             gl.enableVertexAttribArray(location);
+        },
+        // 创建元素索引的缓冲对象
+        initElementArrayBuffer(gl, array) {
+            let typeArray = new Uint8Array(array, 0, array.length);
+            let buffer = gl.createBuffer();
+            if (!buffer) {
+                console.error('元素索引的缓冲对象创建失败');
+                return;
+            }
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffer);
+            gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, typeArray, gl.STATIC_DRAW);
         },
         getWebGLContext(canvas, opt_debug) {
             /**
@@ -95,6 +166,7 @@ export default {
             }
             // 使用程序对象
             gl.useProgram(program);
+
             gl[programName] = program;
             return true;
         },
@@ -151,20 +223,20 @@ export default {
                 precision mediump float;
 
                 attribute vec4 a_Position;
-                attribute vec4 a_TexCoord;
+                attribute vec2 a_TexCoord;
 
-                varying vec4 v_TexCoord;
+                varying vec2 v_TexCoord;
 
                 void main() {
                     gl_Position = a_Position;
-                    v_Color = a_Color;
+                    v_TexCoord = a_TexCoord;
                 }
             `;
             let FRAGMENT_SHADER_SOURCE = `
                 precision mediump float;
 
                 uniform sampler2D u_Sampler;
-                varying vec4 v_TexCoord;
+                varying vec2 v_TexCoord;
 
                 void main() {
                     // u_Sampler 纹理单元编号 v_TexCoord 纹理坐标
