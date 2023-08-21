@@ -5,14 +5,24 @@
 </template>
 
 <script>
+/**
+ * 顺序：
+ *  createProgram 初始化着色器
+ *  获取顶点属性下标绑定到Program上
+ *  initBuffer
+ *  useProgram
+ *  bindBuffer
+ *  
+ * 修改着色器中的代码 没有响应
+ */
 export default {
     mounted() {
         this.paintHandle();
     },
     methods: {
         paintHandle() {
-            let { vertex: roundV, fragment: roundF } = this.roundShaderSource();
             let { vertex: triangleV, fragment: triangleF } = this.triangleShaderSource();
+            let { vertex: roundV, fragment: roundF } = this.roundShaderSource();
             let canvas = document.getElementById('init-shaders');
             if (!canvas) {
                 console.error('获取canvas节点失败')
@@ -23,32 +33,53 @@ export default {
                 console.error('获取webGL上下文失败');
                 return;
             }
-            if (!this.initShaders(gl, triangleV, triangleF, 'triangleProgram')) {
+
+            let triangleProgram = this.createProgram(gl, triangleV, triangleF);
+            if (!triangleProgram) {
                 console.error('三角形的着色器初始化失败');
                 return;
             }
-            if (!this.initShaders(gl, roundV, roundF, 'roundProgram')) {
+            let roundProgram = this.createProgram(gl, roundV, roundF);
+            if (!roundProgram) {
                 console.error('圆的着色器初始化失败');
                 return;
             }
 
-            this.initRoundVertexBuffers(gl, 'roundProgram');
-            this.initTriangleVertexBuffers(gl, 'triangleProgram');
-            
+            let triangle = this.initTriangleVertexBuffers(gl, triangleProgram);
+            let round = this.initRoundVertexBuffers(gl, roundProgram);
+
             gl.clearColor(0.93, 0.86, 0.69, 1.0);
             gl.clear(gl.COLOR_BUFFER_BIT);
 
-            gl.drawArrays(gl.POINTS, 0, 1);
+            this.drawTriangle(gl, triangleProgram, triangle);
+            this.drawRound(gl, roundProgram, round);
+        },
+        drawTriangle(gl, program, o) {
+            gl.useProgram(program);
+            this.initAttribArrayVariable(gl, program.a_Position, o.vertexBuffer);
+            this.initAttribArrayVariable(gl, program.a_TexCoord, o.texCoordBuffer);
 
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, o.indexBuffer);
             this.initTexture(gl, () => {
                 gl.drawElements(gl.TRIANGLES, 3, gl.UNSIGNED_BYTE, 0);
             });
         },
-        initTriangleVertexBuffers(gl, programName) {
+        drawRound(gl, program, o) {
+            gl.useProgram(program);
+            this.initAttribArrayVariable(gl, program.a_Position, o.vertexBuffer);
+            this.initAttribArrayVariable(gl, program.a_Color, o.colorBuffer);
+            gl.drawArrays(gl.POINTS, 0, 1);
+        },
+        initAttribArrayVariable(gl, attribLocation, buffer) {
+            gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+            gl.vertexAttribPointer(attribLocation, buffer.size, buffer.type, false, 0, 0);
+            gl.enableVertexAttribArray(attribLocation);
+        },
+        initTriangleVertexBuffers(gl, program) {
             let vertexAxis = [
-                -0.5, 0.5, 0,
-                -0.5, -0.5, 0, 
-                0.5, 0.5, 0,
+                -0.25, 0.25, 0,
+                -0.25, -0.25, 0, 
+                0.25, 0.25, 0,
             ];
             let texCoords = [
                 0.0, 1.0,
@@ -56,16 +87,20 @@ export default {
                 1.0, 1.0,
             ];
             let indices = [ 0, 1, 2 ];
-            this.initArrayBuffer(gl, programName, vertexAxis, 'a_Position');
-            this.initArrayBuffer(gl, programName, texCoords, 'a_TexCoord', 2)
-            this.initElementArrayBuffer(gl, indices);
+            let o = new Object();
+            o.vertexBuffer = this.initArrayBuffer(gl, program, vertexAxis, 'a_Position');
+            o.texCoordBuffer = this.initArrayBuffer(gl, program, texCoords, 'a_TexCoord', 2)
+            o.indexBuffer = this.initElementArrayBuffer(gl, indices);
+            return o;
         },
-        initRoundVertexBuffers(gl, programName) {
-            let vertices = [ 0.5, 0.5, 0.0 ];
+        initRoundVertexBuffers(gl, program) {
+            let vertices = [ -0.5, 0.5, 0.0 ];
             let colors = [ 0.55, 0.39, 0.58 ];
 
-            this.initArrayBuffer(gl, programName, vertices, 'a_Position');
-            this.initArrayBuffer(gl, programName, colors, 'a_Color');
+            let o = new Object();
+            o.vertexBuffer = this.initArrayBuffer(gl, program, vertices, 'a_Position');
+            o.colorBuffer = this.initArrayBuffer(gl, program, colors, 'a_Color');
+            return o;
         },
         initTexture(gl, callBack) {
             let texture = gl.createTexture();
@@ -99,22 +134,21 @@ export default {
 
             callBack();
         },
-        initArrayBuffer(gl, programName, data, attr, size = 3) {
+        initArrayBuffer(gl, program, data, attr, size = 3) {
             let typeArray = new Float32Array(data, 0, data.length);
-
             let buffer = gl.createBuffer();
             if (!buffer) return;
             gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
             gl.bufferData(gl.ARRAY_BUFFER, typeArray, gl.STATIC_DRAW);
 
-            let location = gl.getAttribLocation(gl[programName], attr);
-
+            program[attr] = gl.getAttribLocation(program, attr);
             if (location < 0) {
                 console.error('获取顶点属性'+ attr +'的储存下标失败');
                 return;
             }
-            gl.vertexAttribPointer(location, size, gl.FLOAT, false, 0, 0);
-            gl.enableVertexAttribArray(location);
+            buffer.type = gl.FLOAT;
+            buffer.size = size;
+            return buffer;
         },
         // 创建元素索引的缓冲对象
         initElementArrayBuffer(gl, array) {
@@ -126,6 +160,8 @@ export default {
             }
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffer);
             gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, typeArray, gl.STATIC_DRAW);
+            buffer.type = gl.UNSIGNED_BYTE;
+            return buffer;
         },
         getWebGLContext(canvas, opt_debug) {
             /**
@@ -139,7 +175,7 @@ export default {
             }
             return gl;
         },
-        initShaders(gl, vertexShaderSource, fragmentShaderSource, programName) {
+        createProgram(gl, vertexShaderSource, fragmentShaderSource) {
             // 创建webGL程序对象
             let program = gl.createProgram();
             if (!program) return;
@@ -165,10 +201,10 @@ export default {
                 return null;
             }
             // 使用程序对象
-            gl.useProgram(program);
+            // gl.useProgram(program);
 
-            gl[programName] = program;
-            return true;
+            // gl[programName] = program;
+            return program;
         },
         createShader(gl, type, source) {
             // 创建着色器对象
