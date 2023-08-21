@@ -48,19 +48,20 @@ export default {
             let triangle = this.initTriangleVertexBuffers(gl, triangleProgram);
             let round = this.initRoundVertexBuffers(gl, roundProgram);
 
-            gl.clearColor(0.93, 0.86, 0.69, 1.0);
-            gl.clear(gl.COLOR_BUFFER_BIT);
+            // gl.clearColor(0.93, 0.86, 0.69, 1.0);
+            // gl.clear(gl.COLOR_BUFFER_BIT);
 
             this.drawTriangle(gl, triangleProgram, triangle);
             this.drawRound(gl, roundProgram, round);
         },
         drawTriangle(gl, program, o) {
-            gl.useProgram(program);
-            this.initAttribArrayVariable(gl, program.a_Position, o.vertexBuffer);
-            this.initAttribArrayVariable(gl, program.a_TexCoord, o.texCoordBuffer);
-
-            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, o.indexBuffer);
             this.initTexture(gl, () => {
+                gl.useProgram(program);
+
+                this.initAttribArrayVariable(gl, program.a_Position, o.vertexBuffer);
+                this.initAttribArrayVariable(gl, program.a_TexCoord, o.texCoordBuffer);
+                gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, o.indexBuffer);
+
                 gl.drawElements(gl.TRIANGLES, 3, gl.UNSIGNED_BYTE, 0);
             });
         },
@@ -91,6 +92,9 @@ export default {
             o.vertexBuffer = this.initArrayBuffer(gl, program, vertexAxis, 'a_Position');
             o.texCoordBuffer = this.initArrayBuffer(gl, program, texCoords, 'a_TexCoord', 2)
             o.indexBuffer = this.initElementArrayBuffer(gl, indices);
+
+            gl.bindBuffer(gl.ARRAY_BUFFER, null);
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
             return o;
         },
         initRoundVertexBuffers(gl, program) {
@@ -100,6 +104,8 @@ export default {
             let o = new Object();
             o.vertexBuffer = this.initArrayBuffer(gl, program, vertices, 'a_Position');
             o.colorBuffer = this.initArrayBuffer(gl, program, colors, 'a_Color');
+
+            gl.bindBuffer(gl.ARRAY_BUFFER, null);
             return o;
         },
         initTexture(gl, callBack) {
