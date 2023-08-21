@@ -21,8 +21,8 @@ export default {
     },
     methods: {
         paintHandle() {
-            let { vertex: triangleV, fragment: triangleF } = this.triangleShaderSource();
             let { vertex: roundV, fragment: roundF } = this.roundShaderSource();
+            let { vertex: triangleV, fragment: triangleF } = this.triangleShaderSource();
             let canvas = document.getElementById('init-shaders');
             if (!canvas) {
                 console.error('获取canvas节点失败')
@@ -48,11 +48,8 @@ export default {
             let triangle = this.initTriangleVertexBuffers(gl, triangleProgram);
             let round = this.initRoundVertexBuffers(gl, roundProgram);
 
-            // gl.clearColor(0.93, 0.86, 0.69, 1.0);
-            // gl.clear(gl.COLOR_BUFFER_BIT);
-
-            this.drawTriangle(gl, triangleProgram, triangle);
             this.drawRound(gl, roundProgram, round);
+            this.drawTriangle(gl, triangleProgram, triangle);
         },
         drawTriangle(gl, program, o) {
             this.initTexture(gl, () => {
@@ -62,6 +59,13 @@ export default {
                 this.initAttribArrayVariable(gl, program.a_TexCoord, o.texCoordBuffer);
                 gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, o.indexBuffer);
 
+                let u_Sampler = gl.getUniformLocation(program, 'u_Sampler');
+                if (u_Sampler < 0) {
+                    console.error('获取u_Sampler储存位置失败');
+                    return;
+                }
+                // 将纹理单元传递给片元着色器
+                gl.uniform1i(u_Sampler, 0);
                 gl.drawElements(gl.TRIANGLES, 3, gl.UNSIGNED_BYTE, 0);
             });
         },
