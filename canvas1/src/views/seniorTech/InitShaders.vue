@@ -55,8 +55,6 @@ export default {
             }
             triangleProgram.u_Sampler = u_Sampler;
 
-            gl.clearColor(0.93, 0.86, 0.69, 1.0);
-            gl.clear(gl.COLOR_BUFFER_BIT);
 
             let texture = await this.initTexture(gl, triangleProgram);
             this.drawRound(gl, roundProgram, round);
@@ -81,6 +79,9 @@ export default {
             gl.useProgram(program);
             this.initAttribArrayVariable(gl, program.a_Position, buffers.vertexBuffer);
             this.initAttribArrayVariable(gl, program.a_Color, buffers.colorBuffer);
+           
+            gl.clearColor(0.93, 0.86, 0.69, 1.0);
+            gl.clear(gl.COLOR_BUFFER_BIT);
             gl.drawArrays(gl.POINTS, 0, 1);
         },
         initAttribArrayVariable(gl, attribLocation, buffer) {
@@ -134,12 +135,10 @@ export default {
             let texture = gl.createTexture();
             let image = new Image();
             image.src = '/img/sunrise.jpg';
-            let loaded = await this.loadImg(image);
-            console.log('loaded', loaded)
+            await this.loadImg(image);
             return this.LoadTexture(gl, program, texture, image);
         },
         LoadTexture(gl, program, texture, image) {
-            console.log('加载纹理')
             let target = gl.TEXTURE_2D;
             // webGL纹理坐标系统重的t轴的方向和图片的坐标系统的Y轴方向是相反的，需要做翻转操作
             gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
@@ -158,8 +157,11 @@ export default {
             // 指定二维纹理图像
             gl.texImage2D(target, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
 
+            gl.useProgram(program);
             // 将纹理单元传递给片元着色器
             gl.uniform1i(program.u_Sampler, 0);
+
+            gl.bindTexture(gl.TEXTURE_2D, null); // Unbind texture
 
             return texture;
         },
