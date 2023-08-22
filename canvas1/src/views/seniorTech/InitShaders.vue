@@ -20,7 +20,7 @@ export default {
         this.paintHandle();
     },
     methods: {
-        paintHandle() {
+        async paintHandle() {
             let { vertex: roundV, fragment: roundF } = this.roundShaderSource();
             let { vertex: triangleV, fragment: triangleF } = this.triangleShaderSource();
             let canvas = document.getElementById('init-shaders');
@@ -48,31 +48,39 @@ export default {
             let triangle = this.initTriangleVertexBuffers(gl, triangleProgram);
             let round = this.initRoundVertexBuffers(gl, roundProgram);
 
+            let u_Sampler = gl.getUniformLocation(triangleProgram, 'u_Sampler');
+            if (u_Sampler < 0) {
+                console.error('获取u_Sampler储存位置失败');
+                return;
+            }
+            triangleProgram.u_Sampler = u_Sampler;
+
+            gl.clearColor(0.93, 0.86, 0.69, 1.0);
+            gl.clear(gl.COLOR_BUFFER_BIT);
+
+            let texture = await this.initTexture(gl, triangleProgram);
             this.drawRound(gl, roundProgram, round);
-            this.drawTriangle(gl, triangleProgram, triangle);
+            this.drawTriangle(gl, triangleProgram, triangle, texture);
         },
-        drawTriangle(gl, program, o) {
-            this.initTexture(gl, () => {
-                gl.useProgram(program);
-
-                this.initAttribArrayVariable(gl, program.a_Position, o.vertexBuffer);
-                this.initAttribArrayVariable(gl, program.a_TexCoord, o.texCoordBuffer);
-                gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, o.indexBuffer);
-
-                let u_Sampler = gl.getUniformLocation(program, 'u_Sampler');
-                if (u_Sampler < 0) {
-                    console.error('获取u_Sampler储存位置失败');
-                    return;
-                }
-                // 将纹理单元传递给片元着色器
-                gl.uniform1i(u_Sampler, 0);
-                gl.drawElements(gl.TRIANGLES, 3, gl.UNSIGNED_BYTE, 0);
-            });
-        },
-        drawRound(gl, program, o) {
+        drawTriangle(gl, program, buffers, texture) {
             gl.useProgram(program);
-            this.initAttribArrayVariable(gl, program.a_Position, o.vertexBuffer);
-            this.initAttribArrayVariable(gl, program.a_Color, o.colorBuffer);
+
+            this.initAttribArrayVariable(gl, program.a_Position, buffers.vertexBuffer);
+            this.initAttribArrayVariable(gl, program.a_TexCoord, buffers.texCoordBuffer);
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffers.indexBuffer);
+
+            // 激活指定的纹理单元
+            gl.activeTexture(gl.TEXTURE0);
+
+            // 开启纹理对象，以及将纹理对象绑定到纹理单元上
+            gl.bindTexture(gl.TEXTURE_2D, texture);
+
+            gl.drawElements(gl.TRIANGLES, 3, gl.UNSIGNED_BYTE, 0);
+        },
+        drawRound(gl, program, buffers) {
+            gl.useProgram(program);
+            this.initAttribArrayVariable(gl, program.a_Position, buffers.vertexBuffer);
+            this.initAttribArrayVariable(gl, program.a_Color, buffers.colorBuffer);
             gl.drawArrays(gl.POINTS, 0, 1);
         },
         initAttribArrayVariable(gl, attribLocation, buffer) {
@@ -112,15 +120,26 @@ export default {
             gl.bindBuffer(gl.ARRAY_BUFFER, null);
             return o;
         },
-        initTexture(gl, callBack) {
+        loadImg(image) {
+            return new Promise((resolve, reject) => {
+                image.onload = () => {
+                   resolve(true);
+                };
+                image.onerror = (err) => {
+                    reject(err);
+                };
+            });
+        },
+        async initTexture(gl, program) {
             let texture = gl.createTexture();
             let image = new Image();
-            image.onload = () => {
-                this.LoadTexture(gl, texture, image, callBack);
-            };
             image.src = '/img/sunrise.jpg';
+            let loaded = await this.loadImg(image);
+            console.log('loaded', loaded)
+            return this.LoadTexture(gl, program, texture, image);
         },
-        LoadTexture(gl, texture, image, callBack) {
+        LoadTexture(gl, program, texture, image) {
+            console.log('加载纹理')
             let target = gl.TEXTURE_2D;
             // webGL纹理坐标系统重的t轴的方向和图片的坐标系统的Y轴方向是相反的，需要做翻转操作
             gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
@@ -139,10 +158,10 @@ export default {
             // 指定二维纹理图像
             gl.texImage2D(target, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
 
-            gl.clearColor(0.93, 0.86, 0.69, 1.0);
-            gl.clear(gl.COLOR_BUFFER_BIT);
+            // 将纹理单元传递给片元着色器
+            gl.uniform1i(program.u_Sampler, 0);
 
-            callBack();
+            return texture;
         },
         initArrayBuffer(gl, program, data, attr, size = 3) {
             let typeArray = new Float32Array(data, 0, data.length);
