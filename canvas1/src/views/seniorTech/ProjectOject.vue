@@ -8,7 +8,7 @@
 import { getWebGLContext, createProgram } from '@lib/cuon-utils';
 import Matrix4 from '@lib/cuon-matrix';
 /**
- * 一下函数调用2次的意义
+ * 以下函数调用2次的意义
  * bufferBuffer
  * bufferData
  * activeTexture
@@ -81,17 +81,20 @@ export default {
             );
             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
             this.drawSolidCube(gl, solidProgram, cube, viewProjMatrix);
-            this.drawTexCube(gl, texProgram, cube, texture,  viewProjMatrix);
+            this.drawTexCube(gl, texProgram, texture, cube,  viewProjMatrix);
         },
-        drawTexCube(gl, program, buffers, texture, viewProjMatrix){
+        drawTexCube(gl, program, texture, buffers, viewProjMatrix){
             gl.useProgram(program);
+
             this.initAttributeVariable(gl, program.a_Position, buffers.vertexBuffer);
             this.initAttributeVariable(gl, program.a_Normal, buffers.normalBuffer);
             this.initAttributeVariable(gl, program.a_TexCoord, buffers.texCoordBuffer);
+            
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffers.indexBuffer);
 
             gl.activeTexture(gl.TEXTURE0);
             gl.bindTexture(gl.TEXTURE_2D, texture);
+
             this.drawCube(gl, program, buffers, viewProjMatrix, [-2, 0, 0]);
         },
         drawSolidCube(gl, program, buffers, viewProjMatrix) {
@@ -170,7 +173,7 @@ export default {
                 ...back, ...back, ...back, ...back,
             ];
 
-            let topL = [ 0,0, 0.0 ],
+            let topL = [ 0,0, 1.0 ],
                 topR = [ 1.0, 1.0 ],
                 bottomL = [ 0.0, 0.0 ],
                 bottomR = [ 1.0, 0.0 ];
