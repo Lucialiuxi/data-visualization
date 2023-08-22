@@ -102,18 +102,18 @@ export default {
                 v7 = [ -1.0, -1.0, -1.0 ];
 
             let vertices = [
-                // 正面 1203
-                ...v1, ...v2, ...v0, ...v3,
-                // 背面 6754
-                ...v6, ...v7,...v5, ...v4, 
-                // 左面 2716
-                ...v2, ...v7,...v1, ...v6, 
-                // 右面 3405
-                ...v3, ...v4,...v0, ...v5, 
-                // 顶面 1605
-                ...v1, ...v6,...v0, ...v5,
-                // 底面 2734
-                ...v2, ...v7,...v3, ...v4, 
+                // 正面
+                ...v0, ...v1, ...v2, ...v3,
+                // 右面
+                ...v0, ...v3, ...v4,...v5,
+                // 上面
+                ...v0, ...v5, ...v6, ...v1,
+                // 左面
+                ...v1, ...v6, ...v7, ...v2, 
+                // 下面
+                ...v7, ...v4, ...v3, ...v2,
+                // 背面
+                ...v4, ...v7, ...v6, ...v5,
             ];
       
             // 每个面的法向量
@@ -125,11 +125,11 @@ export default {
             back = [ 0.0, 0.0, -1.0];
             let normals = [
                 ...front, ...front, ...front, ...front,
-                ...back, ...back, ...back, ...back,
-                ...left, ...left, ...left,  ...left, 
                 ...right, ...right, ...right, ...right, 
                 ...top, ...top, ...top, ...top,
+                ...left, ...left, ...left,  ...left, 
                 ...bottom, ...bottom, ...bottom, ...bottom, 
+                ...back, ...back, ...back, ...back,
             ];
 
             let indices = [
@@ -145,7 +145,6 @@ export default {
 
             o.vertexBuffer = this.initArrayBufferForLaterUse(gl, vertices, 3, gl.FLOAT);
             o.normalBuffer = this.initArrayBufferForLaterUse(gl, normals, 3, gl.FLOAT);
-
             o.indexBuffer = this.initElementArrayBufferForLaterUse(gl, indices, gl.UNSIGNED_BYTE);
 
             if (!this.validate(o)) return;
@@ -204,6 +203,7 @@ export default {
             }
         },
         initArrayBufferForLaterUse(gl, data, num, type) {
+            let array = new Float32Array(data, 0, data.length);
             let buffer = gl.createBuffer();
             if (!buffer) {
                 console.log('Failed to create the buffer object');
@@ -211,7 +211,7 @@ export default {
             }
         
             gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-            gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
+            gl.bufferData(gl.ARRAY_BUFFER, array, gl.STATIC_DRAW);
 
             buffer.num = num;
             buffer.type = type;
@@ -219,13 +219,14 @@ export default {
             return buffer;
         },
         initElementArrayBufferForLaterUse(gl, data, type) {
+            let array = new Uint8Array(data, 0, data.length);
             let buffer = gl.createBuffer();
             if (!buffer) {
                 console.log('Failed to create the buffer object');
                 return null;
             }
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffer);
-            gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, data, gl.STATIC_DRAW);
+            gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, array, gl.STATIC_DRAW);
 
             buffer.type = type;
 
