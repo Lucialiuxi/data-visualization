@@ -406,9 +406,14 @@ const seniorTech = {
       component: () => import('../views/seniorTech/LookAtBlendedTiangles.vue')
     },
     {
-      path: 'init-shader',
-      name: 'initShaders',
+      path: 'init-shaders',
+      name: '切换着色器1',
       component: () => import('../views/seniorTech/InitShaders.vue'),
+    },
+    {
+      path: 'project-object',
+      name: '切换着色器2',
+      component: () => import('../views/seniorTech/ProjectOject.vue'),
     },
   ],
 }
