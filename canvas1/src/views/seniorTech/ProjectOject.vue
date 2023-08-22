@@ -7,6 +7,13 @@
 <script>
 import { getWebGLContext, createProgram } from '@lib/cuon-utils';
 import Matrix4 from '@lib/cuon-matrix';
+/**
+ * 一下函数调用2次的意义
+ * bufferBuffer
+ * bufferData
+ * activeTexture
+ * bindTexture
+ */
 export default {
     mounted() {
         this.paintHandle();
@@ -74,16 +81,18 @@ export default {
             );
             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
             this.drawSolidCube(gl, solidProgram, cube, viewProjMatrix);
-            this.drawTexCube(gl, texProgram, cube, viewProjMatrix);
+            this.drawTexCube(gl, texProgram, cube, texture,  viewProjMatrix);
         },
-        drawTexCube(gl, program, buffers, viewProjMatrix){
+        drawTexCube(gl, program, buffers, texture, viewProjMatrix){
             gl.useProgram(program);
             this.initAttributeVariable(gl, program.a_Position, buffers.vertexBuffer);
             this.initAttributeVariable(gl, program.a_Normal, buffers.normalBuffer);
             this.initAttributeVariable(gl, program.a_TexCoord, buffers.texCoordBuffer);
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffers.indexBuffer);
 
-            this.drawCube(gl, program, buffers, viewProjMatrix);
+            gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_2D, texture);
+            this.drawCube(gl, program, buffers, viewProjMatrix, [-2, 0, 0]);
         },
         drawSolidCube(gl, program, buffers, viewProjMatrix) {
             gl.useProgram(program);
@@ -92,16 +101,16 @@ export default {
             this.initAttributeVariable(gl, program.a_Normal, buffers.normalBuffer);
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffers.indexBuffer);
 
-            this.drawCube(gl, program, buffers, viewProjMatrix);
+            this.drawCube(gl, program, buffers, viewProjMatrix, [1, 1, 0]);
         },
         // 绘制立方体的通用方法
-        drawCube(gl, program, buffers, viewProjMatrix) {
+        drawCube(gl, program, buffers, viewProjMatrix, translateObj = [0, 0, 0]) {
             let modelMatrix = new Matrix4(); // 旋转、平移、缩放等
             let normalMatrix = new Matrix4(); // 法向量变换的矩阵
             let mvpMatrix = new Matrix4();
 
             modelMatrix.setRotate(30, 1, 1, 1);
-
+            modelMatrix.translate(...translateObj)
             // 根据模型矩阵计算用来变换法向量的矩阵
             normalMatrix.setInverseOf(modelMatrix);
             // 对自身进行转置
