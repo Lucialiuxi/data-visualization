@@ -85,7 +85,7 @@ export default {
         },
         drawTexCube(gl, program, texture, buffers, viewProjMatrix){
             gl.useProgram(program);
-            console.log('邦定')
+
             this.initAttributeVariable(gl, program.a_Position, buffers.vertexBuffer);
             this.initAttributeVariable(gl, program.a_Normal, buffers.normalBuffer);
             this.initAttributeVariable(gl, program.a_TexCoord, buffers.texCoordBuffer);
@@ -238,13 +238,14 @@ export default {
                 gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);  // Flip the image Y coordinate
                 gl.activeTexture(gl.TEXTURE0);
                 gl.bindTexture(gl.TEXTURE_2D, texture);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
                 gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
                 gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
 
                 // Pass the texure unit 0 to u_Sampler
                 gl.useProgram(program);
                 gl.uniform1i(program.u_Sampler, 0);
-                console.log('加载纹理')
                 gl.bindTexture(gl.TEXTURE_2D, null); // Unbind texture
 
             }
