@@ -19,7 +19,7 @@ export default {
         this.paintHandle();
     },
     methods: {
-        paintHandle() {
+        async paintHandle() {
             let {
                 SOLID_VSHADER_SOURCE,
                 SOLID_FSHADER_SOURCE,
@@ -57,7 +57,7 @@ export default {
                 return;
             }
 
-            var texture = this.initTextures(gl, texProgram);
+            var texture = await this.initTextures(gl, texProgram);
             if (!texture) {
                 console.error('Failed to intialize the texture.');
                 return;
@@ -85,7 +85,7 @@ export default {
         },
         drawTexCube(gl, program, texture, buffers, viewProjMatrix){
             gl.useProgram(program);
-
+            console.log('邦定')
             this.initAttributeVariable(gl, program.a_Position, buffers.vertexBuffer);
             this.initAttributeVariable(gl, program.a_Normal, buffers.normalBuffer);
             this.initAttributeVariable(gl, program.a_TexCoord, buffers.texCoordBuffer);
@@ -209,7 +209,17 @@ export default {
 
             return o;
         },
-        initTextures(gl, program) {
+        loadImg(image) {
+            return new Promise((resolve, reject) => {
+                image.onload = () => {
+                   resolve(true);
+                };
+                image.onerror = (err) => {
+                    reject(err);
+                };
+            });
+        },
+        async initTextures(gl, program) {
             var texture = gl.createTexture();   // Create a texture object
             if (!texture) {
                 console.error('Failed to create the texture object');
@@ -221,8 +231,9 @@ export default {
                 console.error('Failed to create the image object');
                 return null;
             }
-            // Register the event handler to be called when image loading is completed
-            image.onload = function() {
+            image.src = '/img/water.webp';
+            let loaded = await this.loadImg(image);
+            if (loaded) {
                 // Write the image data to texture object
                 gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);  // Flip the image Y coordinate
                 gl.activeTexture(gl.TEXTURE0);
@@ -233,13 +244,10 @@ export default {
                 // Pass the texure unit 0 to u_Sampler
                 gl.useProgram(program);
                 gl.uniform1i(program.u_Sampler, 0);
-
+                console.log('加载纹理')
                 gl.bindTexture(gl.TEXTURE_2D, null); // Unbind texture
-            };
 
-            // Tell the browser to load an Image
-            image.src = '/img/water.webp';
-
+            }
             return texture;
         },
         // 缓冲对象中的属性的存储下标是否存在
