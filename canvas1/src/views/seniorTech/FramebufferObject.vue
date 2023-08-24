@@ -24,6 +24,8 @@ export default {
             let { 
                 TEX_VSHADER_SOURCE,
                 TEX_FASHDER_SOURCE,
+                // ROUND_VSHADER_SOURCE,
+                // ROUND_FASHDER_SOURCE,
             } = this.getShaderSource();
             
             let canvas = document.getElementById('frame-buffer-object');
@@ -32,15 +34,25 @@ export default {
                 console.error('获取webGL上下文失败');
                 return;
             }
-            this.createWebGLProgram(gl, TEX_VSHADER_SOURCE, TEX_FASHDER_SOURCE);
+            let cubeProgram = this.createWebGLProgram(
+                gl, 
+                TEX_VSHADER_SOURCE, 
+                TEX_FASHDER_SOURCE, 
+                'cubeProgram',
+            );
 
-            let n = this.initVertexBuffers(gl);
-            this.matrixHandle(gl, canvas);
-            await this.initTexture(gl, n);
-            // this.draw(gl, n);
-            this.initFramebufferObject(gl);
-        }, 
-        draw(gl, n) {
+            // let roundProgram = this.createWebGLProgram(
+            //     gl, 
+            //     ROUND_VSHADER_SOURCE,
+            //     ROUND_FASHDER_SOURCE,
+            //     'roundProgram',
+            // );
+            let cubeBuffer = this.initVertexBuffers(gl, cubeProgram);
+            
+            let texture = await this.initTexture(gl, cubeProgram);
+
+            // let roundVertexCount = this.initRoundVertexBuffer(gl, roundProgram);
+
             gl.clearColor(0.9, 0.97, 0.95, 1);
 
             // 开启隐藏面消除
@@ -49,23 +61,61 @@ export default {
             gl.enable(gl.POLYGON_OFFSET_FILL);
             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-            gl.drawElements(gl.TRIANGLE_STRIP, n, gl.UNSIGNED_BYTE, 0); // mode, count, type, offset
+            this.drawCube(gl, cubeProgram, cubeBuffer, texture);
+
+            // this.initFramebufferObject(gl);
+        }, 
+        drawCube(gl, program, buffers, texture) {
+            let { vertexBuffer, texCoordBuffer, indexBuffer } = buffers;
+            gl.useProgram(program);
+
+
+            this.initAttributeVariable(gl, program, vertexBuffer, 'a_Position');
+            this.initAttributeVariable(gl, program, texCoordBuffer, 'a_TexCoord');
+
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+            
+            gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_2D, texture);
+
+            this.matrixHandle(gl, program);
+
+            gl.bindBuffer(gl.ARRAY_BUFFER, null);
+            gl.drawElements(gl.TRIANGLE_STRIP, buffers.vertexCount, gl.UNSIGNED_BYTE, 0); // mode, count, type, offset
+        },
+        initAttributeVariable(gl, program, buffer, attr) {
+            gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+
+            gl.vertexAttribPointer(program[attr], buffer.size, buffer.type, false, 0, 0);
+            gl.enableVertexAttribArray(program[attr]);
+        },
+        initRoundVertexBuffer(gl, program) {
+            let vertices = [ -0.8, 0.8, 0.0 ];
+            let indices = [ 0 ];
+
+            let a_Color = gl.getUniformLocation(program, 'a_Color');
+            if (a_Color < 0) {
+                console.error('获取a_Color的存储下标失败');
+                return;
+            }
+            gl.uniform4f(a_Color, 0.44, 0.57, 0.58, 1.0);
+            this.initArrayBuffer(gl, program, vertices, 'a_Position', 3);
+            this.initElementArrayBuffer(gl, indices);
+            return 1;
         },
         // 矩阵相关
-        matrixHandle(gl, canvas) {
+        matrixHandle(gl, program) {
             // 视图矩阵
             let viewMatrix = new Matrix4();
             // 模型矩阵
             let modelMatrix = new Matrix4();
-            // 法向量矩阵
-            let normalMatrix = new Matrix4();
             // 模型视图投影矩阵
             let mvpMatrix = new Matrix4();
 
             // 透视投影
             viewMatrix.setPerspective(
                 30,
-                canvas.width/canvas.height,
+                1,
                 1,
                 100,
             );
@@ -80,23 +130,16 @@ export default {
             modelMatrix.setRotate(10, 1, 0, 0); // 绕X轴旋转
             modelMatrix.rotate(20, 0, 1, 0); // 绕Y轴旋转
 
-            // 求逆转置矩阵【用法向量乘以模型矩阵的逆转置矩阵，就可以求得变换后的法向量】
-            // 自身成为 模型句还早呢的逆矩阵
-            normalMatrix.setInverseOf(modelMatrix);
-            // 对自身进行转置操作，并将自身设置为转置后的结果
-            normalMatrix.transpose();
 
             mvpMatrix.multiply(viewMatrix).multiply(modelMatrix);
 
-            let u_MvpMatrix = gl.getUniformLocation(gl.program, 'u_MvpMatrix');
+            let u_MvpMatrix = gl.getUniformLocation(program, 'u_MvpMatrix');
             gl.uniformMatrix4fv(u_MvpMatrix, false, mvpMatrix.elements);
 
-            let u_NormalMatrix = gl.getUniformLocation(gl.program, 'u_NormalMatrix');
-            gl.uniformMatrix4fv(u_NormalMatrix, false, normalMatrix.elements);
 
         },
         // 初始化帧缓冲区
-        async initFramebufferObject(gl, canvas) {
+        async initFramebufferObject(gl) {
             // 创建帧缓冲区对象
             let framebuffer = gl.createFramebuffer();
             
@@ -128,7 +171,7 @@ export default {
             gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
         },
         // 创建顶点缓冲对象
-        initVertexBuffers(gl) {
+        initVertexBuffers(gl, program) {
             // 顶点坐标
             let v0 = [ 1.0, 1.0, 1.0 ],
                 v1 = [ -1.0, 1.0, 1.0 ],
@@ -176,14 +219,20 @@ export default {
                 16, 17, 18, 19,
                 20, 21, 22, 23,
             ];
-            
-            this.initArrayBuffer(gl, vertexAxis, 'a_Position', 3);
-            this.initArrayBuffer(gl, texCoords, 'a_TexCoord', 2);
-            this.initElementArrayBuffer(gl, indices);
-            return indices.length;
+
+            let buffers = new Object();
+            buffers.vertexBuffer = this.initArrayBuffer(gl, program, vertexAxis, 'a_Position', 3);
+            buffers.texCoordBuffer = this.initArrayBuffer(gl, program, texCoords, 'a_TexCoord', 2);
+            buffers.indexBuffer = this.initElementArrayBuffer(gl, indices);
+            buffers.vertexCount = indices.length;
+
+            gl.bindBuffer(gl.ARRAY_BUFFER, null);
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+
+            return buffers;
         },
         // 创建顶点数组缓冲对象
-        initArrayBuffer(gl, array, attr, size) {
+        initArrayBuffer(gl, program, array, attr, size) {
             let data = new Float32Array(array, 0, array.length);
             let arrayBuffer = gl.createBuffer();
             if (!arrayBuffer) {
@@ -192,15 +241,17 @@ export default {
             }
             gl.bindBuffer(gl.ARRAY_BUFFER, arrayBuffer);
             gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
+            arrayBuffer.size = size;
+            arrayBuffer.type = gl.FLOAT;
 
-            let location = gl.getAttribLocation(gl.program, attr);
+            let location = gl.getAttribLocation(program, attr);
             if (location < 0) {
                 console.error(attr + '的存储位置获取失败');
                 return;
             }
-            gl.vertexAttribPointer(location, size, gl.FLOAT, false, 0, 0);
-            gl.enableVertexAttribArray(location);
-            gl.bindBuffer(gl.ARRAY_BUFFER, null);
+            program[attr] = gl.getAttribLocation(program, attr);
+
+            return arrayBuffer;
         },
         // 创建索引缓冲对象
         initElementArrayBuffer(gl, array) {
@@ -212,14 +263,18 @@ export default {
             }
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, elementArrayBuffer);
             gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, data, gl.STATIC_DRAW);
+            elementArrayBuffer.type = gl.UNSIGNED_BYTE;
+            return elementArrayBuffer;
         },
         //初始化纹理
-        async initTexture(gl) {
+        async initTexture(gl, program) {
+            gl.useProgram(program);
             let texture = gl.createTexture();
             let image = new Image();
             image.src = '/img/water.webp';
 
-            let u_Sampler = gl.getUniformLocation(gl.program, 'u_Sampler');
+            let u_Sampler = gl.getUniformLocation(program, 'u_Sampler');
+
             if (u_Sampler < 0) {
                 console.error('获取u_Sampler储存位置失败');
                 return;
@@ -250,6 +305,7 @@ export default {
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image);
             // 将纹理单元传递给片元着色器
             gl.uniform1i(u_Sampler, 0);
+            gl.bindTexture(gl.TEXTURE_2D, null); // Unbind texture
             return texture;
         },
         /** 
@@ -273,7 +329,7 @@ export default {
          * @param {*} vertexShaderSource 用于顶点着色器的GLSL的程序代码
          * @param {*} fragmentShaderSource 用于片元着色器的GLSL的程序代码
          */
-        createWebGLProgram(gl, vertexShaderSource, fragmentShaderSource,) {
+        createWebGLProgram(gl, vertexShaderSource, fragmentShaderSource, name) {
             // 创建webGL程序对象
             let program = gl.createProgram();
             if (!program)  return;
@@ -305,8 +361,9 @@ export default {
             }
 
             // 使用程序对象
-            gl.useProgram(program);
-            gl.program = program;
+            // gl.useProgram(program);
+            // gl[name] = program;
+            return program;
         },
         /**
          * 创建着色器
@@ -336,7 +393,6 @@ export default {
                 varying vec2 v_TexCoord;
 
                 uniform mat4 u_MvpMatrix; // 模型视图透视投影矩阵
-                uniform mat4 u_NormalMatrix; // 记录法向量变化的矩阵
 
                 uniform vec3 u_LightPosition; // 入射光位置（世界坐标）
                 
@@ -355,9 +411,30 @@ export default {
                     gl_FragColor = texture2D(u_Sampler, v_TexCoord);
                 }
             `;
+
+            let ROUND_VSHADER_SOURCE = `
+                precision mediump float;
+
+                attribute vec4 a_Position;
+
+                void main() {
+                    gl_Position = a_Position;
+                    gl_PointSize = 50.0;
+                }
+            `;
+            let ROUND_FASHDER_SOURCE = `
+                precision mediump float;
+                uniform vec4 a_Color;
+
+                void main() {
+                    gl_FragColor = a_Color;
+                }
+            `;
             return {
                 TEX_VSHADER_SOURCE,
                 TEX_FASHDER_SOURCE,
+                ROUND_VSHADER_SOURCE,
+                ROUND_FASHDER_SOURCE
             }
         },
         loadImg(image) {
