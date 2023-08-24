@@ -415,6 +415,11 @@ const seniorTech = {
       name: '切换着色器2',
       component: () => import('../views/seniorTech/ProjectOject.vue'),
     },
+    {
+      path: 'frame-buffer-object',
+      name: '渲染到纹理',
+      component: () => import('../views/seniorTech/FramebufferObject.vue')
+    },
   ],
 }
 const router = createRouter({
