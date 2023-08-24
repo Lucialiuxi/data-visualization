@@ -24,8 +24,8 @@ export default {
             let { 
                 TEX_VSHADER_SOURCE,
                 TEX_FASHDER_SOURCE,
-                // ROUND_VSHADER_SOURCE,
-                // ROUND_FASHDER_SOURCE,
+                ROUND_VSHADER_SOURCE,
+                ROUND_FASHDER_SOURCE,
             } = this.getShaderSource();
             
             let canvas = document.getElementById('frame-buffer-object');
@@ -41,17 +41,17 @@ export default {
                 'cubeProgram',
             );
 
-            // let roundProgram = this.createWebGLProgram(
-            //     gl, 
-            //     ROUND_VSHADER_SOURCE,
-            //     ROUND_FASHDER_SOURCE,
-            //     'roundProgram',
-            // );
+            let roundProgram = this.createWebGLProgram(
+                gl, 
+                ROUND_VSHADER_SOURCE,
+                ROUND_FASHDER_SOURCE,
+                'roundProgram',
+            );
             let cubeBuffer = this.initVertexBuffers(gl, cubeProgram);
             
             let texture = await this.initTexture(gl, cubeProgram);
 
-            // let roundVertexCount = this.initRoundVertexBuffer(gl, roundProgram);
+            let roundBuffer= this.initRoundVertexBuffer(gl, roundProgram);
 
             gl.clearColor(0.9, 0.97, 0.95, 1);
 
@@ -62,9 +62,19 @@ export default {
             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
             this.drawCube(gl, cubeProgram, cubeBuffer, texture);
-
+            this.drawRound(gl, roundProgram, roundBuffer);
             // this.initFramebufferObject(gl);
+            
         }, 
+        drawRound(gl, program, buffers) {
+            gl.useProgram(program);
+            let { vertexBuffer, indexBuffer, vertexCount } = buffers;
+            this.initAttributeVariable(gl, program, vertexBuffer, 'a_Position');
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+
+            gl.bindBuffer(gl.ARRAY_BUFFER, null);
+            gl.drawElements(gl.POINTS, vertexCount, indexBuffer.type, 0);
+        },
         drawCube(gl, program, buffers, texture) {
             let { vertexBuffer, texCoordBuffer, indexBuffer } = buffers;
             gl.useProgram(program);
@@ -93,15 +103,19 @@ export default {
             let vertices = [ -0.8, 0.8, 0.0 ];
             let indices = [ 0 ];
 
+            gl.useProgram(program);
             let a_Color = gl.getUniformLocation(program, 'a_Color');
             if (a_Color < 0) {
                 console.error('获取a_Color的存储下标失败');
                 return;
             }
             gl.uniform4f(a_Color, 0.44, 0.57, 0.58, 1.0);
-            this.initArrayBuffer(gl, program, vertices, 'a_Position', 3);
-            this.initElementArrayBuffer(gl, indices);
-            return 1;
+
+            let buffers = new Object();
+            buffers.vertexBuffer = this.initArrayBuffer(gl, program, vertices, 'a_Position', 3);
+            buffers.indexBuffer = this.initElementArrayBuffer(gl, indices);
+            buffers.vertexCount = indices.length;
+            return buffers;
         },
         // 矩阵相关
         matrixHandle(gl, program) {
@@ -360,9 +374,6 @@ export default {
                 return null;
             }
 
-            // 使用程序对象
-            // gl.useProgram(program);
-            // gl[name] = program;
             return program;
         },
         /**
@@ -427,7 +438,14 @@ export default {
                 uniform vec4 a_Color;
 
                 void main() {
-                    gl_FragColor = a_Color;
+                    // gl_PointCoord表示片元所在点内的坐标（值在0.0~1.0之间),点的中心坐标是(0.5, 0.5) 
+                    // 计算片元离点中心的距离
+                    float dist = distance(gl_PointCoord, vec2(0.5, 0.5));
+                    if (dist < 0.5) {
+                        gl_FragColor = a_Color;
+                    } else {
+                        discard;
+                    }
                 }
             `;
             return {
