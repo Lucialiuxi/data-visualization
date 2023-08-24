@@ -9,6 +9,13 @@
 import Matrix4 from '@lib/cuon-matrix';
 
 export default {
+    data() {
+        return {
+            // 离屏绘制尺寸
+            OFFSCREEN_WIDTH: 256,
+            OFFSCREEN_HEIGHT: 256
+        }
+    },
     mounted() {
         this.paintHandle();
     },
@@ -31,7 +38,7 @@ export default {
             this.matrixHandle(gl, canvas);
             await this.initTexture(gl, n);
             // this.draw(gl, n);
-            this.initFramebufferObject(gl, canvas);
+            this.initFramebufferObject(gl);
         }, 
         draw(gl, n) {
             gl.clearColor(0.9, 0.97, 0.95, 1);
@@ -102,7 +109,7 @@ export default {
             // 绑定渲染缓冲区对象
             gl.bindRenderbuffer(gl.RENDERBUFFER, renderbuffer);
             // 初始化一个渲染缓冲区对象的数据存储
-            gl.renderbufferStorage(gl.RENDERBUFFER, gl.RGBA4, canvas.width, canvas.height);
+            gl.renderbufferStorage(gl.RENDERBUFFER, gl.RGBA4, this.OFFSCREEN_WIDTH, this.OFFSCREEN_HEIGHT);
 
 
             // 将缓冲区的颜色关联对象指定为一个纹理对象
@@ -113,9 +120,12 @@ export default {
 
             // 检查帧缓冲区是否正确配置
             let status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
-            console.log('status',  gl.bindFrameBuffer)
+            if (!status) {
+                console.error('帧缓冲区是配置有误');
+                return;
+            }
             // 在缓冲区进行绘制
-            gl.bindFrameBuffer(gl.FRAMEBUFFER, framebuffer);
+            gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
         },
         // 创建顶点缓冲对象
         initVertexBuffers(gl) {
