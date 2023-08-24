@@ -13,7 +13,7 @@ export default {
         this.paintHandle();
     },
     methods: {
-        paintHandle() {
+        async paintHandle() {
             let { 
                 TEX_VSHADER_SOURCE,
                 TEX_FASHDER_SOURCE,
@@ -29,8 +29,9 @@ export default {
 
             let n = this.initVertexBuffers(gl);
             this.matrixHandle(gl, canvas);
-            this.initTexture(gl, n);
-            this.draw(gl, n);
+            await this.initTexture(gl, n);
+            // this.draw(gl, n);
+            this.initFramebufferObject(gl, canvas);
         }, 
         draw(gl, n) {
             gl.clearColor(0.9, 0.97, 0.95, 1);
@@ -86,6 +87,35 @@ export default {
             let u_NormalMatrix = gl.getUniformLocation(gl.program, 'u_NormalMatrix');
             gl.uniformMatrix4fv(u_NormalMatrix, false, normalMatrix.elements);
 
+        },
+        // 初始化帧缓冲区
+        async initFramebufferObject(gl, canvas) {
+            // 创建帧缓冲区对象
+            let framebuffer = gl.createFramebuffer();
+            
+            // 创建纹理对象并设置其尺寸和参数
+            let texture = await this.initTexture(gl);
+            
+            // 创建渲染缓冲区对象
+            let renderbuffer = gl.createRenderbuffer();
+
+            // 绑定渲染缓冲区对象
+            gl.bindRenderbuffer(gl.RENDERBUFFER, renderbuffer);
+            // 初始化一个渲染缓冲区对象的数据存储
+            gl.renderbufferStorage(gl.RENDERBUFFER, gl.RGBA4, canvas.width, canvas.height);
+
+
+            // 将缓冲区的颜色关联对象指定为一个纹理对象
+            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+
+            // 将帧缓冲区的深度关联对象指定为渲染缓冲区对象
+            gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, renderbuffer);
+
+            // 检查帧缓冲区是否正确配置
+            let status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
+            console.log('status',  gl.bindFrameBuffer)
+            // 在缓冲区进行绘制
+            gl.bindFrameBuffer(gl.FRAMEBUFFER, framebuffer);
         },
         // 创建顶点缓冲对象
         initVertexBuffers(gl) {
@@ -174,9 +204,10 @@ export default {
             gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, data, gl.STATIC_DRAW);
         },
         //初始化纹理
-        initTexture(gl, n) {
+        async initTexture(gl) {
             let texture = gl.createTexture();
             let image = new Image();
+            image.src = '/img/water.webp';
 
             let u_Sampler = gl.getUniformLocation(gl.program, 'u_Sampler');
             if (u_Sampler < 0) {
@@ -184,13 +215,15 @@ export default {
                 return;
             }
 
-            image.onload = (ev) => {
-                this.loadTexture(gl, n, texture, u_Sampler, image);
-            };
-            image.src = '/img/water.webp';
+            let loaded = await this.loadImg(image);
+            if (!loaded) {
+                console.error('加载图片出错：' + loaded);
+                return null;
+            }
+            return this.loadTexture(gl,texture, u_Sampler, image);
         },
         // 加载纹理
-        loadTexture(gl, n, texture, u_Sampler, image) {
+        loadTexture(gl,texture, u_Sampler, image) {
             // 图像预处理【对纹理图像进行Y轴翻转】
             gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
             let textureOrder = gl.TEXTURE0;
@@ -207,7 +240,7 @@ export default {
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image);
             // 将纹理单元传递给片元着色器
             gl.uniform1i(u_Sampler, 0);
-            this.draw(gl, n)
+            return texture;
         },
         /** 
          * 获取webGL上下文
@@ -317,6 +350,16 @@ export default {
                 TEX_FASHDER_SOURCE,
             }
         },
+        loadImg(image) {
+            return new Promise((resolve, reject) => {
+                image.onload = () => {
+                    resolve(true);
+                };
+                image.onerror = (error) => {
+                     reject(error);
+                };
+            })
+        }
     }
 }
 </script>
