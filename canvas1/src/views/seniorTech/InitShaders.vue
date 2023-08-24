@@ -227,7 +227,7 @@ export default {
                 gl.deleteProgram(program);
                 // deleteShader并不会立即删除着色器，而是要等程序对象不在使用该着色器后，才将其删除
                 gl.deleteShader(vertexShader);
-                gl.deleteShader(vertexShader); 
+                gl.deleteShader(fragmentShader); 
                 console.error('无法编译webGL program' + '\\n' + info);
                 return null;
             }
