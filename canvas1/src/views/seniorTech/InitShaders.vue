@@ -202,7 +202,7 @@ export default {
             let gl = window?.WebGLUtils?.setupWebGL(canvas);
             if (!gl) return null;
             if (arguments.length < 2 || opt_debug) {
-                gl = window.WebGLDebugUtils.makeDebugContext(gl);
+                gl = window?.WebGLDebugUtils?.makeDebugContext(gl);
             }
             return gl;
         },
