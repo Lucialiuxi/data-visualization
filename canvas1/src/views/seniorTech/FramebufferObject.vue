@@ -64,21 +64,45 @@ export default {
             
             let quadBuffer = this.initQuadVertexBuffers(gl, quadProgram);
 
-            gl.clearColor(0.9, 0.97, 0.95, 1);
-
-            // 开启隐藏面消除
             gl.enable(gl.DEPTH_TEST);
-            // 开启多边形位移
-            gl.enable(gl.POLYGON_OFFSET_FILL);
+            gl.clearColor(0.2, 0.2, 0.4, 1);
             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
             this.drawCube(gl, cubeProgram, cubeBuffer, texture);
             this.drawRound(gl, roundProgram, roundBuffer);
             this.drawQuad(gl, quadProgram, quadBuffer, texture);
 
-            let frameBuffer = this.initFramebufferObject(gl, texture);
-            
+            let framebuffer = await this.initFramebufferObject(gl);
+
+            this.drawTexQuad(gl, canvas, framebuffer, quadProgram, quadBuffer,
+                () => this.drawCube(gl, cubeProgram, cubeBuffer, texture),
+            );
         }, 
+        drawTexQuad(gl, canvas, framebuffer, quadProgram, quadBuffer, drawCube) {
+
+            gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer)
+
+            // 定义离线绘图的绘图区域gl.viewport(x, y, width, height)
+            gl.viewport(0, 0, this.OFFSCREEN_WIDTH, this.OFFSCREEN_HEIGHT);
+
+            // 设置矩形中 清空缓冲时的颜色值
+            gl.clearColor(0.2, 0.2, 0.4, 1);
+            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+            // 绘制贴于矩形内的立方体
+            drawCube();
+
+            // 切换绘制目标为颜色缓冲区
+            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+            // 将视口设置回canvas的尺寸
+            gl.viewport(0, 0, canvas.width, canvas.height);
+
+            gl.clearColor(0.9, 0.97, 0.95, 1);
+            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+            this.drawQuad(gl, quadProgram,quadBuffer, framebuffer.texture);
+        },
         drawQuad(gl, program, buffers, texture) {
             gl.useProgram(program);
 
@@ -111,7 +135,6 @@ export default {
             let { vertexBuffer, texCoordBuffer, indexBuffer } = buffers;
             gl.useProgram(program);
 
-
             this.initAttributeVariable(gl, program, vertexBuffer, 'a_Position');
             this.initAttributeVariable(gl, program, texCoordBuffer, 'a_TexCoord');
 
@@ -128,7 +151,9 @@ export default {
         initAttributeVariable(gl, program, buffer, attr) {
             gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
 
+            // 告诉显卡从当前绑定的缓冲区（bindBuffer指定的缓冲区）中读取定点数据
             gl.vertexAttribPointer(program[attr], buffer.size, buffer.type, false, 0, 0);
+            // 打开【激活】属性列表中指定索引处的通用顶点属性数组
             gl.enableVertexAttribArray(program[attr]);
         },
         initRoundVertexBuffer(gl, program) {
@@ -189,38 +214,6 @@ export default {
 
             let u_MvpMatrix = gl.getUniformLocation(program, 'u_MvpMatrix');
             gl.uniformMatrix4fv(u_MvpMatrix, false, mvpMatrix.elements);
-        },
-        // 初始化帧缓冲区
-        initFramebufferObject(gl, texture) {
-            // 创建帧缓冲区对象
-            let framebuffer = gl.createFramebuffer();
-
-            framebuffer.texture = texture;
-
-            // 创建渲染缓冲区对象
-            let renderbuffer = gl.createRenderbuffer();
-
-            // 绑定渲染缓冲区对象
-            gl.bindRenderbuffer(gl.RENDERBUFFER, renderbuffer);
-            // 初始化一个渲染缓冲区对象的数据存储
-            gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, this.OFFSCREEN_WIDTH, this.OFFSCREEN_HEIGHT);
-
-            // 在缓冲区进行绘制
-            gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
-
-            // 将缓冲区的颜色关联对象指定为一个纹理对象
-            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
-
-            // 将帧缓冲区的深度关联对象指定为渲染缓冲区对象
-            gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, renderbuffer);
-
-            // 检查帧缓冲区是否正确配置
-            let status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
-            if (!status) {
-                console.error('帧缓冲区是配置有误');
-                return;
-            }
-            return framebuffer;
         },
         initQuadVertexBuffers(gl, program) {
             let v0 = [ 1.0, 1.0, 0.0 ],
@@ -375,7 +368,10 @@ export default {
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-            // 指定二维纹理图像
+            /**
+             * 指定二维纹理图像
+             * texImage2D(target, level, internalformat, format, type, pixels)
+             */
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image);
             // 将纹理单元传递给片元着色器
 
@@ -383,6 +379,69 @@ export default {
             gl.uniform1i(program.u_Sampler, 0);
             gl.bindTexture(gl.TEXTURE_2D, null); // Unbind texture
             return texture;
+        },
+        // 初始化帧缓冲区
+        async initFramebufferObject(gl) {
+            // 创建帧缓冲区对象
+            let framebuffer = gl.createFramebuffer();
+
+            let texture = gl.createTexture();
+            gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1); // 对图像进行Y轴翻转
+            gl.activeTexture(gl.TEXTURE0); // 激活纹理单元
+            gl.bindTexture(gl.TEXTURE_2D, texture); // 开启纹理单元，以及将纹理对象绑定到纹理单元上
+            // 配置纹理参数
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+            /**
+             * 指定二维纹理图像
+             * texImage2D(target, level, internalformat, width, height, border, format, type, pixels)
+             */
+            gl.texImage2D(
+                gl.TEXTURE_2D, 
+                0, 
+                gl.RGBA, 
+                this.OFFSCREEN_WIDTH, 
+                this.OFFSCREEN_HEIGHT, 
+                0, 
+                gl.RGBA, 
+                gl.UNSIGNED_BYTE, 
+                null,
+            );
+            // 将纹理对象保存到帧缓冲对象上
+            framebuffer.texture = texture;
+
+            // 创建渲染缓冲区对象【将被指定为帧缓冲区的深度关联对象】
+            let renderbuffer = gl.createRenderbuffer();
+
+            // 绑定渲染缓冲区对象
+            gl.bindRenderbuffer(gl.RENDERBUFFER, renderbuffer);
+            // 初始化一个渲染缓冲区对象的数据存储
+            gl.renderbufferStorage(
+                gl.RENDERBUFFER, 
+                gl.DEPTH_COMPONENT16, 
+                this.OFFSCREEN_WIDTH, 
+                this.OFFSCREEN_HEIGHT,
+            );
+
+            // 绑定帧缓冲区
+            gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+
+            // 将缓冲区的颜色关联对象指定为一个纹理对象
+            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+
+            // 将帧缓冲区的深度关联对象指定为渲染缓冲区对象
+            gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, renderbuffer);
+
+            // 检查帧缓冲区是否正确配置
+            let status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
+            if (!status) {
+                console.error('帧缓冲区是配置有误');
+                return;
+            }
+
+            return framebuffer;
         },
         /** 
          * 获取webGL上下文
