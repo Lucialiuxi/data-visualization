@@ -23,9 +23,13 @@ export default {
         async paintHandle() {
             let { 
                 TEX_VSHADER_SOURCE,
-                TEX_FASHDER_SOURCE,
+                TEX_FSHADER_SOURCE,
+
                 ROUND_VSHADER_SOURCE,
-                ROUND_FASHDER_SOURCE,
+                ROUND_FSHADER_SOURCE,
+                
+                QUAD_VSHADER_SOURCE,
+                QUAD_FSHADER_SOURCE,
             } = this.getShaderSource();
             
             let canvas = document.getElementById('frame-buffer-object');
@@ -37,21 +41,28 @@ export default {
             let cubeProgram = this.createWebGLProgram(
                 gl, 
                 TEX_VSHADER_SOURCE, 
-                TEX_FASHDER_SOURCE, 
-                'cubeProgram',
+                TEX_FSHADER_SOURCE, 
             );
 
             let roundProgram = this.createWebGLProgram(
                 gl, 
                 ROUND_VSHADER_SOURCE,
-                ROUND_FASHDER_SOURCE,
-                'roundProgram',
+                ROUND_FSHADER_SOURCE,
             );
-            let cubeBuffer = this.initVertexBuffers(gl, cubeProgram);
+
+            let quadProgram = this.createWebGLProgram(
+                gl, 
+                QUAD_VSHADER_SOURCE,
+                QUAD_FSHADER_SOURCE,
+            );
+
+            let cubeBuffer = this.initCubeVertexBuffers(gl, cubeProgram);
             
             let texture = await this.initTexture(gl, cubeProgram);
 
-            let roundBuffer= this.initRoundVertexBuffer(gl, roundProgram);
+            let roundBuffer = this.initRoundVertexBuffer(gl, roundProgram);
+            
+            // let quadBuffer = this.initQuadVertexBuffers(gl, quadProgram);
 
             gl.clearColor(0.9, 0.97, 0.95, 1);
 
@@ -63,9 +74,29 @@ export default {
 
             this.drawCube(gl, cubeProgram, cubeBuffer, texture);
             this.drawRound(gl, roundProgram, roundBuffer);
-            // this.initFramebufferObject(gl);
+            // this.drawQuad(gl, quadProgram, quadBuffer);
+
+            // let frameBuffer = this.initFramebufferObject(gl, texture);
             
         }, 
+        drawQuad(gl, program, buffers) {
+            gl.useProgram(program);
+
+            let { vertexBuffer, texCoordBuffer, indexBuffer, vertexCount } = buffers;
+            gl.useProgram(program);
+
+            this.initAttributeVariable(gl, program, vertexBuffer, 'a_Position');
+            this.initAttributeVariable(gl, program, texCoordBuffer, 'a_TexCoord');
+
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+            
+            gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_2D, texture);
+
+            gl.bindBuffer(gl.ARRAY_BUFFER, null);
+
+            this.drawElements(gl.TRIANGLE_STRIP, vertexCount, indexBuffer.type, 0);
+        },
         drawRound(gl, program, buffers) {
             gl.useProgram(program);
             let { vertexBuffer, indexBuffer, vertexCount } = buffers;
@@ -143,31 +174,30 @@ export default {
 
             modelMatrix.setRotate(10, 1, 0, 0); // 绕X轴旋转
             modelMatrix.rotate(20, 0, 1, 0); // 绕Y轴旋转
-
+            modelMatrix.scale(0.5, 0.5, 0.5);
 
             mvpMatrix.multiply(viewMatrix).multiply(modelMatrix);
 
             let u_MvpMatrix = gl.getUniformLocation(program, 'u_MvpMatrix');
             gl.uniformMatrix4fv(u_MvpMatrix, false, mvpMatrix.elements);
-
-
         },
         // 初始化帧缓冲区
-        async initFramebufferObject(gl) {
+        initFramebufferObject(gl, texture) {
             // 创建帧缓冲区对象
             let framebuffer = gl.createFramebuffer();
-            
-            // 创建纹理对象并设置其尺寸和参数
-            let texture = await this.initTexture(gl);
-            
+
+            framebuffer.texture = texture;
+
             // 创建渲染缓冲区对象
             let renderbuffer = gl.createRenderbuffer();
 
             // 绑定渲染缓冲区对象
             gl.bindRenderbuffer(gl.RENDERBUFFER, renderbuffer);
             // 初始化一个渲染缓冲区对象的数据存储
-            gl.renderbufferStorage(gl.RENDERBUFFER, gl.RGBA4, this.OFFSCREEN_WIDTH, this.OFFSCREEN_HEIGHT);
+            gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, this.OFFSCREEN_WIDTH, this.OFFSCREEN_HEIGHT);
 
+            // 在缓冲区进行绘制
+            gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
 
             // 将缓冲区的颜色关联对象指定为一个纹理对象
             gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
@@ -181,11 +211,40 @@ export default {
                 console.error('帧缓冲区是配置有误');
                 return;
             }
-            // 在缓冲区进行绘制
-            gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+            return framebuffer;
         },
-        // 创建顶点缓冲对象
-        initVertexBuffers(gl, program) {
+        initQuadVertexBuffers(gl, program) {
+            console.log(program)
+            let v0 = [ 1.0, 1.0, 1.0 ],
+                v1 = [ -1.0, 1.0, 1.0 ],
+                v2 = [ -1.0, -1.0, 1.0 ],
+                v3 = [ 1.0, -1.0, 1.0 ];
+            let vertices = [
+                ...v1, ...v2, ...v0, ...v3,
+            ];
+            let texCoords = [
+                0.0, 1.0, // topL
+                0.0, 0.0, // bottomL
+                1.0, 1.0, // topR
+                1.0, 0.0, // bottomR
+            ];
+            let indices = [ 0, 1, 2, 3 ];
+
+            let buffers = new Object();
+
+            program.u_Sampler = gl.getUniformLocation(program, 'u_Sampler');
+            buffers.vertexBuffer = this.initArrayBuffer(gl, program, vertices, 'a_Position', 3);
+            buffers.texCoordBuffer = this.initArrayBuffer(gl, program, texCoords, 'a_TexCoord', 2);
+            buffers.indexBuffer = this.initElementArrayBuffer(gl, indices);
+            buffers.vertexCount = indices.length;
+
+            gl.bindBuffer(gl.ARRAY_BUFFER, null);
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+
+            return buffers;
+        },
+        // 创建立方体的顶点缓冲对象
+        initCubeVertexBuffers(gl, program) {
             // 顶点坐标
             let v0 = [ 1.0, 1.0, 1.0 ],
                 v1 = [ -1.0, 1.0, 1.0 ],
@@ -235,6 +294,7 @@ export default {
             ];
 
             let buffers = new Object();
+            program.u_Sampler = gl.getUniformLocation(program, 'u_Sampler');
             buffers.vertexBuffer = this.initArrayBuffer(gl, program, vertexAxis, 'a_Position', 3);
             buffers.texCoordBuffer = this.initArrayBuffer(gl, program, texCoords, 'a_TexCoord', 2);
             buffers.indexBuffer = this.initElementArrayBuffer(gl, indices);
@@ -282,27 +342,19 @@ export default {
         },
         //初始化纹理
         async initTexture(gl, program) {
-            gl.useProgram(program);
             let texture = gl.createTexture();
             let image = new Image();
             image.src = '/img/water.webp';
-
-            let u_Sampler = gl.getUniformLocation(program, 'u_Sampler');
-
-            if (u_Sampler < 0) {
-                console.error('获取u_Sampler储存位置失败');
-                return;
-            }
 
             let loaded = await this.loadImg(image);
             if (!loaded) {
                 console.error('加载图片出错：' + loaded);
                 return null;
             }
-            return this.loadTexture(gl,texture, u_Sampler, image);
+            return this.loadTexture(gl, program, texture, image);
         },
         // 加载纹理
-        loadTexture(gl,texture, u_Sampler, image) {
+        loadTexture(gl, program, texture, image) {
             // 图像预处理【对纹理图像进行Y轴翻转】
             gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
             let textureOrder = gl.TEXTURE0;
@@ -318,7 +370,9 @@ export default {
             // 指定二维纹理图像
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image);
             // 将纹理单元传递给片元着色器
-            gl.uniform1i(u_Sampler, 0);
+
+            gl.useProgram(program);
+            gl.uniform1i(program.u_Sampler, 0);
             gl.bindTexture(gl.TEXTURE_2D, null); // Unbind texture
             return texture;
         },
@@ -343,7 +397,8 @@ export default {
          * @param {*} vertexShaderSource 用于顶点着色器的GLSL的程序代码
          * @param {*} fragmentShaderSource 用于片元着色器的GLSL的程序代码
          */
-        createWebGLProgram(gl, vertexShaderSource, fragmentShaderSource, name) {
+        createWebGLProgram(gl, vertexShaderSource, fragmentShaderSource) {
+            console.log(gl)
             // 创建webGL程序对象
             let program = gl.createProgram();
             if (!program)  return;
@@ -412,7 +467,7 @@ export default {
                     v_TexCoord = a_TexCoord;
                 }
             `;
-            let TEX_FASHDER_SOURCE = `
+            let TEX_FSHADER_SOURCE = `
                 precision mediump float;
 
                 uniform sampler2D u_Sampler;
@@ -433,7 +488,7 @@ export default {
                     gl_PointSize = 50.0;
                 }
             `;
-            let ROUND_FASHDER_SOURCE = `
+            let ROUND_FSHADER_SOURCE = `
                 precision mediump float;
                 uniform vec4 a_Color;
 
@@ -448,11 +503,40 @@ export default {
                     }
                 }
             `;
+            
+
+            let QUAD_VSHADER_SOURCE = `
+                precision mediump float;
+
+                attribute vec4 a_Position;
+                attribute vec2 a_TexCoord;
+
+                varying vec2 v_TexCoord;
+
+                void main() {
+                    gl_Position = a_Position;
+                    a_TexCoord = v_TexCoord;
+                }
+            `;
+            let QUAD_FSHADER_SOURCE = `
+                precision mediump float;
+
+                uniform sampler2D u_Sampler;
+
+                varying vec2 v_TexCoord;
+
+                void main() {
+                    gl_FragColor = texture2D(u_Sampler, v_TexCoord);
+                }
+            `;
+            
             return {
                 TEX_VSHADER_SOURCE,
-                TEX_FASHDER_SOURCE,
+                TEX_FSHADER_SOURCE,
                 ROUND_VSHADER_SOURCE,
-                ROUND_FASHDER_SOURCE
+                ROUND_FSHADER_SOURCE,
+                QUAD_VSHADER_SOURCE,
+                QUAD_FSHADER_SOURCE,
             }
         },
         loadImg(image) {
