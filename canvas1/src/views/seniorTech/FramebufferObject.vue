@@ -62,7 +62,7 @@ export default {
 
             let roundBuffer = this.initRoundVertexBuffer(gl, roundProgram);
             
-            // let quadBuffer = this.initQuadVertexBuffers(gl, quadProgram);
+            let quadBuffer = this.initQuadVertexBuffers(gl, quadProgram);
 
             gl.clearColor(0.9, 0.97, 0.95, 1);
 
@@ -74,12 +74,12 @@ export default {
 
             this.drawCube(gl, cubeProgram, cubeBuffer, texture);
             this.drawRound(gl, roundProgram, roundBuffer);
-            // this.drawQuad(gl, quadProgram, quadBuffer);
+            this.drawQuad(gl, quadProgram, quadBuffer, texture);
 
-            // let frameBuffer = this.initFramebufferObject(gl, texture);
+            let frameBuffer = this.initFramebufferObject(gl, texture);
             
         }, 
-        drawQuad(gl, program, buffers) {
+        drawQuad(gl, program, buffers, texture) {
             gl.useProgram(program);
 
             let { vertexBuffer, texCoordBuffer, indexBuffer, vertexCount } = buffers;
@@ -95,7 +95,8 @@ export default {
 
             gl.bindBuffer(gl.ARRAY_BUFFER, null);
 
-            this.drawElements(gl.TRIANGLE_STRIP, vertexCount, indexBuffer.type, 0);
+            this.matrixHandle(gl, program, [ -1, 1, 0 ], [ 0, -40, 0 ], [ 0.8, 0.8, 1 ]);
+            gl.drawElements(gl.TRIANGLE_STRIP, vertexCount, indexBuffer.type, 0);
         },
         drawRound(gl, program, buffers) {
             gl.useProgram(program);
@@ -119,7 +120,7 @@ export default {
             gl.activeTexture(gl.TEXTURE0);
             gl.bindTexture(gl.TEXTURE_2D, texture);
 
-            this.matrixHandle(gl, program);
+            this.matrixHandle(gl, program, [ 3, -3, 0 ]);
 
             gl.bindBuffer(gl.ARRAY_BUFFER, null);
             gl.drawElements(gl.TRIANGLE_STRIP, buffers.vertexCount, gl.UNSIGNED_BYTE, 0); // mode, count, type, offset
@@ -149,7 +150,13 @@ export default {
             return buffers;
         },
         // 矩阵相关
-        matrixHandle(gl, program) {
+        matrixHandle(
+            gl, 
+            program, 
+            translates = [ 0, 0, 0 ], // 在x、y、z轴平移的参数
+            rotates = [ 10, 10, 0], // 绕x、y、z轴旋转的角度
+            scales = [ 0.5, 0.5, 0.5 ], // x、y、z长度的缩放因子
+        ) {
             // 视图矩阵
             let viewMatrix = new Matrix4();
             // 模型矩阵
@@ -172,9 +179,11 @@ export default {
                 0, 1, 0, // 上方向
             );
 
-            modelMatrix.setRotate(10, 1, 0, 0); // 绕X轴旋转
-            modelMatrix.rotate(20, 0, 1, 0); // 绕Y轴旋转
-            modelMatrix.scale(0.5, 0.5, 0.5);
+            modelMatrix.setRotate(rotates[0], 1, 0, 0); // 绕X轴旋转
+            modelMatrix.rotate(rotates[1], 0, 1, 0); // 绕Y轴旋转
+            modelMatrix.rotate(rotates[2], 0, 1, 0); // 绕Z轴旋转
+            modelMatrix.scale(...scales);
+            modelMatrix.translate(...translates);
 
             mvpMatrix.multiply(viewMatrix).multiply(modelMatrix);
 
@@ -214,11 +223,10 @@ export default {
             return framebuffer;
         },
         initQuadVertexBuffers(gl, program) {
-            console.log(program)
-            let v0 = [ 1.0, 1.0, 1.0 ],
-                v1 = [ -1.0, 1.0, 1.0 ],
-                v2 = [ -1.0, -1.0, 1.0 ],
-                v3 = [ 1.0, -1.0, 1.0 ];
+            let v0 = [ 1.0, 1.0, 0.0 ],
+                v1 = [ -1.0, 1.0, 0.0 ],
+                v2 = [ -1.0, -1.0, 0.0 ],
+                v3 = [ 1.0, -1.0, 0.0 ];
             let vertices = [
                 ...v1, ...v2, ...v0, ...v3,
             ];
@@ -398,7 +406,6 @@ export default {
          * @param {*} fragmentShaderSource 用于片元着色器的GLSL的程序代码
          */
         createWebGLProgram(gl, vertexShaderSource, fragmentShaderSource) {
-            console.log(gl)
             // 创建webGL程序对象
             let program = gl.createProgram();
             if (!program)  return;
@@ -511,11 +518,13 @@ export default {
                 attribute vec4 a_Position;
                 attribute vec2 a_TexCoord;
 
+                uniform mat4 u_MvpMatrix;
+
                 varying vec2 v_TexCoord;
 
                 void main() {
-                    gl_Position = a_Position;
-                    a_TexCoord = v_TexCoord;
+                    gl_Position = u_MvpMatrix * a_Position;
+                    v_TexCoord = a_TexCoord;
                 }
             `;
             let QUAD_FSHADER_SOURCE = `
