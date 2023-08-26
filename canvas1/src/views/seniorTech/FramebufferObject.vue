@@ -101,10 +101,6 @@ export default {
             // 将视口设置回canvas的尺寸
             gl.viewport(0, 0, canvas.width, canvas.height);
 
-            gl.clearColor(0.9, 0.97, 0.95, 1);
-            // -----------注释掉-----------------------------如果不注释，会影响其他图形渲染
-            // gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
             this.drawQuad(gl, quadProgram,quadBuffer, framebuffer.texture, [ -1, -2, 0 ]);
         },
         drawQuad(gl, program, buffers, texture, translates) {
