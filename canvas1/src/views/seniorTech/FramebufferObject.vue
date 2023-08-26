@@ -68,6 +68,9 @@ export default {
             gl.clearColor(0.96, 1, 0.86, 1);
             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
+            // let viewport = gl.getParameter(gl.VIEWPORT);
+            // console.log('viewport', viewport)
+
             this.drawCube(gl, cubeProgram, cubeBuffer, texture);
             this.drawRound(gl, roundProgram, roundBuffer);
             this.drawQuad(gl, quadProgram, quadBuffer, texture);
@@ -95,17 +98,16 @@ export default {
             // 切换绘制目标为颜色缓冲区
             gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
-            // -----------注释掉-----------------------------如果不注释，会影响其他图形渲染
             // 将视口设置回canvas的尺寸
-            // gl.viewport(0, 0, canvas.width, canvas.height);
+            gl.viewport(0, 0, canvas.width, canvas.height);
 
-            // gl.clearColor(0.9, 0.97, 0.95, 1);
+            gl.clearColor(0.9, 0.97, 0.95, 1);
+            // -----------注释掉-----------------------------如果不注释，会影响其他图形渲染
             // gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-            // -----------注释掉-----------------------------
 
-            this.drawQuad(gl, quadProgram,quadBuffer, framebuffer.texture);
+            this.drawQuad(gl, quadProgram,quadBuffer, framebuffer.texture, [ -1, -2, 0 ]);
         },
-        drawQuad(gl, program, buffers, texture) {
+        drawQuad(gl, program, buffers, texture, translates) {
             gl.useProgram(program);
 
             let { vertexBuffer, texCoordBuffer, indexBuffer, vertexCount } = buffers;
@@ -121,7 +123,7 @@ export default {
 
             gl.bindBuffer(gl.ARRAY_BUFFER, null);
 
-            this.matrixHandle(gl, program, true, [ -1, 1, 0 ], [ 0, -40, 0 ], [ 0.8, 0.8, 1 ]);
+            this.matrixHandle(gl, program, true, translates || [ -1, 1, 0 ], [ 0, -40, 0 ], [ 0.8, 0.8, 1 ]);
             gl.drawElements(gl.TRIANGLE_STRIP, vertexCount, indexBuffer.type, 0);
         },
         drawRound(gl, program, buffers) {

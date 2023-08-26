@@ -80,6 +80,14 @@ export default {
             // gl.blendFunc(gl.SRC_COLOR, gl.ONE_MINUS_SRC_COLOR);
             gl.blendFunc(gl.DST_COLOR, gl.DST_COLOR); // 显示在最前的三角形是最后绘制的，所以目标是现实在里视点最近的三角形
 
+            /**
+             * gl.viewport(x, y, width, height)
+             * x 用来设定视口的左下角水平坐标
+             * y 用来设定视口的左下角垂直坐标
+             * width 用来设定视口的宽度
+             * height 用来设定视口的宽度
+             */
+            gl.viewport(100, 100, 600, 600);
             // 使用预设值来清空缓冲
             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
