@@ -65,7 +65,7 @@ export default {
             let quadBuffer = this.initQuadVertexBuffers(gl, quadProgram);
 
             gl.enable(gl.DEPTH_TEST);
-            gl.clearColor(0.2, 0.2, 0.4, 1);
+            gl.clearColor(0.96, 1, 0.86, 1);
             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
             this.drawCube(gl, cubeProgram, cubeBuffer, texture);
@@ -75,12 +75,12 @@ export default {
             let framebuffer = await this.initFramebufferObject(gl);
 
             this.drawTexQuad(gl, canvas, framebuffer, quadProgram, quadBuffer,
-                () => this.drawCube(gl, cubeProgram, cubeBuffer, texture),
+                () => this.drawCube(gl, cubeProgram, cubeBuffer, texture, false),
             );
         }, 
         drawTexQuad(gl, canvas, framebuffer, quadProgram, quadBuffer, drawCube) {
 
-            gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer)
+            gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
 
             // 定义离线绘图的绘图区域gl.viewport(x, y, width, height)
             gl.viewport(0, 0, this.OFFSCREEN_WIDTH, this.OFFSCREEN_HEIGHT);
@@ -95,11 +95,13 @@ export default {
             // 切换绘制目标为颜色缓冲区
             gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
+            // -----------注释掉-----------------------------如果不注释，会影响其他图形渲染
             // 将视口设置回canvas的尺寸
-            gl.viewport(0, 0, canvas.width, canvas.height);
+            // gl.viewport(0, 0, canvas.width, canvas.height);
 
-            gl.clearColor(0.9, 0.97, 0.95, 1);
-            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+            // gl.clearColor(0.9, 0.97, 0.95, 1);
+            // gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+            // -----------注释掉-----------------------------
 
             this.drawQuad(gl, quadProgram,quadBuffer, framebuffer.texture);
         },
@@ -119,7 +121,7 @@ export default {
 
             gl.bindBuffer(gl.ARRAY_BUFFER, null);
 
-            this.matrixHandle(gl, program, [ -1, 1, 0 ], [ 0, -40, 0 ], [ 0.8, 0.8, 1 ]);
+            this.matrixHandle(gl, program, true, [ -1, 1, 0 ], [ 0, -40, 0 ], [ 0.8, 0.8, 1 ]);
             gl.drawElements(gl.TRIANGLE_STRIP, vertexCount, indexBuffer.type, 0);
         },
         drawRound(gl, program, buffers) {
@@ -131,7 +133,7 @@ export default {
             gl.bindBuffer(gl.ARRAY_BUFFER, null);
             gl.drawElements(gl.POINTS, vertexCount, indexBuffer.type, 0);
         },
-        drawCube(gl, program, buffers, texture) {
+        drawCube(gl, program, buffers, texture, modeNotEffect) {
             let { vertexBuffer, texCoordBuffer, indexBuffer } = buffers;
             gl.useProgram(program);
 
@@ -178,6 +180,7 @@ export default {
         matrixHandle(
             gl, 
             program, 
+            modeNotEffect = true,
             translates = [ 0, 0, 0 ], // 在x、y、z轴平移的参数
             rotates = [ 10, 10, 0], // 绕x、y、z轴旋转的角度
             scales = [ 0.5, 0.5, 0.5 ], // x、y、z长度的缩放因子
@@ -204,11 +207,13 @@ export default {
                 0, 1, 0, // 上方向
             );
 
-            modelMatrix.setRotate(rotates[0], 1, 0, 0); // 绕X轴旋转
-            modelMatrix.rotate(rotates[1], 0, 1, 0); // 绕Y轴旋转
-            modelMatrix.rotate(rotates[2], 0, 1, 0); // 绕Z轴旋转
-            modelMatrix.scale(...scales);
-            modelMatrix.translate(...translates);
+            if (modeNotEffect) {
+                modelMatrix.setRotate(rotates[0], 1, 0, 0); // 绕X轴旋转
+                modelMatrix.rotate(rotates[1], 0, 1, 0); // 绕Y轴旋转
+                modelMatrix.rotate(rotates[2], 0, 1, 0); // 绕Z轴旋转
+                modelMatrix.scale(...scales);
+                modelMatrix.translate(...translates);
+            }
 
             mvpMatrix.multiply(viewMatrix).multiply(modelMatrix);
 
